@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false" debug="false">
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>[%t, %d, %-5p, %C:%L] - %.-100000m%n</pattern>
+		</encoder>
+	</appender>
+
+	<logger name="org.apache.cxf.common.logging" level="WARN" additivity="false"/>
+
+	<root level="INFO">
+<!--		<appender-ref ref="CONSOLE"/> -->
+	</root>
+
+	<logger name="no.nav.dokkanalvalg" level="INFO"/>
+
+	<logger name="org.apache.cxf.interceptor" additivity="true">
+		    
+		<appender-ref ref="CONSOLE"/>
+		  
+	</logger>
+
+</configuration>

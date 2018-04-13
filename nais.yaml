@@ -1,0 +1,46 @@
+image: "docker.adeo.no:5000/dok/dokkanalvalg"
+replicas:
+  min: 1
+  max: 2
+  cpuThresholdPercentage: 50
+port: 8080
+healthcheck:
+  liveness:
+    path: /isAlive
+    initialDelay: 30
+    failureThreshold: 10
+  readiness:
+    path: /isReady
+    initialDelay: 30
+    timeout: 3
+redis: true
+prometheus:
+  enabled: true
+  path: /prometheus
+resources:
+  limits:
+    cpu: 1000m
+fasitResources:
+  used:
+  - alias: securityTokenService
+    resourceType: baseurl
+  - alias: "virksomhet:Organisasjon_v4"
+    resourceType: webserviceendpoint
+  - alias: "virksomhet:Person_v3"
+    resourceType: webserviceendpoint
+  - alias: DokumenttypeInfo_v3
+    resourceType: restservice
+  - alias: srvregoppslag
+    resourceType: credential
+    propertyMap:
+      username: SERVICEUSER_USERNAME
+      password: SERVICEUSER_PASSWORD
+  - alias: srvregoppslag
+    resourceType: certificate
+    propertyMap:
+      keystorealias: SRVREGOPPSLAG_CERT_KEYSTOREALIAS
+      password: SRVREGOPPSLAG_CERT_PASSWORD
+  exposed:
+  - alias: bestemDistribusjonKanal
+    resourceType: restservice
+    path: /rest/bestemDistribusjonKanal
