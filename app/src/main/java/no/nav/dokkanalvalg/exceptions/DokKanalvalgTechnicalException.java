@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Jarl Øystein Samseth, Visma Consulting
  */
 @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-public class DokKanalvalgTechnicalException extends Exception {
+public class DokKanalvalgTechnicalException extends RuntimeException{
 	public DokKanalvalgTechnicalException() {
 	}
 	

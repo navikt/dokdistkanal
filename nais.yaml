@@ -24,8 +24,6 @@ fasitResources:
   used:
   - alias: securityTokenService
     resourceType: baseurl
-  - alias: "virksomhet:Organisasjon_v4"
-    resourceType: webserviceendpoint
   - alias: "virksomhet:Person_v3"
     resourceType: webserviceendpoint
   - alias: DokumenttypeInfo_v3
