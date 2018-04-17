@@ -1,24 +1,23 @@
 package no.nav.dokkanalvalg.consumer.personv3;
 
-import static no.nav.dokkanalvalg.metrics.PrometheusLabels.CACHE_HIT;
 import static no.nav.dokkanalvalg.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokkanalvalg.metrics.PrometheusLabels.SERVICE_CODE_TREG001;
-import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.cacheCounter;
+import static no.nav.dokkanalvalg.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
+import static no.nav.dokkanalvalg.metrics.PrometheusLabels.PERSONV3;
+import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokkanalvalg.nais.checks.PersonV3Check.PERSONV3_LABEL;
 
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokkanalvalg.consumer.personv3.to.PersonV3To;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgFunctionalException;
-import no.nav.dokkanalvalg.exceptions.DokKanalvalgTechnicalException;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgSecurityException;
-//import no.nav.dokkanalvalg.exceptions.SamlTokenInterceptorException;
+import no.nav.dokkanalvalg.exceptions.DokKanalvalgTechnicalException;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Bruker;
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Informasjonsbehov;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent;
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Person;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter;
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest;
@@ -30,6 +29,10 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.LocalDate;
+
+//import no.nav.dokkanalvalg.exceptions.SamlTokenInterceptorException;
 
 /**
  * @author Joakim Bjørnstad, Jbit AS
@@ -40,50 +43,48 @@ import javax.inject.Inject;
 public class PersonV3Consumer {
 	private final PersonV3 personV3;
 	private Histogram.Timer requestTimer;
-	
+
 	public static final String HENT_PERSON = "hentPerson";
 
-	
 	@Inject
 	public PersonV3Consumer(PersonV3 personV3) {
 		this.personV3 = personV3;
 	}
-	
-	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-'+#principalName")
-	@Retryable(include = DokKanalvalgTechnicalException.class, exclude = {DokKanalvalgFunctionalException.class }, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public Bruker hentPerson(final String personidentifikator, final String principalName) throws DokKanalvalgFunctionalException, DokKanalvalgTechnicalException, DokKanalvalgSecurityException {
-		
-		cacheCounter.labels(HENT_PERSON, PERSONV3_LABEL, CACHE_HIT).dec();
-		cacheCounter.labels(HENT_PERSON, PERSONV3_LABEL, CACHE_MISS).inc();
-		
-		log.info("Test-- Henter person --Test");
-		
+
+	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-'+#consumerId")
+	@Retryable(include = DokKanalvalgTechnicalException.class, exclude = {DokKanalvalgFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	public PersonV3To hentPerson(final String personidentifikator, final String consumerId, final String serviceCode) throws DokKanalvalgTechnicalException, DokKanalvalgFunctionalException, DokKanalvalgSecurityException {
+
+		requestCounter.labels(HENT_PERSON, LABEL_CACHE_COUNTER, consumerId, CACHE_MISS).inc();
+
 		HentPersonRequest request = mapHentPersonRequest(personidentifikator);
 		HentPersonResponse response;
+
 		try {
-			requestTimer = requestLatency.labels(SERVICE_CODE_TREG001, PERSONV3_LABEL, HENT_PERSON).startTimer();
+			requestTimer = requestLatency.labels(serviceCode, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
 			throw new DokKanalvalgFunctionalException("PersonV3.hentPerson fant ikke person med ident:" + personidentifikator + ", message=" + hentPersonPersonIkkeFunnet
 					.getMessage(), hentPersonPersonIkkeFunnet);
 		} catch (HentPersonSikkerhetsbegrensning hentPersonSikkerhetsbegrensning) {
-			throw new DokKanalvalgSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning for ident: " + personidentifikator + ", message=" + hentPersonSikkerhetsbegrensning
+			throw new DokKanalvalgSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentPersonSikkerhetsbegrensning
 					.getMessage(), hentPersonSikkerhetsbegrensning);
 		} catch (Exception e) {
 //			if (e.getCause() instanceof SamlTokenInterceptorException){
-//				throw new DokKanalvalgFunctionalException(e.getMessage());
+//				throw new RegOppslagFunctionalException(e.getMessage());
 //			}
-			throw new DokKanalvalgTechnicalException("Noe gikk galt i kall til PersonV3.hentPerson for ident: " + personidentifikator + ", message=" + e.getMessage());
+			throw new DokKanalvalgTechnicalException("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=" + consumerId + ", message=" + e
+					.getMessage());
 		} finally {
 			requestTimer.observeDuration();
 		}
 		if (response != null && response.getPerson() != null) {
-			
-			return (Bruker) response.getPerson();
+
+			return mapTo((Bruker) response.getPerson());
 		}
 		return null;
 	}
-	
+
 	private HentPersonRequest mapHentPersonRequest(String personidentifikator) {
 
 		Personidenter personidenter = new Personidenter();
@@ -92,16 +93,25 @@ public class PersonV3Consumer {
 		} else {
 			personidenter.setValue("DNR");
 		}
-		
+
 		NorskIdent norskIdent = new NorskIdent();
 		norskIdent.setType(personidenter);
 		norskIdent.setIdent(personidentifikator);
-		
+
 		PersonIdent personIdent = new PersonIdent();
 		personIdent.setIdent(norskIdent);
 		HentPersonRequest request = new HentPersonRequest();
 		request.setAktoer(personIdent);
-		request.getInformasjonsbehov().add(Informasjonsbehov.ADRESSE);
 		return request;
+	}
+
+	private PersonV3To mapTo(Bruker bruker) {
+		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato().getFoedselsdato();
+		XMLGregorianCalendar brukerDoedsdato = bruker.getDoedsdato().getDoedsdato();
+
+		return PersonV3To.builder()
+				.doedsdato(brukerDoedsdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
+				.foedselsdato(brukerFoedselssdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
+				.build();
 	}
 }
