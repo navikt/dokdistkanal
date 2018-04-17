@@ -1,4 +1,4 @@
-image: "docker.adeo.no:5000/dok/dokkanalvalg"
+image: "docker.adeo.no:5000/dok/dokdistkanal"
 replicas:
   min: 1
   max: 2
