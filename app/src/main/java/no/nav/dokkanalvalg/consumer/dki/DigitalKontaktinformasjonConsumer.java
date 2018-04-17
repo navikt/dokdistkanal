@@ -1,14 +1,15 @@
 package no.nav.dokkanalvalg.consumer.dki;
 
 import static no.nav.dokkanalvalg.metrics.PrometheusLabels.CACHE_MISS;
+import static no.nav.dokkanalvalg.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
 import static no.nav.dokkanalvalg.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
-import static no.nav.dokkanalvalg.metrics.PrometheusLabels.PERSONV3;
+import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestLatency;
 
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokkanalvalg.consumer.dki.to.DigitalKontaktinfoTo;
+import no.nav.dokkanalvalg.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgFunctionalException;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgSecurityException;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgTechnicalException;
@@ -28,30 +29,30 @@ import javax.inject.Inject;
 
 @Slf4j
 @Service
-public class DigitalKontaktinfoConsumer {
+public class DigitalKontaktinformasjonConsumer {
 
 	private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 	private Histogram.Timer requestTimer;
 
-	public static final String HENT_PERSON = "hentPerson";
+	public static final String HENT_DIGITAL_KONTAKTINFORMASJON = "hentDigitalKontaktinformasjon";
 
 
 	@Inject
-	public DigitalKontaktinfoConsumer(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
+	public DigitalKontaktinformasjonConsumer(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
 	}
 
-	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-'+#consumerId")
+	@Cacheable(value = HENT_DIGITAL_KONTAKTINFORMASJON, key = "#personidentifikator")
 	@Retryable(include = DokKanalvalgTechnicalException.class, exclude = {DokKanalvalgFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DigitalKontaktinfoTo hentDigitakKontaktinfo(final String personidentifikator, final String consumerId, final String serviceCode) throws DokKanalvalgTechnicalException, DokKanalvalgFunctionalException, DokKanalvalgSecurityException {
+	public DigitalKontaktinformasjonTo hentDigitalKontaktinformasjon(final String personidentifikator, final String serviceCode) throws DokKanalvalgTechnicalException, DokKanalvalgFunctionalException, DokKanalvalgSecurityException {
 
-		requestCounter.labels(HENT_PERSON, LABEL_CACHE_COUNTER, consumerId, CACHE_MISS).inc();
+		requestCounter.labels(HENT_DIGITAL_KONTAKTINFORMASJON, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 
 		HentDigitalKontaktinformasjonRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentDigitalKontaktinformasjonResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(serviceCode, PERSONV3, HENT_PERSON).startTimer();
+			requestTimer = requestLatency.labels(serviceCode, DIGITALKONTAKTINFORMASJONV1, HENT_DIGITAL_KONTAKTINFORMASJON).startTimer();
 			response = digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(request);
 		} catch (HentDigitalKontaktinformasjonPersonIkkeFunnet hentDigitalKontaktinformasjonPersonIkkeFunnet) {
 			throw new DokKanalvalgFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + personidentifikator + ", message=" + hentDigitalKontaktinformasjonPersonIkkeFunnet
@@ -60,19 +61,18 @@ public class DigitalKontaktinfoConsumer {
 			throw new DokKanalvalgFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person med ident:" + personidentifikator + ", message=" + hentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet
 					.getMessage(), hentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet);
 		} catch (HentDigitalKontaktinformasjonSikkerhetsbegrensing hentDigitalKontaktinformasjonSikkerhetsbegrensing) {
-			throw new DokKanalvalgSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentDigitalKontaktinformasjonSikkerhetsbegrensing
+			throw new DokKanalvalgSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=" + hentDigitalKontaktinformasjonSikkerhetsbegrensing
 					.getMessage(), hentDigitalKontaktinformasjonSikkerhetsbegrensing);
 		} catch (Exception e) {
 //			if (e.getCause() instanceof SamlTokenInterceptorException){
 //				throw new RegOppslagFunctionalException(e.getMessage());
 //			}
-			throw new DokKanalvalgTechnicalException("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. ConsumerId=" + consumerId + ", message=" + e
+			throw new DokKanalvalgTechnicalException("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. message=" + e
 					.getMessage());
 		} finally {
 			requestTimer.observeDuration();
 		}
 		if (response != null && response.getDigitalKontaktinformasjon() != null) {
-
 			return mapTo(response.getDigitalKontaktinformasjon());
 		}
 		return null;
@@ -84,8 +84,8 @@ public class DigitalKontaktinfoConsumer {
 		return request;
 	}
 
-	private DigitalKontaktinfoTo mapTo(Kontaktinformasjon kontaktinformasjon) {
-		return DigitalKontaktinfoTo.builder()
+	private DigitalKontaktinformasjonTo mapTo(Kontaktinformasjon kontaktinformasjon) {
+		return DigitalKontaktinformasjonTo.builder()
 				.epostadresse(kontaktinformasjon.getEpostadresse().getValue())
 				.mobiltelefon(kontaktinformasjon.getMobiltelefonnummer().getValue())
 				.reservasjon(kontaktinformasjon.getReservasjon()).build();
