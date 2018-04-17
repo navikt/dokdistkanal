@@ -56,6 +56,7 @@
 		<javax.servlet-api.version>3.1.0</javax.servlet-api.version>
 		<cxf.version>3.2.2</cxf.version>
 		<nav-person-v3-tjenestespesifikasjon.version>3.0.2</nav-person-v3-tjenestespesifikasjon.version>
+		<nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon>2.0.0</nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon>
 		<dokkat-api.version>9.4.1</dokkat-api.version>
 		<wiremock-standalone.version>2.15.0</wiremock-standalone.version>
 		<retry.version>1.0.2.RELEASE</retry.version>
