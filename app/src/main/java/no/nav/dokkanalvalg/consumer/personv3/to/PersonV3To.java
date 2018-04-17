@@ -8,7 +8,6 @@ import java.time.LocalDate;
 @Builder
 @Data
 public class PersonV3To {
-
 	private LocalDate doedsdato;
 	private LocalDate foedselsdato;
 }

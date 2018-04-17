@@ -3,18 +3,18 @@ package no.nav.dokkanalvalg.consumer.dokkat;
 import static no.nav.dokkanalvalg.metrics.PrometheusLabels.CACHE_MISS;
 import static no.nav.dokkanalvalg.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
 import static no.nav.dokkanalvalg.metrics.PrometheusLabels.SERVICE_CODE_TREG001;
-import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.requestLatency;
 
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokkanalvalg.config.fasit.DokumenttypeInfoV3Alias;
 import no.nav.dokkanalvalg.config.fasit.ServiceuserAlias;
+import no.nav.dokkanalvalg.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgFunctionalException;
 import no.nav.dokkanalvalg.exceptions.DokKanalvalgTechnicalException;
 import no.nav.dokkat.api.tkat020.v3.DokumentTypeInfoToV3;
-import no.nav.dokkat.api.tkat020.v3.SpraakInfoTo;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -27,9 +27,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,17 +35,17 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class Tkat020DokumenttypeInfo {
+public class DokumentTypeInfoConsumer {
 	private final RestTemplate restTemplate;
-	public static final String HENT_DOKKAT_SPRAAKINFO = "hentDokumenttypeInfoSpraak";
+	public static final String HENT_DOKKAT_INFO = "hentDokumentTypeInfo";
 	public static final String DOKKAT = "DOKKAT";
 	private Histogram.Timer requestTimer;
 
 	@Inject
-	public Tkat020DokumenttypeInfo(RestTemplateBuilder restTemplateBuilder,
-								   HttpComponentsClientHttpRequestFactory requestFactory,
-								   DokumenttypeInfoV3Alias dokumenttypeInfoV3Alias,
-								   ServiceuserAlias serviceuserAlias) {
+	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
+									HttpComponentsClientHttpRequestFactory requestFactory,
+									DokumenttypeInfoV3Alias dokumenttypeInfoV3Alias,
+									ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.requestFactory(requestFactory)
 				.rootUri(dokumenttypeInfoV3Alias.getUrl())
@@ -57,25 +55,25 @@ public class Tkat020DokumenttypeInfo {
 				.build();
 	}
 
-	public Tkat020DokumenttypeInfo(RestTemplate restTemplate) {
+	public DokumentTypeInfoConsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
 	}
 
-	@Cacheable(HENT_DOKKAT_SPRAAKINFO)
+	@Cacheable(HENT_DOKKAT_INFO)
 	@Retryable(include = DokKanalvalgTechnicalException.class, exclude = {DokKanalvalgFunctionalException.class }, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public List<SpraakInfoTo> hentDokumenttypeInfoSpraak(final String dokumenttypeId) throws DokKanalvalgFunctionalException,DokKanalvalgTechnicalException{
+	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokKanalvalgFunctionalException,DokKanalvalgTechnicalException{
 
-		requestCounter.labels(HENT_DOKKAT_SPRAAKINFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
+		requestCounter.labels(HENT_DOKKAT_INFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
-			requestTimer = requestLatency.labels(SERVICE_CODE_TREG001, DOKKAT, HENT_DOKKAT_SPRAAKINFO).startTimer();
+			requestTimer = requestLatency.labels(SERVICE_CODE_TREG001, DOKKAT, HENT_DOKKAT_INFO).startTimer();
 			DokumentTypeInfoToV3 dokumentTypeInfoToV3 =  restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV3.class, uriVariables);
-			if (dokumentTypeInfoToV3.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getSpraakInfos() == null) {
-				return Collections.emptyList();
+			if (dokumentTypeInfoToV3.getDokumentMottakInfo() == null) {
+				return null;
 			} else {
-				return dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getSpraakInfos();
+				return mapTo(dokumentTypeInfoToV3);
 			}
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
@@ -90,5 +88,11 @@ public class Tkat020DokumenttypeInfo {
 		} finally {
 			requestTimer.observeDuration();
 		}
+	}
+
+	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV3 dokumentTypeInfoToV3) {
+		return DokumentTypeInfoTo.builder()
+				.arkivbehandling(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivBehandling())
+				.arkivsystem(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivSystem()).build();
 	}
 }
