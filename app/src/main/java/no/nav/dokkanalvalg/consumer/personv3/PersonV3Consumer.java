@@ -17,7 +17,6 @@ import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensn
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent;
-import no.nav.tjeneste.virksomhet.person.v3.informasjon.Person;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter;
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest;
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
 
 //import no.nav.dokkanalvalg.exceptions.SamlTokenInterceptorException;
 

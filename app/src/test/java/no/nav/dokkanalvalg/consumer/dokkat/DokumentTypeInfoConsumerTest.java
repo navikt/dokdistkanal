@@ -17,8 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
@@ -29,7 +27,6 @@ import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DokumentTypeInfoConsumerTest {
-	private static final String DOKKAT_URL = "http://nav.no/dokkat";
 	private static final String DOKTYPE = "***gammelt_fnr***";
 	private static final String ARKIVBEHANDLING = "Behandling";
 	private static final String ARKIVSYSTEM = "System";
