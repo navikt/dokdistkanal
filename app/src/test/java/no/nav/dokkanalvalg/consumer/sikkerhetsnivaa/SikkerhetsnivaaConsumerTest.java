@@ -65,7 +65,7 @@ public class SikkerhetsnivaaConsumerTest {
 		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet med BAD REQUEST for fnr=" + FNR);
 		when(restTemplate.postForObject(eq(SIKKERHETSNIVAA_URL + "/"), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
+		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
 
@@ -74,7 +74,7 @@ public class SikkerhetsnivaaConsumerTest {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet for fnr=" + FNR);
 		when(restTemplate.postForObject(eq(SIKKERHETSNIVAA_URL + "/"), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new RuntimeException());
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
+		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class SikkerhetsnivaaConsumerTest {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet for fnr=" + FNR);
 		when(restTemplate.postForObject(eq(SIKKERHETSNIVAA_URL + "/"), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
+		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
 	@Test
@@ -91,6 +91,4 @@ public class SikkerhetsnivaaConsumerTest {
 		sikkerhetsnivaaConsumer.ping();
 		verify(restTemplate).getForObject(SIKKERHETSNIVAA_URL + "/isReady", String.class);
 	}
-
-
 }

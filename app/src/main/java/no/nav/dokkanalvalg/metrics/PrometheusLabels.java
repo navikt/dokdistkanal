@@ -33,7 +33,6 @@ public class PrometheusLabels {
 	public static final String CONTROLLER = "controller";
 	public static final String PERSONV3 = "personV3";
 	public static final String DIGITALKONTAKTINFORMASJONV1 = "digitalKontaktInformasjonV1";
-	public static final String ORGENHETKONTAKTV1 = "OrganisasjonEnhetKontaktinformasjonV1";
-	public static final String LDAP = "ldap";
-	
+	public static final String SIKKERHETSNIVAAV1 = "SikkerhetsnivaaV1";
+
 }

@@ -3,7 +3,10 @@ package no.nav.dokkanalvalg.nais;
 import static no.nav.dokkanalvalg.metrics.PrometheusMetrics.isReady;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokkanalvalg.nais.checks.DigitalKontaktinfoV1Check;
+import no.nav.dokkanalvalg.nais.checks.DokumenttypeInfoV3Check;
 import no.nav.dokkanalvalg.nais.checks.PersonV3Check;
+import no.nav.dokkanalvalg.nais.checks.SikkerhetsnivaaV1Check;
 import no.nav.dokkanalvalg.nais.selftest.support.Result;
 import no.nav.dokkanalvalg.nais.selftest.support.SelftestCheck;
 import org.springframework.http.HttpStatus;
@@ -33,10 +36,17 @@ public class NaisContract {
 	private static final String APPLICATION_NOT_READY = "Application is not ready for traffic :-(";
 
 	private final PersonV3Check personV3Check;
+	private final DokumenttypeInfoV3Check dokumenttypeInfoV3Check;
+	private final DigitalKontaktinfoV1Check digitalKontaktinfoV1Check;
+	private final SikkerhetsnivaaV1Check sikkerhetsnivaaV1Check;
 
 	@Inject
-	public NaisContract(PersonV3Check personV3Check) {
+	public NaisContract(PersonV3Check personV3Check, DokumenttypeInfoV3Check dokumenttypeInfoV3Check, DigitalKontaktinfoV1Check digitalKontaktinfoV1Check, SikkerhetsnivaaV1Check sikkerhetsnivaaV1Check)
+	{
 		this.personV3Check = personV3Check;
+		this.dokumenttypeInfoV3Check = dokumenttypeInfoV3Check;
+		this.digitalKontaktinfoV1Check = digitalKontaktinfoV1Check;
+		this.sikkerhetsnivaaV1Check = sikkerhetsnivaaV1Check;
 	}
 
 	@GetMapping("/isAlive")
@@ -51,6 +61,9 @@ public class NaisContract {
 			List<SelftestCheck> results = new ArrayList<>();
 
 			results.add(personV3Check.check());
+			results.add(dokumenttypeInfoV3Check.check());
+			results.add(digitalKontaktinfoV1Check.check());
+			results.add(sikkerhetsnivaaV1Check.check());
 
 			if (isAnyDependencyUnhealthy(results.stream().map(SelftestCheck::getResult).collect(Collectors.toList()))) {
 				isReady.dec();
