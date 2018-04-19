@@ -8,7 +8,7 @@
 			<appender-ref ref="stdout_json"/>
 		</root>
 
-		<logger name="no.nav.dokkanalvalg" level="INFO" additivity="false">
+		<logger name="no.nav.dokdistkanal" level="INFO" additivity="false">
 			<appender-ref ref="stdout_json"/>
 		</logger>
 

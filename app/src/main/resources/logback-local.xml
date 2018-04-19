@@ -11,7 +11,7 @@
 		<appender-ref ref="CONSOLE"/>
 	</root>
 
-	<logger name="no.nav.dokkanalvalg" level="DEBUG" additivity="false">
+	<logger name="no.nav.dokdistkanal" level="DEBUG" additivity="false">
 		<appender-ref ref="CONSOLE"/>
 	</logger>
 

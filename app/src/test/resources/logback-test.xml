@@ -13,7 +13,7 @@
 <!--		<appender-ref ref="CONSOLE"/> -->
 	</root>
 
-	<logger name="no.nav.dokkanalvalg" level="INFO"/>
+	<logger name="no.nav.dokdistkanal" level="INFO"/>
 
 	<logger name="org.apache.cxf.interceptor" additivity="true">
 		    
