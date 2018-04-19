@@ -28,6 +28,10 @@ fasitResources:
     resourceType: webserviceendpoint
   - alias: DokumenttypeInfo_v3
     resourceType: restservice
+  - alias: Sikkerhetsnivaa_v1
+    resourceType: restservice
+  - alias: DigitalKontaktinformasjon_v1
+    resourceType: webserviceendpoint
   - alias: srvregoppslag
     resourceType: credential
     propertyMap:
@@ -41,4 +45,4 @@ fasitResources:
   exposed:
   - alias: bestemDistribusjonKanal
     resourceType: restservice
-    path: /rest/bestemDistribusjonKanal
+    path: /rest/bestemKanal
