@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV3Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgTechnicalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokkat.api.tkat020.v3.DokumentTypeInfoToV3;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -59,9 +59,9 @@ public class DokumentTypeInfoConsumer {
 		this.restTemplate = restTemplate;
 	}
 
-	@Cacheable(HENT_DOKKAT_INFO)
-	@Retryable(include = DokKanalvalgTechnicalException.class, exclude = {DokKanalvalgFunctionalException.class }, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokKanalvalgFunctionalException,DokKanalvalgTechnicalException{
+//	@Cacheable(HENT_DOKKAT_INFO)
+	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class }, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException,DokDistKanalTechnicalException {
 
 		requestCounter.labels(HENT_DOKKAT_INFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		
@@ -77,14 +77,14 @@ public class DokumentTypeInfoConsumer {
 			}
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
-				throw new DokKanalvalgFunctionalException("Dokkat.TKAT020 failed with bad request for dokumenttypeId:" + dokumenttypeId, e);
+				throw new DokDistKanalFunctionalException("Dokkat.TKAT020 failed with bad request for dokumenttypeId:" + dokumenttypeId, e);
 			} else {
-				throw new DokKanalvalgTechnicalException("Dokkat.TKAT020 failed. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
+				throw new DokDistKanalTechnicalException("Dokkat.TKAT020 failed. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 			}
 		} catch (HttpServerErrorException e) {
-			throw new DokKanalvalgTechnicalException("Dokkat.TKAT020 failed with statusCode=" + e.getRawStatusCode(), e);
+			throw new DokDistKanalTechnicalException("Dokkat.TKAT020 failed with statusCode=" + e.getRawStatusCode(), e);
 		} catch (Exception e) {
-			throw new DokKanalvalgTechnicalException("Dokkat.TKAT020 failed with message=" + e.getMessage(), e);
+			throw new DokDistKanalTechnicalException("Dokkat.TKAT020 failed with message=" + e.getMessage(), e);
 		} finally {
 			requestTimer.observeDuration();
 		}

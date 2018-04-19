@@ -47,7 +47,7 @@ public class SikkerhetsnivaaConsumerTest {
 		response.setHarbruktnivaa4(Boolean.FALSE);
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenReturn(response);
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
-		assertThat(sikkerhetsnivaaTo.getHarLoggetPaaNivaa4(), equalTo(Boolean.FALSE));
+		assertThat(sikkerhetsnivaaTo.isHarLoggetPaaNivaa4(), equalTo(Boolean.FALSE));
 		assertThat(sikkerhetsnivaaTo.getPersonIdent(), equalTo(FNR));
 	}
 

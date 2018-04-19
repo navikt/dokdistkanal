@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.consumer.personv3.to;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDate;
 

@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 @Builder
 public class DokDistKanalResponse {
-	private String distribusjonsKanal;
+	private DistribusjonKanalCode distribusjonsKanal;
 }

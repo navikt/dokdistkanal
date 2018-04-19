@@ -8,8 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgTechnicalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokkat.api.tkat020.v3.DokumentMottakInfoToV3;
 import no.nav.dokkat.api.tkat020.v3.DokumentTypeInfoToV3;
 import org.junit.Before;
@@ -44,7 +44,7 @@ public class DokumentTypeInfoConsumerTest {
 	}
 
 	@Test
-	public void shouldRunOK() throws DokKanalvalgFunctionalException {
+	public void shouldRunOK() throws DokDistKanalFunctionalException {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
 				.thenReturn(createResponse());
 
@@ -59,7 +59,7 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
 		expectedException.expectMessage("Dokkat.TKAT020 failed with bad request for dokumenttypeId:");
-		expectedException.expect(DokKanalvalgFunctionalException.class);
+		expectedException.expect(DokDistKanalFunctionalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}
@@ -70,7 +70,7 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
 		expectedException.expectMessage("Dokkat.TKAT020 failed. (HttpStatus=503) for dokumenttypeId:");
-		expectedException.expect(DokKanalvalgTechnicalException.class);
+		expectedException.expect(DokDistKanalTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}
@@ -81,7 +81,7 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
 		expectedException.expectMessage("Dokkat.TKAT020 failed with statusCode=503");
-		expectedException.expect(DokKanalvalgTechnicalException.class);
+		expectedException.expect(DokDistKanalTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}
@@ -92,7 +92,7 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new RuntimeException());
 
 		expectedException.expectMessage("Dokkat.TKAT020 failed with message");
-		expectedException.expect(DokKanalvalgTechnicalException.class);
+		expectedException.expect(DokDistKanalTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}

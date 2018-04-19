@@ -2,6 +2,8 @@ package no.nav.dokdistkanal.rest;
 
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +28,7 @@ public class DokDistKanalRestController {
 
 	@ResponseBody
 	@PostMapping(value = BESTEM_KANAL_URI_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request) {
-		return dokDistKanalService.velgKanal(request.getPersonIdent(), request.getDokumentTypeId());
+	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		return dokDistKanalService.velgKanal(request.getDokumentTypeId(), request.getPersonIdent());
 	}
 }

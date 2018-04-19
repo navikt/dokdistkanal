@@ -7,20 +7,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Jarl Øystein Samseth, Visma Consulting
  */
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-public class DokKanalvalgFunctionalException extends Exception {
+public class DokDistKanalFunctionalException extends Exception {
 	
-	public DokKanalvalgFunctionalException() {
+	public DokDistKanalFunctionalException() {
 	}
 	
-	public DokKanalvalgFunctionalException(String message) {
+	public DokDistKanalFunctionalException(String message) {
 		super(message);
 	}
 	
-	public DokKanalvalgFunctionalException(String message, Throwable cause) {
+	public DokDistKanalFunctionalException(String message, Throwable cause) {
 		super(message, cause);
 	}
 	
-	public DokKanalvalgFunctionalException(Throwable cause) {
+	public DokDistKanalFunctionalException(Throwable cause) {
 		super(cause);
 	}
 }

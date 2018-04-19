@@ -8,8 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgSecurityException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentDigitalKontaktinformasjonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentDigitalKontaktinformasjonSikkerhetsbegrensing;
@@ -33,7 +33,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 	private final static String FNR = "***gammelt_fnr***";
 	private final static String EPOSTADRESSE = "adresse@test.no";
 	private final static String MOBIL = "123 45 678";
-	private final static String RESERVASJON = "Reservert";
+	private final static boolean RESERVASJON = true;
 
 	private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1 = mock(DigitalKontaktinformasjonV1.class);
 	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = new DigitalKontaktinformasjonConsumer(digitalKontaktinformasjonV1);
@@ -48,8 +48,8 @@ public class DigitalKontaktinformasjonConsumerTest {
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
 
 		assertThat(digitalKontaktinformasjonTo.getEpostadresse(), is(EPOSTADRESSE));
-		assertThat(digitalKontaktinformasjonTo.getMobiltelefon(), is(MOBIL));
-		assertThat(digitalKontaktinformasjonTo.getReservasjon(), is(RESERVASJON));
+		assertThat(digitalKontaktinformasjonTo.getMobiltelefonnummer(), is(MOBIL));
+		assertThat(digitalKontaktinformasjonTo.isReservasjon(), is(RESERVASJON));
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class)))
 				.thenThrow(new HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet("Finner ikke konraktinfo", new KontaktinformasjonIkkeFunnet()));
 
-		expectedException.expect(DokKanalvalgFunctionalException.class);
+		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person med ident:" + FNR+ ", message=Finner ikke konraktinfo");
 		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
 	}
@@ -77,7 +77,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 	public void shouldThrowFunctionalExceptionWhenPersonIkkeFunnet() throws Exception {
 		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class)))
 				.thenThrow(new HentDigitalKontaktinformasjonPersonIkkeFunnet("Finner ikke person", new PersonIkkeFunnet()));
-		expectedException.expect(DokKanalvalgFunctionalException.class);
+		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + FNR + ", message=Finner ikke person");
 
 		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
@@ -87,7 +87,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 	public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() throws Exception {
 		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class)))
 				.thenThrow(new HentDigitalKontaktinformasjonSikkerhetsbegrensing("Ingen adgang", new Sikkerhetsbegrensing()));
-		expectedException.expect(DokKanalvalgSecurityException.class);
+		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Ingen adgang");
 
 		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
@@ -102,7 +102,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		mobiltelefonnummer.setValue(MOBIL);
 		kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
 		kontaktinformasjon.setPersonident(FNR);
-		kontaktinformasjon.setReservasjon(RESERVASJON);
+		kontaktinformasjon.setReservasjon("true");
 		HentDigitalKontaktinformasjonResponse response = new HentDigitalKontaktinformasjonResponse();
 		response.setDigitalKontaktinformasjon(kontaktinformasjon);
 		return response;

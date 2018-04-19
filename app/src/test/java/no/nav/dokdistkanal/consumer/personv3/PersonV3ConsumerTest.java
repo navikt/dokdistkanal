@@ -8,8 +8,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgSecurityException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
@@ -68,7 +68,7 @@ public class PersonV3ConsumerTest {
 	public void shouldThrowFunctionalExceptionWhenPersonIkkeFunnet() throws Exception {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new HentPersonPersonIkkeFunnet("Fant ikke person", new PersonIkkeFunnet()));
 
-		expectedException.expect(DokKanalvalgFunctionalException.class);
+		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med ident:" + FNR);
 		personV3Consumer.hentPerson(FNR, PRINCIPAL, "");
 	}
@@ -76,7 +76,7 @@ public class PersonV3ConsumerTest {
 	@Test
 	public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() throws Exception {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new HentPersonSikkerhetsbegrensning("Ingen adgang", new Sikkerhetsbegrensning()));
-		expectedException.expect(DokKanalvalgSecurityException.class);
+		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + PRINCIPAL + ", message=Ingen adgang");
 
 		personV3Consumer.hentPerson(FNR, PRINCIPAL, "");

@@ -1,8 +1,8 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
-import no.nav.dokdistkanal.exceptions.DokKanalvalgTechnicalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 
-public class SikkerhetsnivaaTechnicalException extends DokKanalvalgTechnicalException{
+public class SikkerhetsnivaaTechnicalException extends DokDistKanalTechnicalException {
 	public SikkerhetsnivaaTechnicalException(String message) {
 		super(message);
 	}

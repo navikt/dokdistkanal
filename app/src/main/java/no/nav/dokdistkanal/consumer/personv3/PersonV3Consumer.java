@@ -9,9 +9,9 @@ import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgSecurityException;
-import no.nav.dokdistkanal.exceptions.DokKanalvalgTechnicalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
@@ -49,9 +49,9 @@ public class PersonV3Consumer {
 		this.personV3 = personV3;
 	}
 
-	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-'+#consumerId")
-	@Retryable(include = DokKanalvalgTechnicalException.class, exclude = {DokKanalvalgFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public PersonV3To hentPerson(final String personidentifikator, final String consumerId, final String serviceCode) throws DokKanalvalgTechnicalException, DokKanalvalgFunctionalException, DokKanalvalgSecurityException {
+//	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-'+#consumerId")
+	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	public PersonV3To hentPerson(final String personidentifikator, final String consumerId, final String serviceCode) throws DokDistKanalTechnicalException, DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
 		requestCounter.labels(HENT_PERSON, LABEL_CACHE_COUNTER, consumerId, CACHE_MISS).inc();
 
@@ -62,16 +62,16 @@ public class PersonV3Consumer {
 			requestTimer = requestLatency.labels(serviceCode, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
-			throw new DokKanalvalgFunctionalException("PersonV3.hentPerson fant ikke person med ident:" + personidentifikator + ", message=" + hentPersonPersonIkkeFunnet
+			throw new DokDistKanalFunctionalException("PersonV3.hentPerson fant ikke person med ident:" + personidentifikator + ", message=" + hentPersonPersonIkkeFunnet
 					.getMessage(), hentPersonPersonIkkeFunnet);
 		} catch (HentPersonSikkerhetsbegrensning hentPersonSikkerhetsbegrensning) {
-			throw new DokKanalvalgSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentPersonSikkerhetsbegrensning
+			throw new DokDistKanalSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentPersonSikkerhetsbegrensning
 					.getMessage(), hentPersonSikkerhetsbegrensning);
 		} catch (Exception e) {
 //			if (e.getCause() instanceof SamlTokenInterceptorException){
 //				throw new RegOppslagFunctionalException(e.getMessage());
 //			}
-			throw new DokKanalvalgTechnicalException("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=" + consumerId + ", message=" + e
+			throw new DokDistKanalTechnicalException("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=" + consumerId + ", message=" + e
 					.getMessage());
 		} finally {
 			requestTimer.observeDuration();
@@ -104,12 +104,12 @@ public class PersonV3Consumer {
 	}
 
 	private PersonV3To mapTo(Bruker bruker) {
-		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato().getFoedselsdato();
-		XMLGregorianCalendar brukerDoedsdato = bruker.getDoedsdato().getDoedsdato();
+		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato() == null ? null :  bruker.getFoedselsdato().getFoedselsdato();
+		XMLGregorianCalendar brukerDoedsdato = bruker.getDoedsdato() == null ? null : bruker.getDoedsdato().getDoedsdato();
 
 		return PersonV3To.builder()
-				.doedsdato(brukerDoedsdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
-				.foedselsdato(brukerFoedselssdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
+				.doedsdato(brukerDoedsdato == null ? null: brukerDoedsdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
+				.foedselsdato(brukerFoedselssdato == null ? null : brukerFoedselssdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
 				.build();
 	}
 }
