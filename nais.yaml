@@ -30,7 +30,7 @@ fasitResources:
     resourceType: restservice
   - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
-  - alias: DigitalKontaktinformasjon_v1
+  - alias: "virksomhet:DigitalKontakinformasjon_v1"
     resourceType: webserviceendpoint
   - alias: srvregoppslag
     resourceType: credential
