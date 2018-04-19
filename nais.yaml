@@ -28,7 +28,7 @@ fasitResources:
     resourceType: webserviceendpoint
   - alias: DokumenttypeInfo_v3
     resourceType: restservice
-  - alias: Sikkerhetsnivaa_v1
+  - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
   - alias: DigitalKontaktinformasjon_v1
     resourceType: webserviceendpoint
