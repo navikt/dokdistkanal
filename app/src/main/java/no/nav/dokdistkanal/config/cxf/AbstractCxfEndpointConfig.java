@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal.config.cxf;
 
 //import no.nav.dokdistkanal.config.sts.STSConfig;
+import no.nav.dokdistkanal.config.sts.STSConfig;
 import org.apache.cxf.Bus;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.interceptor.Interceptor;
@@ -34,6 +35,9 @@ public abstract class AbstractCxfEndpointConfig {
 		factoryBean.setProperties(new HashMap<>());
 		factoryBean.setBus(bus);
 	}
+
+	@Inject
+	private STSConfig stsConfig;
 
 	protected void setAdress(String aktoerUrl) {
 		factoryBean.setAddress(aktoerUrl);
@@ -96,7 +100,7 @@ public abstract class AbstractCxfEndpointConfig {
 		this.connectTimeout = connectTimeout;
 	}
 	
-//	public void configureSTSSamlToken(Object port){
-//		stsConfig.configureSTS(port);
-//	}
+	public void configureSTSSamlToken(Object port){
+		stsConfig.configureSTS(port);
+	}
 }

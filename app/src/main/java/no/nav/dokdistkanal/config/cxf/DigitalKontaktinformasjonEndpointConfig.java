@@ -31,6 +31,9 @@ public class DigitalKontaktinformasjonEndpointConfig extends AbstractCxfEndpoint
 		setConnectTimeout(digitalKontaktinfoV1Alias.getConnecttimeoutms());
 		addFeature(new WSAddressingFeature());
 
-		return createPort(DigitalKontaktinformasjonV1.class);
+		DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1 = createPort(DigitalKontaktinformasjonV1.class);
+		configureSTSSamlToken(digitalKontaktinformasjonV1);
+
+		return digitalKontaktinformasjonV1;
 	}
 }

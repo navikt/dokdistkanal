@@ -36,7 +36,7 @@ public class SikkerhetsnivaaV1Check extends AbstractSelftest {
 	@Override
 	protected void doCheck() {
 		try {
-			restTemplate.getForEntity("/ping", String.class);
+			restTemplate.getForEntity("/isReady", String.class);
 		} catch (Exception e) {
 			throw new ApplicationNotReadyException("Could not ping "+ SIKKERHETSNIVAAV1, e);
 		}

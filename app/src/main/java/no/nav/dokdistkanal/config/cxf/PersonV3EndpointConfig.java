@@ -36,8 +36,10 @@ public class PersonV3EndpointConfig extends AbstractCxfEndpointConfig {
 		setConnectTimeout(personV3Alias.getConnecttimeoutms());
 		addFeature(new WSAddressingFeature());
 //		addOutInterceptor(new CustomSamlTokenOutInterceptor());
-		
-		return createPort(PersonV3.class);
+
+		PersonV3 personV3 = createPort(PersonV3.class);
+		configureSTSSamlToken(personV3);
+		return personV3;
 	}
 
 }
