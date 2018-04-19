@@ -1,8 +1,8 @@
 package no.nav.dokdistkanal.config.fasit;
 
-//import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERTY_APPCERT_ALIAS;
-//import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERTY_APPCERT_FILE;
-//import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERTY_APPCERT_PASSWORD;
+import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERTY_APPCERT_ALIAS;
+import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERTY_APPCERT_FILE;
+import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERTY_APPCERT_PASSWORD;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +10,8 @@ import lombok.ToString;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author Joakim Bjørnstad, Jbit AS
@@ -27,10 +29,10 @@ public class NavAppCertAlias {
 	@NotEmpty
 	private String password;
 
-//	@PostConstruct
-//	public void postConstruct() {
-//		System.setProperty(SYSTEM_PROPERTY_APPCERT_FILE, keystore);
-//		System.setProperty(SYSTEM_PROPERTY_APPCERT_ALIAS, keystorealias);
-//		System.setProperty(SYSTEM_PROPERTY_APPCERT_PASSWORD, password);
-//	}
+	@PostConstruct
+	public void postConstruct() {
+		System.setProperty(SYSTEM_PROPERTY_APPCERT_FILE, keystore);
+		System.setProperty(SYSTEM_PROPERTY_APPCERT_ALIAS, keystorealias);
+		System.setProperty(SYSTEM_PROPERTY_APPCERT_PASSWORD, password);
+	}
 }

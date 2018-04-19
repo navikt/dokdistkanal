@@ -12,7 +12,7 @@ import javax.xml.namespace.QName;
 @Configuration
 public class DigitalKontaktinformasjonEndpointConfig extends AbstractCxfEndpointConfig {
 
-	public static final String WSDL_URL = "wsdl/no/nav/tjeneste/virksomhet/digitakKontaktinformasjon/v1/Binding.wsdl";
+	public static final String WSDL_URL = "wsdl/no/nav/tjeneste/virksomhet/digitalKontaktinformasjon/v1/Binding.wsdl";
 
 	public static final String BINDING_NAMESPACE_URI = "http://nav.no/tjeneste/virksomhet/digitalKontaktinformasjon/v1/Binding";
 	public static final QName SERVICE = new QName(BINDING_NAMESPACE_URI, "DigitalKontaktinformasjon_v1");

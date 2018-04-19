@@ -45,7 +45,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 		expiresInSeconds.put(HENT_PERSON, 10L);
 		
 		redisCacheManager.setExpires(expiresInSeconds);
-		redisCacheManager.setLoadRemoteCachesOnStartup(true);
+		redisCacheManager.setLoadRemoteCachesOnStartup(false);
 		
 		return redisCacheManager;
 	}

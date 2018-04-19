@@ -3,6 +3,7 @@ package no.nav.dokdistkanal;
 import io.prometheus.client.spring.boot.EnablePrometheusEndpoint;
 import io.prometheus.client.spring.boot.EnableSpringBootMetricsCollector;
 import io.prometheus.client.spring.web.EnablePrometheusTiming;
+import no.nav.dokdistkanal.config.RestConsumerConfig;
 import no.nav.dokdistkanal.config.cxf.DigitalKontaktinformasjonEndpointConfig;
 import no.nav.dokdistkanal.config.cxf.PersonV3EndpointConfig;
 import no.nav.dokdistkanal.config.fasit.DigitalKontaktinfoV1Alias;
@@ -10,6 +11,7 @@ import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV3Alias;
 import no.nav.dokdistkanal.config.fasit.NavAppCertAlias;
 import no.nav.dokdistkanal.config.fasit.PersonV3Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
+import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
@@ -23,7 +25,8 @@ import org.springframework.context.annotation.Import;
 		DokumenttypeInfoV3Alias.class,
 		DigitalKontaktinfoV1Alias.class,
 		NavAppCertAlias.class,
-		ServiceuserAlias.class
+		ServiceuserAlias.class,
+		SikkerhetsnivaaV1Alias.class
 })
 @Import({
 		PersonV3Consumer.class,
@@ -31,7 +34,8 @@ import org.springframework.context.annotation.Import;
 		DigitalKontaktinformasjonConsumer.class,
 		DigitalKontaktinformasjonEndpointConfig.class,
 		SikkerhetsnivaaRestComsumer.class,
-		DokumentTypeInfoConsumer.class
+		DokumentTypeInfoConsumer.class,
+		RestConsumerConfig.class
 })
 @EnablePrometheusEndpoint
 @EnablePrometheusTiming

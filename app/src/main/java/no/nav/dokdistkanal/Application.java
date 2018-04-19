@@ -45,7 +45,7 @@ public class Application {
 //		DokkanalvalgConfigSetter configSetter = new RegoppslagConfigSetter();
 //		configSetter.configureSsl();
 //		configSetter.setAppConfig();
-		SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+//		SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
 		SpringApplication.run(Application.class, args);
 	}
 

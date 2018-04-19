@@ -57,7 +57,7 @@ public class NaisContract {
 	@ResponseBody
 	@RequestMapping(value = "/isReady", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity isReady() throws Exception {
-		try {
+//		try {
 			List<SelftestCheck> results = new ArrayList<>();
 
 			results.add(personV3Check.check());
@@ -74,9 +74,9 @@ public class NaisContract {
 			isReady.set(1);
 
 			return new ResponseEntity<>(APPLICATION_READY, HttpStatus.OK);
-		} finally {
-			SecurityContextHolder.clearContext();
-		}
+//		} finally {
+//			SecurityContextHolder.clearContext();
+//		}
 	}
 
 
