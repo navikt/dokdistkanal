@@ -32,16 +32,16 @@ fasitResources:
     resourceType: restservice
   - alias: "virksomhet:DigitalKontakinformasjon_v1"
     resourceType: webserviceendpoint
-  - alias: srvregoppslag
+  - alias: srvdokdistkanal
     resourceType: credential
     propertyMap:
       username: SERVICEUSER_USERNAME
       password: SERVICEUSER_PASSWORD
-  - alias: srvregoppslag
+  - alias: srvdokdistkanal
     resourceType: certificate
     propertyMap:
-      keystorealias: SRVREGOPPSLAG_CERT_KEYSTOREALIAS
-      password: SRVREGOPPSLAG_CERT_PASSWORD
+      keystorealias: SRVDOKDISTKANAL_CERT_KEYSTOREALIAS
+      password: SRVDOKDISTKANAL_CERT_PASSWORD
   exposed:
   - alias: bestemDistribusjonKanal
     resourceType: restservice
