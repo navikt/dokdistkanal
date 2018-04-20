@@ -12,14 +12,12 @@ public class DigitalKontaktinformasjonTo {
 	private boolean reservasjon;
 	private String leverandoerAdresse;
 	private String brukerAdresse;
-	private String sertifikat;
+	private boolean sertifikat;
 
 	public boolean verifyAddress() {
-		boolean hasSertifikat = StringUtils.isNotBlank(getSertifikat());
 		boolean hasLeverandorAdresse = StringUtils.isNotBlank(getLeverandoerAdresse());
 		boolean hasBrukerAdresse = StringUtils.isNotBlank(getBrukerAdresse());
-
-		return (hasSertifikat && hasLeverandorAdresse && hasBrukerAdresse);
+		return (sertifikat && hasLeverandorAdresse && hasBrukerAdresse);
 	}
 
 }

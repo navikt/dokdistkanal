@@ -20,6 +20,8 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikke
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.DigitalPostkasse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Kontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.SikkerDigitalKontaktinformasjon;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentPrintsertifikatRequest;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentPrintsertifikatResponse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +38,7 @@ public class DigitalKontaktinformasjonConsumer {
 	private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
 	private Histogram.Timer requestTimer;
 
-	public static final String HENT_DIGITAL_KONTAKTINFORMASJON = "hentDigitalKontaktinformasjon";
+	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 
 
 	@Inject
@@ -44,17 +46,17 @@ public class DigitalKontaktinformasjonConsumer {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
 	}
 
-	//	@Cacheable(value = HENT_DIGITAL_KONTAKTINFORMASJON, key = "#personidentifikator")
+	//	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DigitalKontaktinformasjonTo hentDigitalKontaktinformasjon(final String personidentifikator, final String serviceCode) throws DokDistKanalTechnicalException, DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final String serviceCode) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
-		requestCounter.labels(HENT_DIGITAL_KONTAKTINFORMASJON, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
+		requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 
 		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentSikkerDigitalPostadresseResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(serviceCode, DIGITALKONTAKTINFORMASJONV1, HENT_DIGITAL_KONTAKTINFORMASJON).startTimer();
+			requestTimer = requestLatency.labels(serviceCode, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
 		} catch (HentSikkerDigitalPostadressePersonIkkeFunnet hentSikkerDigitalPostadressePersonIkkeFunnet) {
 			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + personidentifikator + ", message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
@@ -77,6 +79,7 @@ public class DigitalKontaktinformasjonConsumer {
 		return null;
 	}
 
+
 	private HentSikkerDigitalPostadresseRequest mapHentDigitalKontaktinformasjonRequest(final String personidentifikator) {
 		HentSikkerDigitalPostadresseRequest request = new HentSikkerDigitalPostadresseRequest();
 		request.setPersonident(personidentifikator);
@@ -95,12 +98,16 @@ public class DigitalKontaktinformasjonConsumer {
 			kontaktinformasjon = sikkerDigitalKontaktinformasjon.getDigitalKontaktinformasjon();
 		}
 
+		byte[] sertifikat = sikkerDigitalKontaktinformasjon.getSertifikat();
+
+
 		return DigitalKontaktinformasjonTo.builder()
 				.leverandoerAdresse(digitalPostkasse == null ? null : digitalPostkasse.getLeverandoerAdresse())
 				.brukerAdresse(digitalPostkasse == null ? null : digitalPostkasse.getBrukerAdresse())
 				.epostadresse(kontaktinformasjon == null ? null : kontaktinformasjon.getEpostadresse().getValue())
 				.mobiltelefonnummer(kontaktinformasjon == null ? null : kontaktinformasjon.getMobiltelefonnummer().getValue())
-				.reservasjon(mapStringToBool(kontaktinformasjon==null ? null: kontaktinformasjon.getReservasjon())).build();
+				.reservasjon(mapStringToBool(kontaktinformasjon==null ? null: kontaktinformasjon.getReservasjon()))
+				.sertifikat(StringUtils.isNotEmpty(sertifikat.toString())).build();
 	}
 
 	private boolean mapStringToBool(String bool) {

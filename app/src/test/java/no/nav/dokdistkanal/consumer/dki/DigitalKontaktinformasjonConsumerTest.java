@@ -18,6 +18,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikke
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.feil.KontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.feil.PersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.feil.Sikkerhetsbegrensing;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.DigitalPostkasse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Epostadresse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Kontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Mobiltelefonnummer;
@@ -36,6 +37,8 @@ public class DigitalKontaktinformasjonConsumerTest {
 	private final static String EPOSTADRESSE = "adresse@test.no";
 	private final static String MOBIL = "123 45 678";
 	private final static boolean RESERVASJON = true;
+	private final static String LEVERANDORADRESSE = "Leverandøradresse";
+	private final static String BRUKERADRESSE = "Brukeradresse";
 
 	private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1 = mock(DigitalKontaktinformasjonV1.class);
 	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = new DigitalKontaktinformasjonConsumer(digitalKontaktinformasjonV1);
@@ -47,11 +50,14 @@ public class DigitalKontaktinformasjonConsumerTest {
 	public void shouldHentDKIOK() throws Exception {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(createResponse());
 
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 
 		assertThat(digitalKontaktinformasjonTo.getEpostadresse(), is(EPOSTADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getMobiltelefonnummer(), is(MOBIL));
 		assertThat(digitalKontaktinformasjonTo.isReservasjon(), is(RESERVASJON));
+		assertThat(digitalKontaktinformasjonTo.isSertifikat(), is(Boolean.TRUE));
+		assertThat(digitalKontaktinformasjonTo.getBrukerAdresse(), is(BRUKERADRESSE));
+		assertThat(digitalKontaktinformasjonTo.getLeverandoerAdresse(), is(LEVERANDORADRESSE));
 	}
 
 	@Test
@@ -60,7 +66,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		response.setSikkerDigitalKontaktinformasjon(null);
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(response);
 
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 
 		assertThat(digitalKontaktinformasjonTo, nullValue());
 	}
@@ -72,7 +78,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person med ident:" + FNR+ ", message=Finner ikke konraktinfo");
-		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 	}
 
 	@Test
@@ -82,7 +88,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + FNR + ", message=Finner ikke person");
 
-		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 	}
 
 	@Test
@@ -92,7 +98,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Ingen adgang");
 
-		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 	}
 
 	@Test
@@ -102,7 +108,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		expectedException.expect(DokDistKanalTechnicalException.class);
 		expectedException.expectMessage("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. message=Runtime Exception");
 
-		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 	}
 	private HentSikkerDigitalPostadresseResponse createResponse() {
 		Kontaktinformasjon kontaktinformasjon = new Kontaktinformasjon();
@@ -114,8 +120,15 @@ public class DigitalKontaktinformasjonConsumerTest {
 		kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
 		kontaktinformasjon.setPersonident(FNR);
 		kontaktinformasjon.setReservasjon("true");
+
+		DigitalPostkasse digitalPostkasse = new DigitalPostkasse();
+		digitalPostkasse.setBrukerAdresse(BRUKERADRESSE);
+		digitalPostkasse.setLeverandoerAdresse(LEVERANDORADRESSE);
+
 		SikkerDigitalKontaktinformasjon sikkerDigitalKontaktinformasjon = new SikkerDigitalKontaktinformasjon();
+		sikkerDigitalKontaktinformasjon.setSertifikat("mitt sertifikat".getBytes());
 		sikkerDigitalKontaktinformasjon.setDigitalKontaktinformasjon(kontaktinformasjon);
+		sikkerDigitalKontaktinformasjon.setSikkerDigitalPostkasse(digitalPostkasse);
 		HentSikkerDigitalPostadresseResponse response = new HentSikkerDigitalPostadresseResponse();
 		response.setSikkerDigitalKontaktinformasjon(sikkerDigitalKontaktinformasjon);
 		return response;

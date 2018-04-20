@@ -67,7 +67,7 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Person is under 18 years old");
 			}
 
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(personIdent, "service");
+			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(personIdent, "service");
 			if (dki == null) {
 				return logAndReturn(PRINT, "Missing DKI");
 			}
