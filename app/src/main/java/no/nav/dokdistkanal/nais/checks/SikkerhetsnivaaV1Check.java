@@ -21,7 +21,7 @@ public class SikkerhetsnivaaV1Check extends AbstractSelftest {
 
 	@Inject
 	public SikkerhetsnivaaV1Check(RestTemplateBuilder restTemplateBuilder,
-								  @Value("${SIKKERHETSNIVAA_V1_URL}") String sikkerhetsnivaaUrl,
+								  @Value("${HENTPAALOGGINGSNIVAA_V1_URL}") String sikkerhetsnivaaUrl,
 								  HttpComponentsClientHttpRequestFactory requestFactory) {
 		super(Ping.Type.Rest,
 				SIKKERHETSNIVAAV1,
