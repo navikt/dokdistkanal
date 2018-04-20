@@ -15,7 +15,7 @@ import javax.validation.constraints.Min;
 @Getter
 @Setter
 @ToString
-@ConfigurationProperties("PERSON_V3")
+@ConfigurationProperties("VIRKSOMHET_PERSON_V3")
 @Validated
 public class PersonV3Alias {
 	@NotEmpty
