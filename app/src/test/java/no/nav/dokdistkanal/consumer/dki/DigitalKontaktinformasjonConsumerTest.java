@@ -10,18 +10,20 @@ import static org.mockito.Mockito.when;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentDigitalKontaktinformasjonPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentDigitalKontaktinformasjonSikkerhetsbegrensing;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadressePersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseSikkerhetsbegrensing;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.feil.KontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.feil.PersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.feil.Sikkerhetsbegrensing;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Epostadresse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Kontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Mobiltelefonnummer;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentDigitalKontaktinformasjonResponse;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentDigitalKontaktinformasjonRequest;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.SikkerDigitalKontaktinformasjon;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseRequest;
+import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,7 +45,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 	@Test
 	public void shouldHentDKIOK() throws Exception {
-		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class))).thenReturn(createResponse());
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(createResponse());
 
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
 
@@ -54,9 +56,9 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 	@Test
 	public void shouldReturnNullWhenRequestEmpty() throws Exception {
-		HentDigitalKontaktinformasjonResponse response = createResponse();
-		response.setDigitalKontaktinformasjon(null);
-		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class))).thenReturn(response);
+		HentSikkerDigitalPostadresseResponse response = createResponse();
+		response.setSikkerDigitalKontaktinformasjon(null);
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(response);
 
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
 
@@ -65,8 +67,8 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 	@Test
 	public void shouldThrowFunctionalExceptionWhenDKIIkkeFunnet() throws Exception {
-		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class)))
-				.thenThrow(new HentDigitalKontaktinformasjonKontaktinformasjonIkkeFunnet("Finner ikke konraktinfo", new KontaktinformasjonIkkeFunnet()));
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
+				.thenThrow(new HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet("Finner ikke konraktinfo", new KontaktinformasjonIkkeFunnet()));
 
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person med ident:" + FNR+ ", message=Finner ikke konraktinfo");
@@ -75,8 +77,8 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 	@Test
 	public void shouldThrowFunctionalExceptionWhenPersonIkkeFunnet() throws Exception {
-		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class)))
-				.thenThrow(new HentDigitalKontaktinformasjonPersonIkkeFunnet("Finner ikke person", new PersonIkkeFunnet()));
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
+				.thenThrow(new HentSikkerDigitalPostadressePersonIkkeFunnet("Finner ikke person", new PersonIkkeFunnet()));
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + FNR + ", message=Finner ikke person");
 
@@ -85,15 +87,24 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 	@Test
 	public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() throws Exception {
-		when(digitalKontaktinformasjonV1.hentDigitalKontaktinformasjon(any(HentDigitalKontaktinformasjonRequest.class)))
-				.thenThrow(new HentDigitalKontaktinformasjonSikkerhetsbegrensing("Ingen adgang", new Sikkerhetsbegrensing()));
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
+				.thenThrow(new HentSikkerDigitalPostadresseSikkerhetsbegrensing("Ingen adgang", new Sikkerhetsbegrensing()));
 		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Ingen adgang");
 
 		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
 	}
 
-	private HentDigitalKontaktinformasjonResponse createResponse() {
+	@Test
+	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
+				.thenThrow(new RuntimeException("Runtime Exception"));
+		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expectMessage("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. message=Runtime Exception");
+
+		digitalKontaktinformasjonConsumer.hentDigitalKontaktinformasjon(FNR, "");
+	}
+	private HentSikkerDigitalPostadresseResponse createResponse() {
 		Kontaktinformasjon kontaktinformasjon = new Kontaktinformasjon();
 		Epostadresse epostadresse = new Epostadresse();
 		epostadresse.setValue(EPOSTADRESSE);
@@ -103,8 +114,10 @@ public class DigitalKontaktinformasjonConsumerTest {
 		kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
 		kontaktinformasjon.setPersonident(FNR);
 		kontaktinformasjon.setReservasjon("true");
-		HentDigitalKontaktinformasjonResponse response = new HentDigitalKontaktinformasjonResponse();
-		response.setDigitalKontaktinformasjon(kontaktinformasjon);
+		SikkerDigitalKontaktinformasjon sikkerDigitalKontaktinformasjon = new SikkerDigitalKontaktinformasjon();
+		sikkerDigitalKontaktinformasjon.setDigitalKontaktinformasjon(kontaktinformasjon);
+		HentSikkerDigitalPostadresseResponse response = new HentSikkerDigitalPostadresseResponse();
+		response.setSikkerDigitalKontaktinformasjon(sikkerDigitalKontaktinformasjon);
 		return response;
 	}
 }
