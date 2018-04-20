@@ -41,6 +41,7 @@ fasitResources:
     resourceType: certificate
     propertyMap:
       keystorealias: SRVDOKDISTKANAL_CERT_KEYSTOREALIAS
+      keystore: SRVDOKDISTKANAL_CERT_KEYSTORE
       password: SRVDOKDISTKANAL_CERT_PASSWORD
   exposed:
   - alias: bestemDistribusjonKanal
