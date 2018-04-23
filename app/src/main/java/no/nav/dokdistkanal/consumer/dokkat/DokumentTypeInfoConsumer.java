@@ -9,6 +9,7 @@ import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
 
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV3Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
@@ -59,17 +60,17 @@ public class DokumentTypeInfoConsumer {
 		this.restTemplate = restTemplate;
 	}
 
-//	@Cacheable(HENT_DOKKAT_INFO)
-	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class }, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException,DokDistKanalTechnicalException {
+	//	@Cacheable(HENT_DOKKAT_INFO)
+	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalTechnicalException {
 
 		requestCounter.labels(HENT_DOKKAT_INFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
-		
+
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
 			requestTimer = requestLatency.labels(SERVICE_CODE_TREG001, DOKKAT, HENT_DOKKAT_INFO).startTimer();
-			DokumentTypeInfoToV3 dokumentTypeInfoToV3 =  restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV3.class, uriVariables);
+			DokumentTypeInfoToV3 dokumentTypeInfoToV3 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV3.class, uriVariables);
 			if (dokumentTypeInfoToV3.getDokumentMottakInfo() == null) {
 				return null;
 			} else {
@@ -91,8 +92,19 @@ public class DokumentTypeInfoConsumer {
 	}
 
 	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV3 dokumentTypeInfoToV3) {
-		return DokumentTypeInfoTo.builder()
-				.arkivbehandling(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivBehandling())
-				.arkivsystem(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivSystem()).build();
+		if (dokumentTypeInfoToV3.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getDistribusjonInfo() == null
+				|| dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
+			return DokumentTypeInfoTo.builder()
+					.arkivbehandling(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivBehandling())
+					.isVarslingSdp(Boolean.FALSE).build();
+
+		} else {
+			return DokumentTypeInfoTo.builder()
+					.arkivbehandling(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivBehandling())
+					.isVarslingSdp(dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels().stream()
+							.anyMatch(
+									distribusjonVarselTo -> DistribusjonKanalCode.SDP.toString()
+											.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();
+		}
 	}
 }

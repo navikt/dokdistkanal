@@ -50,7 +50,6 @@ public class DokumentTypeInfoConsumerTest {
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 		assertThat(dokumentTypeInfoTo.getArkivbehandling(), equalTo(ARKIVBEHANDLING));
-		assertThat(dokumentTypeInfoTo.getArkivsystem(), equalTo(ARKIVSYSTEM));
 	}
 
 	@Test
@@ -100,7 +99,6 @@ public class DokumentTypeInfoConsumerTest {
 	private DokumentTypeInfoToV3 createResponse() {
 		DokumentMottakInfoToV3 dokumentMottakInfoToV3 = new DokumentMottakInfoToV3();
 		dokumentMottakInfoToV3.setArkivBehandling(ARKIVBEHANDLING);
-		dokumentMottakInfoToV3.setArkivSystem(ARKIVSYSTEM);
 		DokumentTypeInfoToV3 response = new DokumentTypeInfoToV3();
 		response.setDokumentType(DOKTYPE);
 		response.setDokumentMottakInfo(dokumentMottakInfoToV3);

@@ -70,7 +70,7 @@ public class SikkerhetsnivaaConsumerTest {
 	@Test
 	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws SikkerhetsnivaaFunctionalException {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet for fnr=" + FNR);
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new RuntimeException());
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
@@ -78,7 +78,7 @@ public class SikkerhetsnivaaConsumerTest {
 	@Test
 	public void shouldThrowTechnicalExceptionWhenHttpStatusForbidden() throws SikkerhetsnivaaFunctionalException {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet for fnr=" + FNR);
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}

@@ -77,7 +77,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 				.thenThrow(new HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet("Finner ikke konraktinfo", new KontaktinformasjonIkkeFunnet()));
 
 		expectedException.expect(DokDistKanalFunctionalException.class);
-		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person med ident:" + FNR+ ", message=Finner ikke konraktinfo");
+		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=Finner ikke konraktinfo");
 		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 	}
 
@@ -86,7 +86,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
 				.thenThrow(new HentSikkerDigitalPostadressePersonIkkeFunnet("Finner ikke person", new PersonIkkeFunnet()));
 		expectedException.expect(DokDistKanalFunctionalException.class);
-		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + FNR + ", message=Finner ikke person");
+		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=Finner ikke person");
 
 		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
 	}

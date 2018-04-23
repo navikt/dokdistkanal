@@ -18,6 +18,8 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -29,6 +31,8 @@ import java.time.LocalDate;
 @Slf4j
 @Service
 public class DokDistKanalService {
+
+	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private PersonV3Consumer personV3Consumer;
@@ -46,62 +50,61 @@ public class DokDistKanalService {
 	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String personIdent) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 		//TODO dersom det er dokumenttype som ikke skal arkiveres, skal det alltid på PRINT
-		if (dokumentTypeInfoTo != null) {
+		if ("INGEN".equals(dokumentTypeInfoTo.getArkivbehandling())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
 		} else {
 			PersonV3To personTo = personV3Consumer.hentPerson(personIdent, "VELG_KANAL", "service");
 
 			if (personTo == null) {
-				return logAndReturn(PRINT, "Missing in TPS");
+				return logAndReturn(PRINT, "Finner ikke personen i TPS");
 			}
 
 			if (personTo.getDoedsdato() != null) {
-				return logAndReturn(PRINT, "Person deceased");
+				return logAndReturn(PRINT, "Personen er død");
 			}
 
 			if (personTo.getFoedselsdato() == null) {
-				return logAndReturn(PRINT, "Persons birth date is unknown");
+				return logAndReturn(PRINT, "Personens alder er ukjent");
 			}
 
 			if (LocalDate.now().minusYears(18).isBefore(personTo.getFoedselsdato())) {
-				return logAndReturn(PRINT, "Person is under 18 years old");
+				return logAndReturn(PRINT, "Personen må være minst 18 år gammel");
 			}
 
 			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(personIdent, "service");
 			if (dki == null) {
-				return logAndReturn(PRINT, "Missing DKI");
+				return logAndReturn(PRINT, "Finner ikke DKI");
 			}
 
 			if (dki.isReservasjon()) {
-				return logAndReturn(PRINT, "Is reserved");
+				return logAndReturn(PRINT, "Bruker har reservert seg");
 			}
-//			if (varslingSDP && StringUtils.isBlank(dki.getEpostadresse()) && StringUtils.isBlank(dki.getMobiltelefonnummer())) {
-			if (StringUtils.isBlank(dki.getEpostadresse()) && StringUtils.isBlank(dki.getMobiltelefonnummer())) {
-				return logAndReturn(PRINT, "Varsling is enabled while email and cellphone is empty");
+			if (dokumentTypeInfoTo.isVarslingSdp() && StringUtils.isBlank(dki.getEpostadresse()) && StringUtils.isBlank(dki.getMobiltelefonnummer())) {
+				return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi");
 			}
 			if (dki.verifyAddress()) {
-				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse and BrukerAdresse is populated.");
+				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.");
 			}
 			if (StringUtils.isBlank(dki.getEpostadresse()) && StringUtils.isBlank(dki.getMobiltelefonnummer())) {
-				return logAndReturn(PRINT, "Email and cellphone is empty");
+				return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme");
 			}
 
 			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(personIdent);
 			if (sikkerhetsnivaaTo == null) {
-				return logAndReturn(PRINT, "Paaloggingsnivaa not available");
+				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}
 
 			if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {
-				return logAndReturn(DITT_NAV, "User has used nivaa4 in the last 18 months");
+				return logAndReturn(DITT_NAV, "Bruker har logget på med nivaa4 de siste 18 mnd");
 			}
 
-			return logAndReturn(PRINT, "User has not used nivaa4 in the last 18 months");
+			return logAndReturn(PRINT, "Bruker har ikke logget på med nivaa4 de siste 18 mnd");
 		}
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode code, String reason) {
 
-		log.info("BestemKanal: Sender melding til  " + code.name() + ": " + reason);
+		LOG.info("BestemKanal: Sender melding til " + code.name() + ": " + reason);
 
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}

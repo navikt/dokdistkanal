@@ -52,14 +52,13 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 				throw new SikkerhetsnivaaFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet med BAD REQUEST for fnr=" + fnr +
 						" (HttpStatus=" + e.getStatusCode() + ")", e);
 			} else if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
-				log.info("Sikkerhetsnivaa.hentPaaloggingsnivaa returnerte 404 NOT FOUND for fnr=" + fnr);
+				log.info("Sikkerhetsnivaa.hentPaaloggingsnivaa returnerte 404 NOT FOUND");
 				return null;
 			} else {
-				throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet for fnr=" + fnr +
-						" (HttpStatus=" + e.getStatusCode() + ")", e);
+				throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 			}
 		} catch (Exception e) {
-			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet for fnr=" + fnr, e);
+			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
 		}
 	}
 

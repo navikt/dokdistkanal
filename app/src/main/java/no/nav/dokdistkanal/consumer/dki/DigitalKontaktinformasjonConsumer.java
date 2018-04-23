@@ -25,6 +25,7 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentPri
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class DigitalKontaktinformasjonConsumer {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
 	}
 
-	//	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator")
+	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final String serviceCode) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
@@ -59,10 +60,10 @@ public class DigitalKontaktinformasjonConsumer {
 			requestTimer = requestLatency.labels(serviceCode, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
 		} catch (HentSikkerDigitalPostadressePersonIkkeFunnet hentSikkerDigitalPostadressePersonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person med ident:" + personidentifikator + ", message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
+			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
 					.getMessage(), hentSikkerDigitalPostadressePersonIkkeFunnet);
 		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person med ident:" + personidentifikator + ", message=" + hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet
+			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=" + hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet
 					.getMessage(), hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet);
 		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing hentSikkerDigitalPostadresseSikkerhetsbegrensing) {
 			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=" + hentSikkerDigitalPostadresseSikkerhetsbegrensing
