@@ -12,6 +12,7 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokkat.api.tkat020.v3.DokumentMottakInfoToV3;
 import no.nav.dokkat.api.tkat020.v3.DokumentTypeInfoToV3;
+import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,8 +29,7 @@ import java.util.Map;
 @RunWith(MockitoJUnitRunner.class)
 public class DokumentTypeInfoConsumerTest {
 	private static final String DOKTYPE = "***gammelt_fnr***";
-	private static final String ARKIVBEHANDLING = "Behandling";
-	private static final String ARKIVSYSTEM = "System";
+	private static final String ARKIVSYSTEM = "JOARK";
 
 	private RestTemplate restTemplate;
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
@@ -45,16 +45,16 @@ public class DokumentTypeInfoConsumerTest {
 
 	@Test
 	public void shouldRunOK() throws DokDistKanalFunctionalException {
-		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenReturn(createResponse());
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
-		assertThat(dokumentTypeInfoTo.getArkivbehandling(), equalTo(ARKIVBEHANDLING));
+		assertThat(dokumentTypeInfoTo.getArkivsystem(), equalTo(ARKIVSYSTEM));
 	}
 
 	@Test
 	public void shouldThrowFunctionalExceptionWhenBadRequest() throws Exception {
-		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med \"Bad request\" for dokumenttypeId:");
@@ -65,7 +65,7 @@ public class DokumentTypeInfoConsumerTest {
 
 	@Test
 	public void shouldThrowTechnicalExceptionWhenServiceUnavaliable() throws Exception {
-		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=503) for dokumenttypeId:");
@@ -76,7 +76,7 @@ public class DokumentTypeInfoConsumerTest {
 
 	@Test
 	public void shouldThrowTechnicalExceptionWhenServerException() throws Exception {
-		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med statusCode=503");
@@ -87,7 +87,7 @@ public class DokumentTypeInfoConsumerTest {
 
 	@Test
 	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
-		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new RuntimeException());
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med message");
@@ -96,12 +96,10 @@ public class DokumentTypeInfoConsumerTest {
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}
 
-	private DokumentTypeInfoToV3 createResponse() {
-		DokumentMottakInfoToV3 dokumentMottakInfoToV3 = new DokumentMottakInfoToV3();
-		dokumentMottakInfoToV3.setArkivBehandling(ARKIVBEHANDLING);
-		DokumentTypeInfoToV3 response = new DokumentTypeInfoToV3();
+	private DokumentTypeInfoToV4 createResponse() {
+		DokumentTypeInfoToV4 response = new DokumentTypeInfoToV4();
 		response.setDokumentType(DOKTYPE);
-		response.setDokumentMottakInfo(dokumentMottakInfoToV3);
+		response.setArkivSystem(ARKIVSYSTEM);
 		return response;
 	}
 }

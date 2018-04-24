@@ -15,9 +15,9 @@ import javax.validation.constraints.Min;
 @Getter
 @Setter
 @ToString
-@ConfigurationProperties("DOKUMENTTYPEINFO_V3")
+@ConfigurationProperties("DOKUMENTTYPEINFO_V4")
 @Validated
-public class DokumenttypeInfoV3Alias {
+public class DokumenttypeInfoV4Alias {
 	@NotEmpty
 	private String url;
 	private String description;

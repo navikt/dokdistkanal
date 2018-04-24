@@ -53,7 +53,7 @@ public class DokDistKanalService {
 			throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer: Finner ikke dokumentTypeId=" + dokumentTypeId);
 		}
 		//TODO dersom det er dokumenttype som ikke skal arkiveres, skal det alltid på PRINT
-		if ("INGEN".equals(dokumentTypeInfoTo.getArkivbehandling())) {
+		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
 		}
 		if (mottakerId.length() != 11) {

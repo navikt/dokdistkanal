@@ -12,6 +12,6 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 @AllArgsConstructor(access= AccessLevel.PUBLIC)
 @NoArgsConstructor(access= AccessLevel.PUBLIC)
 public class DokumentTypeInfoTo {
-	private String arkivbehandling;
+	private String arkivsystem;
 	private boolean isVarslingSdp;
 }

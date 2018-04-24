@@ -57,7 +57,7 @@
 		<cxf.version>3.2.2</cxf.version>
 		<nav-person-v3-tjenestespesifikasjon.version>3.0.2</nav-person-v3-tjenestespesifikasjon.version>
 		<nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon>2.0.0</nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon>
-		<dokkat-api.version>9.4.1</dokkat-api.version>
+		<dokkat-api.version>10.0.2</dokkat-api.version>
 		<wiremock-standalone.version>2.15.0</wiremock-standalone.version>
 		<retry.version>1.0.2.RELEASE</retry.version>
 		<modig-security.version>3.0.6</modig-security.version>

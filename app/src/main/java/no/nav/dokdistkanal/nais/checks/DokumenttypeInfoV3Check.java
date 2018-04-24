@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.nais.checks;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
 
-import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV3Alias;
+import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.nais.selftest.support.AbstractSelftest;
 import no.nav.dokdistkanal.nais.selftest.support.ApplicationNotReadyException;
@@ -23,18 +23,18 @@ public class DokumenttypeInfoV3Check extends AbstractSelftest {
 	@Inject
 	public DokumenttypeInfoV3Check(RestTemplateBuilder restTemplateBuilder,
 								   HttpComponentsClientHttpRequestFactory requestFactory,
-								   DokumenttypeInfoV3Alias dokumenttypeInfoV3Alias,
+								   DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 								   ServiceuserAlias serviceuserAlias) {
 		super(Ping.Type.Rest,
 				DIGITALKONTAKTINFORMASJONV1,
-				dokumenttypeInfoV3Alias.getUrl(),
-				dokumenttypeInfoV3Alias.getDescription() == null ? DIGITALKONTAKTINFORMASJONV1 : dokumenttypeInfoV3Alias.getDescription());
-		this.url = dokumenttypeInfoV3Alias.getUrl();
+				dokumenttypeInfoV4Alias.getUrl(),
+				dokumenttypeInfoV4Alias.getDescription() == null ? DIGITALKONTAKTINFORMASJONV1 : dokumenttypeInfoV4Alias.getDescription());
+		this.url = dokumenttypeInfoV4Alias.getUrl();
 		this.restTemplate = restTemplateBuilder.requestFactory(requestFactory)
-				.rootUri(dokumenttypeInfoV3Alias.getUrl())
+				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
-				.setConnectTimeout(dokumenttypeInfoV3Alias.getConnecttimeoutms())
-				.setReadTimeout(dokumenttypeInfoV3Alias.getReadtimeoutms())
+				.setConnectTimeout(dokumenttypeInfoV4Alias.getConnecttimeoutms())
+				.setReadTimeout(dokumenttypeInfoV4Alias.getReadtimeoutms())
 				.build();
 	}
 

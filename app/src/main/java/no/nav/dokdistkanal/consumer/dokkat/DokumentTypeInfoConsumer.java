@@ -10,12 +10,12 @@ import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
-import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV3Alias;
+import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
-import no.nav.dokkat.api.tkat020.v3.DokumentTypeInfoToV3;
+import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -45,14 +45,14 @@ public class DokumentTypeInfoConsumer {
 	@Inject
 	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
 									HttpComponentsClientHttpRequestFactory requestFactory,
-									DokumenttypeInfoV3Alias dokumenttypeInfoV3Alias,
+									DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 									ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.requestFactory(requestFactory)
-				.rootUri(dokumenttypeInfoV3Alias.getUrl())
+				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
-				.setConnectTimeout(dokumenttypeInfoV3Alias.getConnecttimeoutms())
-				.setReadTimeout(dokumenttypeInfoV3Alias.getReadtimeoutms())
+				.setConnectTimeout(dokumenttypeInfoV4Alias.getConnecttimeoutms())
+				.setReadTimeout(dokumenttypeInfoV4Alias.getReadtimeoutms())
 				.build();
 	}
 
@@ -70,12 +70,8 @@ public class DokumentTypeInfoConsumer {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
 			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, DOKKAT, HENT_DOKKAT_INFO).startTimer();
-			DokumentTypeInfoToV3 dokumentTypeInfoToV3 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV3.class, uriVariables);
-			if (dokumentTypeInfoToV3.getDokumentMottakInfo() == null) {
-				return null;
-			} else {
-				return mapTo(dokumentTypeInfoToV3);
-			}
+			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
+			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
 				throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet med \"Bad request\" for dokumenttypeId:" + dokumenttypeId, e);
@@ -91,17 +87,17 @@ public class DokumentTypeInfoConsumer {
 		}
 	}
 
-	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV3 dokumentTypeInfoToV3) {
-		if (dokumentTypeInfoToV3.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getDistribusjonInfo() == null
-				|| dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
+	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
+		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null
+				|| dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
 			return DokumentTypeInfoTo.builder()
-					.arkivbehandling(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivBehandling())
+					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
 					.isVarslingSdp(Boolean.FALSE).build();
 
 		} else {
 			return DokumentTypeInfoTo.builder()
-					.arkivbehandling(dokumentTypeInfoToV3.getDokumentMottakInfo().getArkivBehandling())
-					.isVarslingSdp(dokumentTypeInfoToV3.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels().stream()
+					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
+					.isVarslingSdp(dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels().stream()
 							.anyMatch(
 									distribusjonVarselTo -> DistribusjonKanalCode.SDP.toString()
 											.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();
