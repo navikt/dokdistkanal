@@ -47,13 +47,17 @@ public class DokDistKanalService {
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 	}
 
-	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String personIdent) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 		//TODO dersom det er dokumenttype som ikke skal arkiveres, skal det alltid på PRINT
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivbehandling())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
+		}
+		if (mottakerId.length() != 11) {
+			//Ikke personnnr
+			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
 		} else {
-			PersonV3To personTo = personV3Consumer.hentPerson(personIdent, "VELG_KANAL", "service");
+			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, "VELG_KANAL");
 
 			if (personTo == null) {
 				return logAndReturn(PRINT, "Finner ikke personen i TPS");
@@ -71,7 +75,7 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Personen må være minst 18 år gammel");
 			}
 
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(personIdent, "service");
+			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId, "service");
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke DKI");
 			}
@@ -89,7 +93,7 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme");
 			}
 
-			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(personIdent);
+			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(mottakerId);
 			if (sikkerhetsnivaaTo == null) {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}

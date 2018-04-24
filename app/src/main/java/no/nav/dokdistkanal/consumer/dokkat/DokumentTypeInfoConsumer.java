@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.consumer.dokkat;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_TREG001;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
@@ -60,7 +60,7 @@ public class DokumentTypeInfoConsumer {
 		this.restTemplate = restTemplate;
 	}
 
-	//	@Cacheable(HENT_DOKKAT_INFO)
+	@Cacheable(HENT_DOKKAT_INFO)
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalTechnicalException {
 
@@ -69,7 +69,7 @@ public class DokumentTypeInfoConsumer {
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
-			requestTimer = requestLatency.labels(SERVICE_CODE_TREG001, DOKKAT, HENT_DOKKAT_INFO).startTimer();
+			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, DOKKAT, HENT_DOKKAT_INFO).startTimer();
 			DokumentTypeInfoToV3 dokumentTypeInfoToV3 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV3.class, uriVariables);
 			if (dokumentTypeInfoToV3.getDokumentMottakInfo() == null) {
 				return null;

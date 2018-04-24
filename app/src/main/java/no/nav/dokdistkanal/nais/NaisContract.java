@@ -30,7 +30,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 public class NaisContract {
-	
+
+	public static final String STS_CACHE_NAME = "STS_CACHE_NAME";
 	private static final String APPLICATION_ALIVE = "Application is alive!";
 	private static final String APPLICATION_READY = "Application is ready for traffic!";
 	private static final String APPLICATION_NOT_READY = "Application is not ready for traffic :-(";
@@ -41,8 +42,7 @@ public class NaisContract {
 	private final SikkerhetsnivaaV1Check sikkerhetsnivaaV1Check;
 
 	@Inject
-	public NaisContract(PersonV3Check personV3Check, DokumenttypeInfoV3Check dokumenttypeInfoV3Check, DigitalKontaktinfoV1Check digitalKontaktinfoV1Check, SikkerhetsnivaaV1Check sikkerhetsnivaaV1Check)
-	{
+	public NaisContract(PersonV3Check personV3Check, DokumenttypeInfoV3Check dokumenttypeInfoV3Check, DigitalKontaktinfoV1Check digitalKontaktinfoV1Check, SikkerhetsnivaaV1Check sikkerhetsnivaaV1Check) {
 		this.personV3Check = personV3Check;
 		this.dokumenttypeInfoV3Check = dokumenttypeInfoV3Check;
 		this.digitalKontaktinfoV1Check = digitalKontaktinfoV1Check;
@@ -57,26 +57,22 @@ public class NaisContract {
 	@ResponseBody
 	@RequestMapping(value = "/isReady", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity isReady() throws Exception {
-//		try {
-			List<SelftestCheck> results = new ArrayList<>();
+		List<SelftestCheck> results = new ArrayList<>();
 
-			results.add(personV3Check.check());
-			results.add(dokumenttypeInfoV3Check.check());
-			results.add(digitalKontaktinfoV1Check.check());
-			results.add(sikkerhetsnivaaV1Check.check());
+		results.add(personV3Check.check());
+		results.add(dokumenttypeInfoV3Check.check());
+		results.add(digitalKontaktinfoV1Check.check());
+		results.add(sikkerhetsnivaaV1Check.check());
 
-			if (isAnyDependencyUnhealthy(results.stream().map(SelftestCheck::getResult).collect(Collectors.toList()))) {
-				isReady.dec();
-				String responseBody = APPLICATION_NOT_READY + "/n +  " +  results.stream().map(SelftestCheck::getErrorMessage).collect(Collectors.toList());
-				return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-			}
+		if (isAnyDependencyUnhealthy(results.stream().map(SelftestCheck::getResult).collect(Collectors.toList()))) {
+			isReady.dec();
+			String responseBody = APPLICATION_NOT_READY + "/n +  " + results.stream().map(SelftestCheck::getErrorMessage).collect(Collectors.toList());
+			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-			isReady.set(1);
+		isReady.set(1);
 
-			return new ResponseEntity<>(APPLICATION_READY, HttpStatus.OK);
-//		} finally {
-//			SecurityContextHolder.clearContext();
-//		}
+		return new ResponseEntity<>(APPLICATION_READY, HttpStatus.OK);
 	}
 
 

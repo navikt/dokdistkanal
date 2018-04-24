@@ -4,6 +4,7 @@ package no.nav.dokdistkanal.metrics;
  * @author Jakob A. Libak, NAV.
  */
 public class PrometheusLabels {
+
 	public static final String LABEL_TECHNICAL_EXCEPTION = "technical";
 	public static final String LABEL_FUNCTIONAL_EXCEPTION = "functional";
 	public static final String LABEL_SECURITY_EXCEPTION = "security";
@@ -18,8 +19,7 @@ public class PrometheusLabels {
 	public static final String LABEL_EVENT = "event";
 	public static final String LABEL_ERROR_TYPE = "error_type";
 
-	public static final String SERVICE_CODE_TREG001="TREG001";
-	public static final String SERVICE_CODE_TREG002="TREG002";
+	public static final String SERVICE_CODE_DOKDIST="DokDistKanalService";
 
 	//Cache
 	public static final String LABEL_CACHE_NAME = "name";
@@ -27,6 +27,9 @@ public class PrometheusLabels {
 	public static final String LABEL_CACHE_COUNTER = "cacheCounter";
 	public static final String CACHE_MISS = "cacheMiss";
 	public static final String CACHE_TOTAL = "cacheTotal";
+	public static final String CACHE_ERROR = "cacheError";
+	public static final String REDIS_CACHE = "redisCache";
+
 
 	public static final String MOTTAKERTYPE = "mottakerType";
 	public static final String PLUGIN = "plugin";
@@ -34,5 +37,6 @@ public class PrometheusLabels {
 	public static final String PERSONV3 = "personV3";
 	public static final String DIGITALKONTAKTINFORMASJONV1 = "digitalKontaktInformasjonV1";
 	public static final String SIKKERHETSNIVAAV1 = "SikkerhetsnivaaV1";
+	public static final String DOKUMENTTYPEINFOV4 = "DokumenttypeInfoV4";
 
 }

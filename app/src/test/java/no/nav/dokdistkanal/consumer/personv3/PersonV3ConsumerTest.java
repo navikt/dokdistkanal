@@ -46,7 +46,7 @@ public class PersonV3ConsumerTest {
 	public void shouldHentPersonOK() throws Exception {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenReturn(createResponse());
 
-		PersonV3To personV3To = personV3Consumer.hentPerson(FNR, PRINCIPAL, "");
+		PersonV3To personV3To = personV3Consumer.hentPerson(FNR, PRINCIPAL);
 
 		assertThat(personV3To.getDoedsdato(), is(DOEDSDATO));
 		assertThat(personV3To.getFoedselsdato(), is(FOEDSELSDATO));
@@ -59,7 +59,7 @@ public class PersonV3ConsumerTest {
 		response.setPerson(null);
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenReturn(response);
 
-		PersonV3To personV3To = personV3Consumer.hentPerson(FNR, PRINCIPAL, "");
+		PersonV3To personV3To = personV3Consumer.hentPerson(FNR, PRINCIPAL);
 
 		assertThat(personV3To, nullValue());
 	}
@@ -70,7 +70,7 @@ public class PersonV3ConsumerTest {
 
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med ident:" + FNR);
-		personV3Consumer.hentPerson(FNR, PRINCIPAL, "");
+		personV3Consumer.hentPerson(FNR, PRINCIPAL);
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class PersonV3ConsumerTest {
 		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + PRINCIPAL + ", message=Ingen adgang");
 
-		personV3Consumer.hentPerson(FNR, PRINCIPAL, "");
+		personV3Consumer.hentPerson(FNR, PRINCIPAL);
 	}
 
 

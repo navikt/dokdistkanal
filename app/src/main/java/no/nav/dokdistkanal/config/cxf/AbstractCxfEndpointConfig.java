@@ -1,12 +1,15 @@
 package no.nav.dokdistkanal.config.cxf;
 
 //import no.nav.dokdistkanal.config.sts.STSConfig;
+import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
+
 import no.nav.dokdistkanal.config.sts.STSConfig;
 import org.apache.cxf.Bus;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.message.Message;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Configuration;
 
 import javax.inject.Inject;
@@ -99,7 +102,8 @@ public abstract class AbstractCxfEndpointConfig {
 	public void setConnectTimeout(int connectTimeout) {
 		this.connectTimeout = connectTimeout;
 	}
-	
+
+	@Cacheable(value = STS_CACHE_NAME)
 	public void configureSTSSamlToken(Object port){
 		stsConfig.configureSTS(port);
 	}

@@ -1,7 +1,12 @@
 package no.nav.dokdistkanal.config.cache;
 
 import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
+import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
+import com.lambdaworks.redis.resource.DefaultClientResources;
+import com.lambdaworks.redis.resource.Delay;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -14,6 +19,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettucePool;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.HashMap;
@@ -26,53 +32,80 @@ import java.util.concurrent.TimeUnit;
 @Profile("nais")
 @Configuration
 @EnableCaching
+@Slf4j
 public class CacheConfig extends CachingConfigurerSupport {
-	
+
 	private static final String MASTER_NAME = "mymaster";
-	
+
 	@Value("${app.name}")
 	private String appName;
-	
+
 	private final CustomRedisSerializer customRedisSerializer = new CustomRedisSerializer();
-	
+
 	@Bean
 	public CacheManager cacheManager(RedisTemplate redisTemplate) {
 		RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate);
 		redisCacheManager.setDefaultExpiration(TimeUnit.DAYS.toSeconds(2));
-		
+
 		//Remaining caches uses the default value
 		Map<String, Long> expiresInSeconds = new HashMap<>();
 		expiresInSeconds.put(HENT_PERSON, 10L);
-		
+		expiresInSeconds.put(STS_CACHE_NAME, TimeUnit.MINUTES.toSeconds(59));
+
 		redisCacheManager.setExpires(expiresInSeconds);
-		redisCacheManager.setLoadRemoteCachesOnStartup(false);
-		
+		redisCacheManager.setLoadRemoteCachesOnStartup(true);
 		return redisCacheManager;
 	}
-	
+
 	@Bean
 	public RedisTemplate<?, ?> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
 		RedisTemplate<?, ?> redisTemplate = new RedisTemplate();
 		redisTemplate.setConnectionFactory(lettuceConnectionFactory);
-		
+
 		redisTemplate.setDefaultSerializer(customRedisSerializer);
 		redisTemplate.setEnableDefaultSerializer(true);
 		return redisTemplate;
 	}
-	
+
 	@Bean
-	public LettuceConnectionFactory lettuceConnectionFactory() {
-		
-		LettuceConnectionFactory factory = new LettuceConnectionFactory(new RedisSentinelConfiguration()
-				.master(MASTER_NAME).sentinel(new RedisNode("rfs-" + appName, 26379)));
-		factory.setTimeout(TimeUnit.SECONDS.toMillis(1));
+	public LettuceConnectionFactory lettuceConnectionFactory(LettucePool lettucePool) {
+		LettuceConnectionFactory factory = new LettuceConnectionFactory(lettucePool);
+		factory.setShareNativeConnection(false);
 		return factory;
 	}
-	
+
+	@Bean
+	public LettucePool lettucePool() {
+		CustomLettucePool lettucePool = new CustomLettucePool(new RedisSentinelConfiguration()
+				.master(MASTER_NAME).sentinel(new RedisNode("rfs-" + appName, 26379)));
+		lettucePool.setClientResources(DefaultClientResources.builder()
+				.reconnectDelay(Delay.constant(100, TimeUnit.MILLISECONDS))
+				.build());
+		lettucePool.setPoolConfig(poolConfig());
+		lettucePool.setTimeout(100);
+		lettucePool.afterPropertiesSet();
+		return lettucePool;
+	}
+
+
+	public GenericObjectPoolConfig poolConfig() {
+		GenericObjectPoolConfig genericObjectPoolConfig = new GenericObjectPoolConfig();
+		genericObjectPoolConfig.setTestOnReturn(false);
+		genericObjectPoolConfig.setTestOnCreate(false);
+		genericObjectPoolConfig.setTestWhileIdle(false);
+		genericObjectPoolConfig.setTestOnBorrow(false);
+		genericObjectPoolConfig.setMaxTotal(128);
+		genericObjectPoolConfig.setMaxIdle(128);
+		genericObjectPoolConfig.setMinIdle(0);
+		genericObjectPoolConfig.setTimeBetweenEvictionRunsMillis(3000);
+		genericObjectPoolConfig.setMinEvictableIdleTimeMillis(6000);
+		return genericObjectPoolConfig;
+	}
+
 	@Bean
 	@Override
 	public CacheErrorHandler errorHandler(){
 		return new CustomCacheErrorHandler();
 	}
-	
+
 }

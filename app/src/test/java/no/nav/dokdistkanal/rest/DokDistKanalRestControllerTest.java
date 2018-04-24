@@ -24,7 +24,7 @@ public class DokDistKanalRestControllerTest {
 
 	@Test
 	public void bestemKanalOK() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).personIdent(FNR).build();
+		request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(FNR).build();
 		DokDistKanalResponse response = DokDistKanalResponse.builder()
 				.distribusjonsKanal(DistribusjonKanalCode.DITT_NAV)
 				.build();

@@ -1,8 +1,8 @@
 package no.nav.dokdistkanal.service;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,7 +25,6 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.util.LogbackCapturingAppender;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -84,7 +83,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = null;
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke personen i TPS"));
@@ -99,7 +98,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().doedsdato(LocalDate.now()).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personen er død"));
@@ -114,7 +113,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().doedsdato(null).foedselsdato(null).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personens alder er ukjent"));
@@ -130,7 +129,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(17).minusMonths(11)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personen må være minst 18 år gammel"));
@@ -145,7 +144,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = null;
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
@@ -162,7 +161,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.sertifikat(SERTIFIKAT)
@@ -185,7 +184,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.sertifikat(SERTIFIKAT)
@@ -208,7 +207,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.sertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.FALSE)
@@ -228,7 +227,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.sertifikat(SERTIFIKAT)
@@ -251,7 +250,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)
@@ -276,7 +275,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)
@@ -301,7 +300,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString(), anyString())).thenReturn(personV3To);
+		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)

@@ -7,8 +7,8 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaReques
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.Assert;
@@ -21,6 +21,7 @@ import javax.inject.Inject;
 public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 
 	private final RestTemplate restTemplate;
+	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
 
 	public SikkerhetsnivaaRestComsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
@@ -28,9 +29,9 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 
 	@Inject
 	public SikkerhetsnivaaRestComsumer(RestTemplateBuilder restTemplateBuilder,
-									HttpComponentsClientHttpRequestFactory requestFactory,
-									SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
-									ServiceuserAlias serviceuserAlias) {
+									   HttpComponentsClientHttpRequestFactory requestFactory,
+									   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
+									   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.requestFactory(requestFactory)
 				.rootUri(sikkerhetsnivaaV1Alias.getUrl())
@@ -42,6 +43,7 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 
 
 	@Override
+	@Cacheable(value = HENT_PAALOGGINGSNIVAA)
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws SikkerhetsnivaaFunctionalException {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		try {

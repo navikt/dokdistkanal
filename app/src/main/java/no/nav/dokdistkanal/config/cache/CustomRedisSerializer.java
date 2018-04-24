@@ -10,18 +10,18 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  * @author Ugur Alpay Cenar, Visma Consulting.
  */
 public class CustomRedisSerializer implements RedisSerializer<Object> {
-	
+
 	private final KryoPool kryoPool;
-	
+
 	private static final Integer MIN_BUFFER_SIZE=1024;
 
 	public CustomRedisSerializer() {
 		this.kryoPool = new KryoPool.Builder(Kryo::new).build();
 	}
-	
+
 	@Override
 	public byte[] serialize(Object o)  {
-		ByteBufferOutput output = new ByteBufferOutput(MIN_BUFFER_SIZE, -1); //-1 means maximum possible buffer size on VM. //TODO: Juster på max buffer size hvis nødvendig
+		ByteBufferOutput output = new ByteBufferOutput(MIN_BUFFER_SIZE, -1); //-1 means maximum possible buffer size on VM.
 		Kryo kryo = kryoPool.borrow();
 		try {
 			kryo.writeClassAndObject(output, o);
@@ -32,7 +32,7 @@ public class CustomRedisSerializer implements RedisSerializer<Object> {
 
 		return output.toBytes();
 	}
-	
+
 	@Override
 	public Object deserialize(byte[] bytes) {
 		if(bytes.length == 0) {

@@ -1,0 +1,50 @@
+package no.nav.dokdistkanal.config.cache;
+
+import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
+import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
+import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
+import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestComsumer.HENT_PAALOGGINGSNIVAA;
+import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCache;
+import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Cachemanager for bruk ved lokalt kjøring av applikasjonen.
+ *
+ * Redis cache krever en Redis server som for å fungere. Redis serveren som kjører på nais er ikke eksponert ut og er derfor ikke mulig å aksessere lokalt.
+ * For å slippe å starte opp Redis server lokalt så vil denne klassen configurere cachemanager som kan kjøre ved lokalt kjøring av applikasjonen.
+ *
+ * @author Ugur Alpay Cenar, Visma Consulting.
+ */
+@Profile("local")
+@Configuration
+@EnableCaching
+public class LocalCacheConfig {
+
+
+	@Bean
+	@Primary
+	public CacheManager cacheManager() {
+
+		SimpleCacheManager cacheManager = new SimpleCacheManager();
+		cacheManager.setCaches(Arrays.asList(
+				new CaffeineCache(HENT_SIKKER_DIGITAL_POSTADRESSE, Caffeine.newBuilder().build()),
+				new CaffeineCache(HENT_PAALOGGINGSNIVAA, Caffeine.newBuilder().build()),
+				new CaffeineCache(HENT_PERSON, Caffeine.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build()),
+				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder().build())));
+		new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES).build());
+		return cacheManager;
+
+	}
+}
