@@ -5,7 +5,7 @@
 	<groupId>no.nav.dokdistkanal</groupId>
 	<artifactId>dokdistkanal</artifactId>
 	<packaging>pom</packaging>
-	<version>0.1.11</version>
+	<version>0.1.12-SNAPSHOT</version>
 	<name>dokdistkanal</name>
 
 	<prerequisites>
