@@ -31,6 +31,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 
 @Slf4j
 @Service
@@ -108,7 +109,7 @@ public class DigitalKontaktinformasjonConsumer {
 				.epostadresse(kontaktinformasjon == null ? null : kontaktinformasjon.getEpostadresse().getValue())
 				.mobiltelefonnummer(kontaktinformasjon == null ? null : kontaktinformasjon.getMobiltelefonnummer().getValue())
 				.reservasjon(mapStringToBool(kontaktinformasjon==null ? null: kontaktinformasjon.getReservasjon()))
-				.sertifikat(StringUtils.isNotEmpty(sertifikat.toString())).build();
+				.sertifikat(StringUtils.isNotEmpty(Arrays.toString((sertifikat)))).build();
 	}
 
 	private boolean mapStringToBool(String bool) {

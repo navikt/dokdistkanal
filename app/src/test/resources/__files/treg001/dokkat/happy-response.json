@@ -1,0 +1,29 @@
+{
+  "dokumenttypeId" : "I000003",
+  "dokumentTittel" : "Søknad om engangsstønad ved fødsel",
+  "dokumentType" : "I",
+  "dokumentKategori" : "SOK",
+  "sensitivt" : false,
+  "tema" : null,
+  "behandlingstema" : null,
+  "artifaktId" : null,
+  "dokumentProduksjonsInfo" : null,
+  "dokumentMottakInfo" : {
+    "konverteringsBehandling" : null,
+    "arkivBehandling" : "ARKIVER_FRA_MOTTAK",
+    "arkivSystem" : "JOARK",
+    "eksternDokumentTyper" : [ ],
+    "changeStamp" : {
+      "opprettetAv" : "srvdokkat",
+      "opprettetDato" : [ 2018, 2, 7, 14, 7, 35, 636000000 ],
+      "endretAv" : null,
+      "endretDato" : null
+    }
+  },
+  "changeStamp" : {
+    "opprettetAv" : "srvdokkat",
+    "opprettetDato" : [ 2018, 2, 7, 14, 7, 35, 635000000 ],
+    "endretAv" : null,
+    "endretDato" : null
+  }
+}
