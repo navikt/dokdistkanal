@@ -26,7 +26,7 @@ fasitResources:
     resourceType: baseurl
   - alias: "virksomhet:Person_v3"
     resourceType: webserviceendpoint
-  - alias: DokumenttypeInfo_v3
+  - alias: DokumenttypeInfo_v4
     resourceType: restservice
   - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
