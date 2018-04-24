@@ -57,7 +57,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
-		expectedException.expectMessage("Dokkat.TKAT020 failed with bad request for dokumenttypeId:");
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med \"Bad request\" for dokumenttypeId:");
 		expectedException.expect(DokDistKanalFunctionalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
@@ -68,7 +68,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
-		expectedException.expectMessage("Dokkat.TKAT020 failed. (HttpStatus=503) for dokumenttypeId:");
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=503) for dokumenttypeId:");
 		expectedException.expect(DokDistKanalTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
@@ -79,7 +79,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
 				.thenThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
-		expectedException.expectMessage("Dokkat.TKAT020 failed with statusCode=503");
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med statusCode=503");
 		expectedException.expect(DokDistKanalTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
@@ -90,7 +90,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV3.class), any(Map.class)))
 				.thenThrow(new RuntimeException());
 
-		expectedException.expectMessage("Dokkat.TKAT020 failed with message");
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med message");
 		expectedException.expect(DokDistKanalTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);

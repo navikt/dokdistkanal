@@ -78,14 +78,14 @@ public class DokumentTypeInfoConsumer {
 			}
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
-				throw new DokDistKanalFunctionalException("Dokkat.TKAT020 failed with bad request for dokumenttypeId:" + dokumenttypeId, e);
+				throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet med \"Bad request\" for dokumenttypeId:" + dokumenttypeId, e);
 			} else {
-				throw new DokDistKanalTechnicalException("Dokkat.TKAT020 failed. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
+				throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 			}
 		} catch (HttpServerErrorException e) {
-			throw new DokDistKanalTechnicalException("Dokkat.TKAT020 failed with statusCode=" + e.getRawStatusCode(), e);
+			throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);
 		} catch (Exception e) {
-			throw new DokDistKanalTechnicalException("Dokkat.TKAT020 failed with message=" + e.getMessage(), e);
+			throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet med message=" + e.getMessage(), e);
 		} finally {
 			requestTimer.observeDuration();
 		}

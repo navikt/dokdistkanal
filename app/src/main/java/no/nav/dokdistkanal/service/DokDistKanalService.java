@@ -49,6 +49,9 @@ public class DokDistKanalService {
 
 	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
+		if (dokumentTypeInfoTo == null) {
+			throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer: Finner ikke dokumentTypeId=" + dokumentTypeId);
+		}
 		//TODO dersom det er dokumenttype som ikke skal arkiveres, skal det alltid på PRINT
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivbehandling())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
