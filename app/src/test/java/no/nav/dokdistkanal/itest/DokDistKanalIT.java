@@ -5,14 +5,24 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
+import static org.junit.Assert.assertEquals;
 
+import no.nav.dokdistkanal.common.DistribusjonKanalCode;
+import no.nav.dokdistkanal.common.DokDistKanalRequest;
+import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import org.junit.Before;
+import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
-public class DokDistKanalIT {
+public class DokDistKanalIT extends AbstractIT {
+
+	private static final String DOKUMENTTYPEID = "000009";
+	private static final String MOTTAKERID = "***gammelt_fnr***";
+
 	@Before
 	public void runBefore() {
-		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V3(.*)"))
+		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withHeader("Content-Type", "application/json")
 						.withBodyFile("treg001/dokkat/happy-response.json")));
@@ -25,7 +35,7 @@ public class DokDistKanalIT {
 
 		stubFor(post("/STS")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("__files/sts/sts_signature-responsebody.xml")));
+						.withBodyFile("felles/sts/sts_signature-responsebody.xml")));
 
 		stubFor(post("/VIRKSOMHET_PERSON_V3")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
@@ -37,4 +47,13 @@ public class DokDistKanalIT {
 
 	}
 
+	/**
+	 * Komplertterer fullt brevdatasett der mottaker er person
+	 */
+	@Test
+	public void shouldGetKomplettBrevdataPerson() throws Exception {
+		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.SDP,actualResponse.getDistribusjonsKanal());
+	}
 }
