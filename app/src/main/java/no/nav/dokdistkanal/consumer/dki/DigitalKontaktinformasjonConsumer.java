@@ -20,8 +20,6 @@ import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikke
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.DigitalPostkasse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Kontaktinformasjon;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.SikkerDigitalKontaktinformasjon;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentPrintsertifikatRequest;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentPrintsertifikatResponse;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseRequest;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +46,7 @@ public class DigitalKontaktinformasjonConsumer {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
 	}
 
-	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator")
+	@Cacheable(HENT_SIKKER_DIGITAL_POSTADRESSE)
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final String serviceCode) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 

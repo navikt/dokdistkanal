@@ -2,12 +2,13 @@ package no.nav.dokdistkanal.config.cxf;
 
 import no.nav.dokdistkanal.config.fasit.NavAppCertAlias;
 import no.nav.dokdistkanal.config.fasit.PersonV3Alias;
-//import no.nav.dokdistkanal.config.security.CustomSamlTokenOutInterceptor;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
 import org.apache.cxf.ws.addressing.WSAddressingFeature;
 import org.springframework.context.annotation.Bean;
 
 import javax.xml.namespace.QName;
+
+//import no.nav.dokdistkanal.config.security.CustomSamlTokenOutInterceptor;
 
 /**
  * Spring config for PersonV3 CXF Endpoint
@@ -26,8 +27,7 @@ public class PersonV3EndpointConfig extends AbstractCxfEndpointConfig {
 	@Bean
 	public PersonV3 personV3(PersonV3Alias personV3Alias, NavAppCertAlias navAppCertAlias) {
 		
-//		navAppCertAlias.postConstruct();
-
+		navAppCertAlias.postConstruct();
 		setWsdlUrl(WSDL_URL);
 		setEndpointName(PERSON_V3_PORT_QNAME);
 		setServiceName(PERSON_V3_SERVICE_QNAME);

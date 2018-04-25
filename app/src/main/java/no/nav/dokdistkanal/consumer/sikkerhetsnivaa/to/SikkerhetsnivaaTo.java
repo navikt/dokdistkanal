@@ -1,15 +1,12 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
 @Builder
-@Getter
-@AllArgsConstructor(access= AccessLevel.PUBLIC)
-@NoArgsConstructor(access= AccessLevel.PUBLIC)
+@Data
+@AllArgsConstructor
 public class SikkerhetsnivaaTo {
 	private boolean harLoggetPaaNivaa4;
 	private String personIdent;

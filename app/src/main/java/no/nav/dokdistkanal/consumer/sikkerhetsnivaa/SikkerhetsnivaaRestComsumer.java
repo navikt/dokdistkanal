@@ -43,7 +43,7 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 
 
 	@Override
-	@Cacheable(value = HENT_PAALOGGINGSNIVAA)
+	@Cacheable(HENT_PAALOGGINGSNIVAA)
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws SikkerhetsnivaaFunctionalException {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		try {

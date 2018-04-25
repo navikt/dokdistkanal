@@ -3,8 +3,6 @@ package no.nav.dokdistkanal.config.cxf;
 import no.nav.dokdistkanal.config.fasit.DigitalKontaktinfoV1Alias;
 import no.nav.dokdistkanal.config.fasit.NavAppCertAlias;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
-import org.apache.cxf.interceptor.LoggingInInterceptor;
-import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.apache.cxf.ws.addressing.WSAddressingFeature;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +21,7 @@ public class DigitalKontaktinformasjonEndpointConfig extends AbstractCxfEndpoint
 	@Bean
 	public DigitalKontaktinformasjonV1 hentDigitalKontaktinformasjon  (DigitalKontaktinfoV1Alias digitalKontaktinfoV1Alias, NavAppCertAlias navAppCertAlias) {
 
-//		navAppCertAlias.postConstruct();
-
+		navAppCertAlias.postConstruct();
 		setWsdlUrl(WSDL_URL);
 		setEndpointName(PORT);
 		setServiceName(SERVICE);
@@ -32,8 +29,6 @@ public class DigitalKontaktinformasjonEndpointConfig extends AbstractCxfEndpoint
 		setReceiveTimeout(digitalKontaktinfoV1Alias.getReadtimeoutms());
 		setConnectTimeout(digitalKontaktinfoV1Alias.getConnecttimeoutms());
 		addFeature(new WSAddressingFeature());
-		LoggingInInterceptor interceptor = new LoggingInInterceptor();
-		addInInterceptor(interceptor);
 
 		DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1 = createPort(DigitalKontaktinformasjonV1.class);
 		configureSTSSamlToken(digitalKontaktinformasjonV1);
