@@ -60,7 +60,7 @@ public class DokumentTypeInfoConsumer {
 		this.restTemplate = restTemplate;
 	}
 
-	@Cacheable(HENT_DOKKAT_INFO)
+	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalTechnicalException {
 

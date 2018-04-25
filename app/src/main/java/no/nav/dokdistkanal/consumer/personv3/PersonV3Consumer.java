@@ -48,7 +48,7 @@ public class PersonV3Consumer {
 		this.personV3 = personV3;
 	}
 
-	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-'+#consumerId")
+	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-personV3'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) throws DokDistKanalTechnicalException, DokDistKanalFunctionalException, DokDistKanalSecurityException {
 

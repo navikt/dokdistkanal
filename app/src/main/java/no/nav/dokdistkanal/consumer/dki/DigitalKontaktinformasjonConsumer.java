@@ -46,7 +46,7 @@ public class DigitalKontaktinformasjonConsumer {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
 	}
 
-	@Cacheable(HENT_SIKKER_DIGITAL_POSTADRESSE)
+	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator+'-dki'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final String serviceCode) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
