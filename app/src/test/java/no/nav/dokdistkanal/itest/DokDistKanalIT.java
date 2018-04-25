@@ -51,7 +51,7 @@ public class DokDistKanalIT extends AbstractIT {
 	 * Komplertterer fullt brevdatasett der mottaker er person
 	 */
 	@Test
-	public void shouldGetKomplettBrevdataPerson() throws Exception {
+	public void shouldGetDistribusjonskanal() throws Exception {
 		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.SDP,actualResponse.getDistribusjonsKanal());
