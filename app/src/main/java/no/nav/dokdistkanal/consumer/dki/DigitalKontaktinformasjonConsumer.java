@@ -136,7 +136,7 @@ public class DigitalKontaktinformasjonConsumer {
 
 			//Dersom epostadresse er sist oppdatert for mer enn 18 måneder siden skal feltet blankes
 			if (kontaktinformasjon.getEpostadresse().getSistOppdatert() != null) {
-				LocalDate sistOppdatert = kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();
+				LocalDate sistOppdatert = kontaktinformasjon.getEpostadresse().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();
 				if (sistOppdatert.isBefore(monthsAgo18)) {
 					Epostadresse epostAdresse = new Epostadresse();
 					kontaktinformasjon.setEpostadresse(epostAdresse);

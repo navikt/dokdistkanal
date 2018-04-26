@@ -30,11 +30,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
-import sun.util.calendar.Gregorian;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -66,6 +66,21 @@ public class DigitalKontaktinformasjonConsumerTest {
 		assertThat(digitalKontaktinformasjonTo.getBrukerAdresse(), is(BRUKERADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getLeverandoerAdresse(), is(LEVERANDORADRESSE));
 	}
+
+	@Test
+	public void shouldHentDKIOld() throws Exception {
+		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(createOldResponse());
+
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
+
+		assertThat(digitalKontaktinformasjonTo.getEpostadresse(), nullValue());
+		assertThat(digitalKontaktinformasjonTo.getMobiltelefonnummer(), nullValue());
+		assertThat(digitalKontaktinformasjonTo.isReservasjon(), is(RESERVASJON));
+		assertThat(digitalKontaktinformasjonTo.isSertifikat(), is(Boolean.TRUE));
+		assertThat(digitalKontaktinformasjonTo.getBrukerAdresse(), is(BRUKERADRESSE));
+		assertThat(digitalKontaktinformasjonTo.getLeverandoerAdresse(), is(LEVERANDORADRESSE));
+	}
+
 
 	@Test
 	public void shouldReturnNullWhenRequestEmpty() throws Exception {
@@ -117,6 +132,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 	}
+
 	private HentSikkerDigitalPostadresseResponse createResponse() throws DatatypeConfigurationException {
 		GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(new Date());
@@ -139,11 +155,46 @@ public class DigitalKontaktinformasjonConsumerTest {
 		digitalPostkasse.setLeverandoerAdresse(LEVERANDORADRESSE);
 
 		SikkerDigitalKontaktinformasjon sikkerDigitalKontaktinformasjon = new SikkerDigitalKontaktinformasjon();
-		sikkerDigitalKontaktinformasjon.setSertifikat("mitt sertifikat".getBytes());
+		sikkerDigitalKontaktinformasjon.setSertifikat("mitt sertifikat" .getBytes());
 		sikkerDigitalKontaktinformasjon.setDigitalKontaktinformasjon(kontaktinformasjon);
 		sikkerDigitalKontaktinformasjon.setSikkerDigitalPostkasse(digitalPostkasse);
 		HentSikkerDigitalPostadresseResponse response = new HentSikkerDigitalPostadresseResponse();
 		response.setSikkerDigitalKontaktinformasjon(sikkerDigitalKontaktinformasjon);
 		return response;
+	}
+
+
+	private HentSikkerDigitalPostadresseResponse createOldResponse() throws DatatypeConfigurationException {
+		GregorianCalendar gcal = new GregorianCalendar();
+		Calendar cal = Calendar.getInstance();
+		cal.set(1999, 01, 01);
+		Date date = cal.getTime();
+		gcal.setTime(date);
+		XMLGregorianCalendar gcalOld = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
+
+		Kontaktinformasjon kontaktinformasjon = new Kontaktinformasjon();
+		Epostadresse epostadresse = new Epostadresse();
+		epostadresse.setValue(EPOSTADRESSE);
+		epostadresse.setSistOppdatert(gcalOld);
+		kontaktinformasjon.setEpostadresse(epostadresse);
+		Mobiltelefonnummer mobiltelefonnummer = new Mobiltelefonnummer();
+		mobiltelefonnummer.setSistOppdatert(gcalOld);
+		mobiltelefonnummer.setValue(MOBIL);
+		kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
+		kontaktinformasjon.setPersonident(FNR);
+		kontaktinformasjon.setReservasjon("true");
+
+		DigitalPostkasse digitalPostkasse = new DigitalPostkasse();
+		digitalPostkasse.setBrukerAdresse(BRUKERADRESSE);
+		digitalPostkasse.setLeverandoerAdresse(LEVERANDORADRESSE);
+
+		SikkerDigitalKontaktinformasjon sikkerDigitalKontaktinformasjon = new SikkerDigitalKontaktinformasjon();
+		sikkerDigitalKontaktinformasjon.setSertifikat("mitt sertifikat" .getBytes());
+		sikkerDigitalKontaktinformasjon.setDigitalKontaktinformasjon(kontaktinformasjon);
+		sikkerDigitalKontaktinformasjon.setSikkerDigitalPostkasse(digitalPostkasse);
+		HentSikkerDigitalPostadresseResponse response = new HentSikkerDigitalPostadresseResponse();
+		response.setSikkerDigitalKontaktinformasjon(sikkerDigitalKontaktinformasjon);
+		return response;
+
 	}
 }
