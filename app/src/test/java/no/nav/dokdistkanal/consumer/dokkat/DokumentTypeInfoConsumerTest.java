@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -10,8 +11,11 @@ import static org.mockito.Mockito.when;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokkat.api.tkat020.DistribusjonInfoTo;
 import no.nav.dokkat.api.tkat020.v3.DokumentMottakInfoToV3;
+import no.nav.dokkat.api.tkat020.v3.DokumentProduksjonsInfoToV3;
 import no.nav.dokkat.api.tkat020.v3.DokumentTypeInfoToV3;
+import no.nav.dokkat.api.tkat020.v4.DokumentProduksjonsInfoToV4;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +54,7 @@ public class DokumentTypeInfoConsumerTest {
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 		assertThat(dokumentTypeInfoTo.getArkivsystem(), equalTo(ARKIVSYSTEM));
+		assertThat(dokumentTypeInfoTo.getPredefinertDistKanal(), equalTo(LOKAL_PRINT.name()));
 	}
 
 	@Test
@@ -100,6 +105,11 @@ public class DokumentTypeInfoConsumerTest {
 		DokumentTypeInfoToV4 response = new DokumentTypeInfoToV4();
 		response.setDokumentType(DOKTYPE);
 		response.setArkivSystem(ARKIVSYSTEM);
+		DistribusjonInfoTo distribusjonInfoTo = new DistribusjonInfoTo();
+		distribusjonInfoTo.setPredefinertDistKanal(LOKAL_PRINT.name());
+		DokumentProduksjonsInfoToV4 dokumentProduksjonsInfoToV4 = new DokumentProduksjonsInfoToV4();
+		dokumentProduksjonsInfoToV4.setDistribusjonInfo(distribusjonInfoTo);
+		response.setDokumentProduksjonsInfo(dokumentProduksjonsInfoToV4);
 		return response;
 	}
 }

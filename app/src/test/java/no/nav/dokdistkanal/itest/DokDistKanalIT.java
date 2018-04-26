@@ -85,7 +85,7 @@ public class DokDistKanalIT extends AbstractIT {
 			assertFalse("Test did not throw exception", Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
 			assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=VELG_KANAL, message=Ingen tilgang"));
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning"));
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalSecurityException"));
 		}
 	}

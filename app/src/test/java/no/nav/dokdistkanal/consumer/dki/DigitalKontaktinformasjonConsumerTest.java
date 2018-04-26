@@ -30,6 +30,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+import sun.util.calendar.Gregorian;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DigitalKontaktinformasjonConsumerTest {
@@ -47,10 +54,10 @@ public class DigitalKontaktinformasjonConsumerTest {
 	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
-	public void shouldHentDKIOK() throws Exception {
+	public void shouldHentDKI() throws Exception {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(createResponse());
 
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 
 		assertThat(digitalKontaktinformasjonTo.getEpostadresse(), is(EPOSTADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getMobiltelefonnummer(), is(MOBIL));
@@ -66,7 +73,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		response.setSikkerDigitalKontaktinformasjon(null);
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class))).thenReturn(response);
 
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 
 		assertThat(digitalKontaktinformasjonTo, nullValue());
 	}
@@ -78,7 +85,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=Finner ikke konraktinfo");
-		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 	}
 
 	@Test
@@ -88,7 +95,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		expectedException.expect(DokDistKanalFunctionalException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=Finner ikke person");
 
-		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 	}
 
 	@Test
@@ -98,7 +105,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Ingen adgang");
 
-		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 	}
 
 	@Test
@@ -108,14 +115,20 @@ public class DigitalKontaktinformasjonConsumerTest {
 		expectedException.expect(DokDistKanalTechnicalException.class);
 		expectedException.expectMessage("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. message=Runtime Exception");
 
-		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, "");
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 	}
-	private HentSikkerDigitalPostadresseResponse createResponse() {
+	private HentSikkerDigitalPostadresseResponse createResponse() throws DatatypeConfigurationException {
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(new Date());
+		XMLGregorianCalendar gcalNow = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+
 		Kontaktinformasjon kontaktinformasjon = new Kontaktinformasjon();
 		Epostadresse epostadresse = new Epostadresse();
 		epostadresse.setValue(EPOSTADRESSE);
+		epostadresse.setSistOppdatert(gcalNow);
 		kontaktinformasjon.setEpostadresse(epostadresse);
 		Mobiltelefonnummer mobiltelefonnummer = new Mobiltelefonnummer();
+		mobiltelefonnummer.setSistOppdatert(gcalNow);
 		mobiltelefonnummer.setValue(MOBIL);
 		kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
 		kontaktinformasjon.setPersonident(FNR);

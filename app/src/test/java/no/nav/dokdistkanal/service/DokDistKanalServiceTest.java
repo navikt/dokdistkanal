@@ -70,17 +70,26 @@ public class DokDistKanalServiceTest {
 
 	@Test
 	public void shouldSetKanalDittNavNaarIngenArkivering() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("INGEN", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("INGEN", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 	}
 
 	@Test
+	public void shouldSetKanalDittNavNaarIngenArkiveringLP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.LOKAL_PRINT.toString(), Boolean.TRUE);
+		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
+		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
+		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.LOKAL_PRINT);
+	}
+
+
+	@Test
 	public void shouldSetKanalPrintNaarIngenPerson() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = null;
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -95,7 +104,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalDittNavNaarPersonDoed() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().doedsdato(LocalDate.now()).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -110,7 +119,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarPersonManglerFoedselsdato() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().doedsdato(null).foedselsdato(null).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -126,7 +135,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarPersonUnder18() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(17).minusMonths(11)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -141,12 +150,12 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarDKIMangler() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DigitalKontaktinformasjonTo dkiResponse = null;
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke DKI"));
@@ -158,7 +167,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarReservasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -169,7 +178,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBIL).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Bruker har reservert seg"));
@@ -181,7 +190,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalSDPNaarAltOK() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -192,7 +201,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBIL).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.SDP);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til SDP: Sertifikat, LeverandørAddresse og BrukerAdresse har verdi."));
@@ -204,7 +213,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalSDPNaarBrukerIkkeVarslesMenEpostOgMobilErTomme() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -212,7 +221,7 @@ public class DokDistKanalServiceTest {
 				.sertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Epostadresse og mobiltelefon - feltene er tomme"));
@@ -224,7 +233,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarMobilOgEpostMangler() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -235,7 +244,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(null)
 				.mobiltelefonnummer(null).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi"));
@@ -247,7 +256,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalDittNavNaarPaalogginsnivaa4OgIkkeSDP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -257,7 +266,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBIL).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
@@ -272,7 +281,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarIkkePaalogginsnivaa4OgIkkeSDP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -282,7 +291,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBIL).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(false).personIdent(FNR).build();
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
@@ -297,7 +306,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSetKanalPrintNaarPaalogginsnivaaIkkeFunnet4OgIkkeSDP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
@@ -307,7 +316,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBIL).build();
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyString())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = null;
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 

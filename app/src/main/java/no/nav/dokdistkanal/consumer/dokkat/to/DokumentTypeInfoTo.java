@@ -9,5 +9,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class DokumentTypeInfoTo {
 	private String arkivsystem;
+	private String predefinertDistKanal;
 	private boolean isVarslingSdp;
 }

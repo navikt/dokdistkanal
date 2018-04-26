@@ -87,15 +87,21 @@ public class DokumentTypeInfoConsumer {
 	}
 
 	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
+		String predefinertDistribusjonKanal = null;
+		if (!(dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null)) {
+			predefinertDistribusjonKanal = dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getPredefinertDistKanal();
+		}
+
 		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null
 				|| dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
 			return DokumentTypeInfoTo.builder()
 					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
+					.predefinertDistKanal(predefinertDistribusjonKanal)
 					.isVarslingSdp(Boolean.FALSE).build();
-
 		} else {
 			return DokumentTypeInfoTo.builder()
 					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
+					.predefinertDistKanal(predefinertDistribusjonKanal)
 					.isVarslingSdp(dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels().stream()
 							.anyMatch(
 									distribusjonVarselTo -> DistribusjonKanalCode.SDP.toString()

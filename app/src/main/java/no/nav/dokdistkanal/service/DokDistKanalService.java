@@ -1,8 +1,10 @@
 package no.nav.dokdistkanal.service;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
@@ -34,6 +36,8 @@ public class DokDistKanalService {
 
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
+	public static final String DOKDISTKANAL_SERVICE = "DokDistKanal";
+
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private PersonV3Consumer personV3Consumer;
 	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
@@ -50,15 +54,17 @@ public class DokDistKanalService {
 	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 
-		//TODO dersom det er dokumenttype som ikke skal arkiveres, skal det alltid på PRINT
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
+		}
+		if (LOKAL_PRINT.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
+			return DokDistKanalResponse.builder().distribusjonsKanal(LOKAL_PRINT).build();
 		}
 		if (mottakerId.length() != 11) {
 			//Ikke personnnr
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
 		} else {
-			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, "VELG_KANAL");
+			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, getConsumerId());
 
 			if (personTo == null) {
 				return logAndReturn(PRINT, "Finner ikke personen i TPS");
@@ -76,7 +82,7 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Personen må være minst 18 år gammel");
 			}
 
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId + "22", "service");
+			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId);
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke DKI");
 			}
