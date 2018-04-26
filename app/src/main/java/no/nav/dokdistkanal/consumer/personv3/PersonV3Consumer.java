@@ -73,7 +73,6 @@ public class PersonV3Consumer {
 			requestTimer.observeDuration();
 		}
 		if (response != null && response.getPerson() != null) {
-
 			return mapTo((Bruker) response.getPerson());
 		}
 		return null;

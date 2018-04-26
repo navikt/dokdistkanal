@@ -49,9 +49,7 @@ public class DokDistKanalService {
 
 	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
-		if (dokumentTypeInfoTo == null) {
-			throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer: Finner ikke dokumentTypeId=" + dokumentTypeId);
-		}
+
 		//TODO dersom det er dokumenttype som ikke skal arkiveres, skal det alltid på PRINT
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
@@ -78,7 +76,7 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Personen må være minst 18 år gammel");
 			}
 
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId, "service");
+			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId + "22", "service");
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke DKI");
 			}

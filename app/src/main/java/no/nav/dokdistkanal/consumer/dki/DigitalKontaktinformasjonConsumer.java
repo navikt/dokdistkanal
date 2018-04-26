@@ -58,13 +58,13 @@ public class DigitalKontaktinformasjonConsumer {
 		try {
 			requestTimer = requestLatency.labels(serviceCode, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
-		} catch (HentSikkerDigitalPostadressePersonIkkeFunnet hentSikkerDigitalPostadressePersonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
-					.getMessage(), hentSikkerDigitalPostadressePersonIkkeFunnet);
 		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
 			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=" + hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet
 					.getMessage(), hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet);
-		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing hentSikkerDigitalPostadresseSikkerhetsbegrensing) {
+		} catch (HentSikkerDigitalPostadressePersonIkkeFunnet hentSikkerDigitalPostadressePersonIkkeFunnet) {
+			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
+					.getMessage(), hentSikkerDigitalPostadressePersonIkkeFunnet);
+		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing   hentSikkerDigitalPostadresseSikkerhetsbegrensing) {
 			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=" + hentSikkerDigitalPostadresseSikkerhetsbegrensing
 					.getMessage(), hentSikkerDigitalPostadresseSikkerhetsbegrensing);
 		} catch (Exception e) {
@@ -115,11 +115,9 @@ public class DigitalKontaktinformasjonConsumer {
 			return true;
 		}
 		switch (bool.toLowerCase()) {
-			case "ja":
-			case "true":
-				return true;
-			default:
-				return false;
+			case "ja": return true;
+			case "true": return true;
+			default: return false;
 		}
 	}
 }

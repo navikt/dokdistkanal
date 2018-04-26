@@ -65,7 +65,6 @@ public class DokumentTypeInfoConsumer {
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalTechnicalException {
 
 		requestCounter.labels(HENT_DOKKAT_INFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
-
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
@@ -73,10 +72,10 @@ public class DokumentTypeInfoConsumer {
 			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
 			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {
-			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
-				throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet med \"Bad request\" for dokumenttypeId:" + dokumenttypeId, e);
-			} else {
+			if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
 				throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
+			} else {
+				throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 			}
 		} catch (HttpServerErrorException e) {
 			throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);

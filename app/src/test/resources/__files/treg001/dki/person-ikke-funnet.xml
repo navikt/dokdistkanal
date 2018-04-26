@@ -1,0 +1,17 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<soap:Fault>
+			<faultcode>soap:Server</faultcode>
+			<faultstring>Person ikke funnet</faultstring>
+			<detail>
+				<ns2:HentSikkerDigitalPostadressepersonIkkeFunnet
+						xmlns:ns2="http://nav.no/tjeneste/virksomhet/digitalKontaktinformasjon/v1">
+					<feilkilde>DKIF</feilkilde>
+					<feilaarsak>Person ikke funnet</feilaarsak>
+					<feilmelding>Person ikke funnet</feilmelding>
+					<tidspunkt>2018-04-25T19:50:06+02:00</tidspunkt>
+				</ns2:HentSikkerDigitalPostadressepersonIkkeFunnet>
+			</detail>
+		</soap:Fault>
+	</soap:Body>
+</soap:Envelope>

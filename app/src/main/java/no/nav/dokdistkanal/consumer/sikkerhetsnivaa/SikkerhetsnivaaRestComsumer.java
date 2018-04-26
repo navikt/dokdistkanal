@@ -50,14 +50,10 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode())) {
-				throw new SikkerhetsnivaaFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet med BAD REQUEST for fnr=" + fnr +
-						" (HttpStatus=" + e.getStatusCode() + ")", e);
-			} else if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
-				log.info("Sikkerhetsnivaa.hentPaaloggingsnivaa returnerte 404 NOT FOUND");
-				return null;
-			} else {
+			if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
 				throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+			} else {
+				throw new SikkerhetsnivaaFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 			}
 		} catch (Exception e) {
 			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);

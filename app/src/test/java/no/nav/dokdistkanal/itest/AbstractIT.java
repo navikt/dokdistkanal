@@ -37,9 +37,6 @@ public abstract class AbstractIT {
 	@Inject
 	protected RestTemplate restTemplate;
 
-	@Inject
-	protected RestTemplate restTemplateNoHeader;
-
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 

@@ -1,0 +1,16 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<soap:Fault>
+			<faultcode>soap:Server</faultcode>
+			<faultstring>Sikkerhetsbegrensning ved kall til DIFI</faultstring>
+			<detail>
+				<ns2:HentSikkerDigitalPostadressesikkerhetsbegrensing xmlns:ns2="http://nav.no/tjeneste/virksomhet/digitalKontaktinformasjon/v1">
+					<feilkilde>DKIF</feilkilde>
+					<feilaarsak>Sikkerhetsbegrensning ved kall til DIFI</feilaarsak>
+					<feilmelding>Sikkerhetsbegrensning ved kall til DIFI</feilmelding>
+					<tidspunkt>2018-04-25T19:50:06+02:00</tidspunkt>
+				</ns2:HentSikkerDigitalPostadressesikkerhetsbegrensing>
+			</detail>
+		</soap:Fault>
+	</soap:Body>
+</soap:Envelope>

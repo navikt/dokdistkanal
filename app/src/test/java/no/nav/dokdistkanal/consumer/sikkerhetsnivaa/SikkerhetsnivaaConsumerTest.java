@@ -52,16 +52,16 @@ public class SikkerhetsnivaaConsumerTest {
 	}
 
 	@Test
-	public void shouldReturnNullWhenSikkerhetsnivaaNotFound() throws SikkerhetsnivaaFunctionalException {
+	public void shouldThrowFunctionalExceptionWhenSikkerhetsnivaaNotFound() throws SikkerhetsnivaaFunctionalException {
+		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
-		assertThat(sikkerhetsnivaaTo, nullValue());
+		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
 	@Test
 	public void shouldThrowFunctionalExceptionWhenHttpStatusBadRequest() throws SikkerhetsnivaaFunctionalException {
 		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet med BAD REQUEST for fnr=" + FNR);
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=400)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
@@ -77,8 +77,8 @@ public class SikkerhetsnivaaConsumerTest {
 
 	@Test
 	public void shouldThrowTechnicalExceptionWhenHttpStatusForbidden() throws SikkerhetsnivaaFunctionalException {
-		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet");
+		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=403)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}

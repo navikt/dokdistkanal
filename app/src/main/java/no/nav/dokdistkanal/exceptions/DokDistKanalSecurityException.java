@@ -8,15 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
 public class DokDistKanalSecurityException extends Exception {
-	
-	public DokDistKanalSecurityException(String message) {
-		super(message);
-	}
-	
-	public DokDistKanalSecurityException(Throwable cause) {
-		super(cause);
-	}
-	
+
 	public DokDistKanalSecurityException(String message, Throwable cause) {
 		super(message, cause);
 	}
