@@ -32,19 +32,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
 
 @Slf4j
 @Service
@@ -122,7 +111,6 @@ public class DigitalKontaktinformasjonConsumer {
 
 
 		if (kontaktinformasjon != null) {
-
 			//Dersom mobiltelefonnummeret er sist oppdatert for mer enn 18 måneder siden skal feltet blankes
 			if (kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert() != null) {
 				LocalDate sistOppdatert = kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();

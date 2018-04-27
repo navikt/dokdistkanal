@@ -6,6 +6,9 @@ import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
+import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
@@ -43,20 +47,21 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 
 
 	@Override
-	@Cacheable(value=HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
-	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws SikkerhetsnivaaFunctionalException {
+	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
+	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		try {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
-				throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
-			} else {
-				throw new SikkerhetsnivaaFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode()) ) {
+				throw new DokDistKanalSecurityException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 			}
+			throw new DokDistKanalFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+		} catch (HttpServerErrorException e) {
+			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 		} catch (Exception e) {
-			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
+			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
 		}
 	}
 

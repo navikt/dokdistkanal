@@ -158,7 +158,7 @@ public class DokDistKanalServiceTest {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
-		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke DKI"));
+		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke Digital kontaktinformasjon"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
 	}

@@ -84,7 +84,7 @@ public class DokDistKanalService {
 
 			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId);
 			if (dki == null) {
-				return logAndReturn(PRINT, "Finner ikke DKI");
+				return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon");
 			}
 
 			if (dki.isReservasjon()) {
@@ -114,9 +114,7 @@ public class DokDistKanalService {
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode code, String reason) {
-
 		LOG.info("BestemKanal: Sender melding til " + code.name() + ": " + reason);
-
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 }

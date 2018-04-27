@@ -14,6 +14,7 @@ import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -62,7 +63,7 @@ public class DokumentTypeInfoConsumer {
 
 	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalTechnicalException {
+	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
 		requestCounter.labels(HENT_DOKKAT_INFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
@@ -72,11 +73,10 @@ public class DokumentTypeInfoConsumer {
 			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
 			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {
-			if (e.getStatusCode() == HttpStatus.SERVICE_UNAVAILABLE) {
-				throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
-			} else {
-				throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
+			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode()) ) {
+				throw new DokDistKanalSecurityException("DokumentTypeInfoConsumer feilet (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 			}
+			throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 		} catch (HttpServerErrorException e) {
 			throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);
 		} catch (Exception e) {

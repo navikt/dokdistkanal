@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokkat.api.tkat020.DistribusjonInfoTo;
 import no.nav.dokkat.api.tkat020.v3.DokumentMottakInfoToV3;
@@ -48,17 +49,30 @@ public class DokumentTypeInfoConsumerTest {
 	}
 
 	@Test
-	public void shouldRunOK() throws DokDistKanalFunctionalException {
+	public void shouldRunOK() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
+		DokumentTypeInfoToV4 response = createResponse();
+		response.getDokumentProduksjonsInfo().setDistribusjonInfo(null);
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
+				.thenReturn(response);
+
+		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
+		assertThat(dokumentTypeInfoTo.getArkivsystem(), equalTo(ARKIVSYSTEM));
+		assertThat(dokumentTypeInfoTo.isVarslingSdp(), equalTo(Boolean.FALSE));
+	}
+
+	@Test
+	public void shouldRunOKDistKanalLokalPrint() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenReturn(createResponse());
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 		assertThat(dokumentTypeInfoTo.getArkivsystem(), equalTo(ARKIVSYSTEM));
+		assertThat(dokumentTypeInfoTo.isVarslingSdp(), equalTo(Boolean.FALSE));
 		assertThat(dokumentTypeInfoTo.getPredefinertDistKanal(), equalTo(LOKAL_PRINT.name()));
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionWhenBadRequest() throws Exception {
+	public void shouldThrowFunctionalExceptionWhenBadRequest() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
@@ -69,18 +83,7 @@ public class DokumentTypeInfoConsumerTest {
 	}
 
 	@Test
-	public void shouldThrowTechnicalExceptionWhenServiceUnavaliable() throws Exception {
-		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
-				.thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
-
-		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=503) for dokumenttypeId:");
-		expectedException.expect(DokDistKanalTechnicalException.class);
-
-		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
-	}
-
-	@Test
-	public void shouldThrowTechnicalExceptionWhenServerException() throws Exception {
+	public void shouldThrowTechnicalExceptionWhenServerException() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
@@ -91,7 +94,19 @@ public class DokumentTypeInfoConsumerTest {
 	}
 
 	@Test
-	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
+	public void shouldThrowTechnicalExceptionWhenUnauthorized() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
+		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
+				.thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
+
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet (HttpStatus=401) for dokumenttypeId:" + DOKTYPE);
+		expectedException.expect(DokDistKanalSecurityException.class);
+
+		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
+	}
+
+
+	@Test
+	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new RuntimeException());
 

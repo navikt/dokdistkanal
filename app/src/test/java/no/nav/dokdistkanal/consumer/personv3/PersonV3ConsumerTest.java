@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
@@ -69,7 +70,7 @@ public class PersonV3ConsumerTest {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new HentPersonPersonIkkeFunnet("Fant ikke person", new PersonIkkeFunnet()));
 
 		expectedException.expect(DokDistKanalFunctionalException.class);
-		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med ident:" + FNR);
+		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med angitt ident");
 		personV3Consumer.hentPerson(FNR, PRINCIPAL);
 	}
 
@@ -82,6 +83,14 @@ public class PersonV3ConsumerTest {
 		personV3Consumer.hentPerson(FNR, PRINCIPAL);
 	}
 
+	@Test
+	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
+		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new RuntimeException("Feil oppstått"));
+		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expectMessage("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=SRVDOKPROD, message=Feil oppstått");
+
+		personV3Consumer.hentPerson(FNR, PRINCIPAL);
+	}
 
 	private HentPersonResponse createResponse() throws DatatypeConfigurationException {
 		HentPersonResponse response = new HentPersonResponse();

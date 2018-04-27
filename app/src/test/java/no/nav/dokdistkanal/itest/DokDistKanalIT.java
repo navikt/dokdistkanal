@@ -102,7 +102,7 @@ public class DokDistKanalIT extends AbstractIT {
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
 			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson fant ikke person med ident:***gammelt_fnr***, message=Ingen forekomster funnet"));
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson fant ikke person med angitt ident, message=Ingen forekomster funnet"));
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
 		}
 	}
@@ -193,7 +193,7 @@ public class DokDistKanalIT extends AbstractIT {
 		} catch (HttpStatusCodeException e) {
 			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=404)"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("SikkerhetsnivaaFunctionalException"));
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
 		}
 
 	}

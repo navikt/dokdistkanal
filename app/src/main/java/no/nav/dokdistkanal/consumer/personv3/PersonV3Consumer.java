@@ -61,7 +61,7 @@ public class PersonV3Consumer {
 			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("PersonV3.hentPerson fant ikke person med ident:" + personidentifikator + ", message=" + hentPersonPersonIkkeFunnet
+			throw new DokDistKanalFunctionalException("PersonV3.hentPerson fant ikke person med angitt ident, message=" + hentPersonPersonIkkeFunnet
 					.getMessage(), hentPersonPersonIkkeFunnet);
 		} catch (HentPersonSikkerhetsbegrensning hentPersonSikkerhetsbegrensning) {
 			throw new DokDistKanalSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentPersonSikkerhetsbegrensning
