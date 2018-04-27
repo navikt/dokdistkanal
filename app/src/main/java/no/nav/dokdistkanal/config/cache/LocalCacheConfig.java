@@ -1,5 +1,8 @@
 package no.nav.dokdistkanal.config.cache;
 
+import static no.nav.dokdistkanal.config.cache.CacheConfig.DEFAULT_CACHE_EXPIRATION_SECONDS;
+import static no.nav.dokdistkanal.config.cache.CacheConfig.HENT_PERSON_CACHE_EXPIRATION_SECONDS;
+import static no.nav.dokdistkanal.config.cache.CacheConfig.STS_CACHE_EXPIRATION_SECONDS;
 import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
 import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
@@ -31,20 +34,32 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 public class LocalCacheConfig {
-
-
 	@Bean
 	@Primary
 	public CacheManager cacheManager() {
 
 		SimpleCacheManager cacheManager = new SimpleCacheManager();
 		cacheManager.setCaches(Arrays.asList(
-				new CaffeineCache(HENT_SIKKER_DIGITAL_POSTADRESSE, Caffeine.newBuilder().build()),
-				new CaffeineCache(HENT_PAALOGGINGSNIVAA, Caffeine.newBuilder().build()),
-				new CaffeineCache(HENT_PERSON, Caffeine.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build()),
-				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder().build())));
-		new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES).build());
+				new CaffeineCache(HENT_SIKKER_DIGITAL_POSTADRESSE, Caffeine.newBuilder()
+						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS)
+						.build()),
+				new CaffeineCache(HENT_PAALOGGINGSNIVAA, Caffeine.newBuilder()
+						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS)
+						.build()),
+				new CaffeineCache(HENT_PERSON, Caffeine.newBuilder()
+						.expireAfterWrite(HENT_PERSON_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS)
+						.build()),
+				new CaffeineCache(HENT_PERSON, Caffeine.newBuilder()
+						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS)
+						.build()),
+				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder()
+						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS)
+						.build())));
+		new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
+				.expireAfterWrite(STS_CACHE_EXPIRATION_SECONDS, TimeUnit.SECONDS)
+				.build());
 		return cacheManager;
 
 	}
+
 }
