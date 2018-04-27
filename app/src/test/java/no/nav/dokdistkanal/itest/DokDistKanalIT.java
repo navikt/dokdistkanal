@@ -97,14 +97,8 @@ public class DokDistKanalIT extends AbstractIT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/personV3/hentPerson-FunksjonellFeil-PersonIkkeFunnet-responsebody.xml")));
 		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
-		try {
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(Boolean.TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson fant ikke person med angitt ident, message=Ingen forekomster funnet"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
-		}
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -131,15 +125,9 @@ public class DokDistKanalIT extends AbstractIT {
 		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/dki/ikke-funnet.xml")));
-		try {
-			DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(Boolean.TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=Kontaktinformasjon ikke funnet for ***gammelt_fnr***"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
-		}
+		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -148,15 +136,10 @@ public class DokDistKanalIT extends AbstractIT {
 		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/dki/person-ikke-funnet.xml")));
-		try {
-			DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(Boolean.TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=Person ikke funnet"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
-		}
+		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
+		restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test

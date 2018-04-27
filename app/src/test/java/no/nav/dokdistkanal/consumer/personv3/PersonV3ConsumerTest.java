@@ -66,12 +66,15 @@ public class PersonV3ConsumerTest {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionWhenPersonIkkeFunnet() throws Exception {
+	public void shouldReturnNullWhenPersonIkkeFunnet() throws Exception {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new HentPersonPersonIkkeFunnet("Fant ikke person", new PersonIkkeFunnet()));
 
-		expectedException.expect(DokDistKanalFunctionalException.class);
-		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med angitt ident");
+//		expectedException.expect(DokDistKanalFunctionalException.class);
+//		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med angitt ident");
 		personV3Consumer.hentPerson(FNR, PRINCIPAL);
+		PersonV3To personV3To = personV3Consumer.hentPerson(FNR, PRINCIPAL);
+
+		assertThat(personV3To, nullValue());
 	}
 
 	@Test

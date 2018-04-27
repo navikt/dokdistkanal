@@ -1,7 +1,7 @@
 package no.nav.dokdistkanal.consumer.personv3;
 
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.PERSONV3;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
@@ -52,7 +52,7 @@ public class PersonV3Consumer {
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) throws DokDistKanalTechnicalException, DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
-		requestCounter.labels(HENT_PERSON, LABEL_CACHE_COUNTER, consumerId, CACHE_MISS).inc();
+		requestCounter.labels(HENT_PERSON, CACHE_COUNTER, consumerId, CACHE_MISS).inc();
 
 		HentPersonRequest request = mapHentPersonRequest(personidentifikator);
 		HentPersonResponse response;
@@ -61,8 +61,9 @@ public class PersonV3Consumer {
 			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("PersonV3.hentPerson fant ikke person med angitt ident, message=" + hentPersonPersonIkkeFunnet
-					.getMessage(), hentPersonPersonIkkeFunnet);
+			return null;
+//			throw new DokDistKanalFunctionalException("PersonV3.hentPerson fant ikke person med angitt ident, message=" + hentPersonPersonIkkeFunnet
+//					.getMessage(), hentPersonPersonIkkeFunnet);
 		} catch (HentPersonSikkerhetsbegrensning hentPersonSikkerhetsbegrensning) {
 			throw new DokDistKanalSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentPersonSikkerhetsbegrensning
 					.getMessage(), hentPersonSikkerhetsbegrensning);
@@ -99,11 +100,11 @@ public class PersonV3Consumer {
 	}
 
 	private PersonV3To mapTo(Bruker bruker) {
-		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato() == null ? null :  bruker.getFoedselsdato().getFoedselsdato();
+		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato() == null ? null : bruker.getFoedselsdato().getFoedselsdato();
 		XMLGregorianCalendar brukerDoedsdato = bruker.getDoedsdato() == null ? null : bruker.getDoedsdato().getDoedsdato();
 
 		return PersonV3To.builder()
-				.doedsdato(brukerDoedsdato == null ? null: brukerDoedsdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
+				.doedsdato(brukerDoedsdato == null ? null : brukerDoedsdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
 				.foedselsdato(brukerFoedselssdato == null ? null : brukerFoedselssdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
 				.build();
 	}

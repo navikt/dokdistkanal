@@ -1,8 +1,8 @@
 package no.nav.dokdistkanal.consumer.dki;
 
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
@@ -54,7 +54,7 @@ public class DigitalKontaktinformasjonConsumer {
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
-		requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
+		requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 
 		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentSikkerDigitalPostadresseResponse response;
@@ -63,11 +63,13 @@ public class DigitalKontaktinformasjonConsumer {
 			requestTimer = requestLatency.labels(DOKDISTKANAL_SERVICE, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
 		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=" + hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet
-					.getMessage(), hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet);
+			return null;
+//			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=" + hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet
+//					.getMessage(), hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet);
 		} catch (HentSikkerDigitalPostadressePersonIkkeFunnet hentSikkerDigitalPostadressePersonIkkeFunnet) {
-			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
-					.getMessage(), hentSikkerDigitalPostadressePersonIkkeFunnet);
+			return null;
+//			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
+//					.getMessage(), hentSikkerDigitalPostadressePersonIkkeFunnet);
 		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing hentSikkerDigitalPostadresseSikkerhetsbegrensing) {
 			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=" + hentSikkerDigitalPostadresseSikkerhetsbegrensing
 					.getMessage(), hentSikkerDigitalPostadresseSikkerhetsbegrensing);
@@ -112,7 +114,7 @@ public class DigitalKontaktinformasjonConsumer {
 
 		if (kontaktinformasjon != null) {
 			//Dersom mobiltelefonnummeret er sist oppdatert for mer enn 18 måneder siden skal feltet blankes
-			if (kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert() != null) {
+			if (kontaktinformasjon.getMobiltelefonnummer() != null && kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert() != null) {
 				LocalDate sistOppdatert = kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();
 				if (sistOppdatert.isBefore(monthsAgo18)) {
 					Mobiltelefonnummer mobiltelefonnummer = new Mobiltelefonnummer();
@@ -123,7 +125,7 @@ public class DigitalKontaktinformasjonConsumer {
 			}
 
 			//Dersom epostadresse er sist oppdatert for mer enn 18 måneder siden skal feltet blankes
-			if (kontaktinformasjon.getEpostadresse().getSistOppdatert() != null) {
+			if (kontaktinformasjon.getEpostadresse() != null && kontaktinformasjon.getEpostadresse().getSistOppdatert() != null) {
 				LocalDate sistOppdatert = kontaktinformasjon.getEpostadresse().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();
 				if (sistOppdatert.isBefore(monthsAgo18)) {
 					Epostadresse epostAdresse = new Epostadresse();

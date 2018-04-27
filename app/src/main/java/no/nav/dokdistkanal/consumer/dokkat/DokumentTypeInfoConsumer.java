@@ -1,7 +1,7 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
@@ -65,7 +65,7 @@ public class DokumentTypeInfoConsumer {
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 
-		requestCounter.labels(HENT_DOKKAT_INFO, LABEL_CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
+		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
@@ -73,7 +73,7 @@ public class DokumentTypeInfoConsumer {
 			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
 			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {
-			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode()) ) {
+			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
 				throw new DokDistKanalSecurityException("DokumentTypeInfoConsumer feilet (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 			}
 			throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);

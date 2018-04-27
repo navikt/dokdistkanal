@@ -4,7 +4,15 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
+import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
+import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.DOKKAT;
+import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
+import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
+import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestComsumer.HENT_PAALOGGINGSNIVAA;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_TOTAL;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
@@ -53,8 +61,10 @@ public class DokDistKanalService {
 
 	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
+		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
-		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
+
+		if ("INGEN" .equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
 		}
 		if (LOKAL_PRINT.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
@@ -65,6 +75,7 @@ public class DokDistKanalService {
 			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
 		} else {
 			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, getConsumerId());
+			requestCounter.labels(HENT_PERSON, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
 			if (personTo == null) {
 				return logAndReturn(PRINT, "Finner ikke personen i TPS");
@@ -83,6 +94,7 @@ public class DokDistKanalService {
 			}
 
 			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId);
+			requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon");
 			}
@@ -101,6 +113,7 @@ public class DokDistKanalService {
 			}
 
 			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(mottakerId);
+			requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 			if (sikkerhetsnivaaTo == null) {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}

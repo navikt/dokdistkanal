@@ -1,5 +1,15 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.PERSONV3;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.SIKKERHETSNIVAAV1;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
+
+import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
@@ -26,6 +36,7 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 
 	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
+	private Histogram.Timer requestTimer;
 
 	public SikkerhetsnivaaRestComsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
@@ -50,11 +61,13 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
+		requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
+			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, SIKKERHETSNIVAAV1, HENT_PAALOGGINGSNIVAA).startTimer();
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode()) ) {
+			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
 				throw new DokDistKanalSecurityException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 			}
 			throw new DokDistKanalFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
@@ -62,6 +75,8 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 		} catch (Exception e) {
 			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
+		} finally {
+			requestTimer.observeDuration();
 		}
 	}
 

@@ -22,9 +22,7 @@ public class PrometheusLabels {
 	public static final String SERVICE_CODE_DOKDIST="DokDistKanalService";
 
 	//Cache
-	public static final String LABEL_CACHE_NAME = "name";
-	public static final String LABEL_CACHE_OPERATION = "operation";
-	public static final String LABEL_CACHE_COUNTER = "cacheCounter";
+	public static final String CACHE_COUNTER = "cacheCounter";
 	public static final String CACHE_MISS = "cacheMiss";
 	public static final String CACHE_TOTAL = "cacheTotal";
 	public static final String CACHE_ERROR = "cacheError";
@@ -34,9 +32,12 @@ public class PrometheusLabels {
 	public static final String MOTTAKERTYPE = "mottakerType";
 	public static final String PLUGIN = "plugin";
 	public static final String CONTROLLER = "controller";
+	public static final String REST = "Rest";
 	public static final String PERSONV3 = "personV3";
 	public static final String DIGITALKONTAKTINFORMASJONV1 = "digitalKontaktInformasjonV1";
 	public static final String SIKKERHETSNIVAAV1 = "SikkerhetsnivaaV1";
 	public static final String DOKUMENTTYPEINFOV4 = "DokumenttypeInfoV4";
+	public static final String RECEIVED = "received";
+	public static final String PROCESSED_OK = "processed_ok";
 
 }

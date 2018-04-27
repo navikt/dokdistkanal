@@ -94,23 +94,26 @@ public class DigitalKontaktinformasjonConsumerTest {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionWhenDKIIkkeFunnet() throws Exception {
+	public void shouldReturnNullWhenDKIIkkeFunnet() throws Exception {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
 				.thenThrow(new HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet("Finner ikke konraktinfo", new KontaktinformasjonIkkeFunnet()));
 
-		expectedException.expect(DokDistKanalFunctionalException.class);
-		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=Finner ikke konraktinfo");
-		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
+//		expectedException.expect(DokDistKanalFunctionalException.class);
+//		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=Finner ikke konraktinfo");
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
+		assertThat(digitalKontaktinformasjonTo, nullValue());
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionWhenPersonIkkeFunnet() throws Exception {
+	public void shouldReturnNullWhenPersonIkkeFunnet() throws Exception {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
 				.thenThrow(new HentSikkerDigitalPostadressePersonIkkeFunnet("Finner ikke person", new PersonIkkeFunnet()));
-		expectedException.expect(DokDistKanalFunctionalException.class);
-		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=Finner ikke person");
+//		expectedException.expect(DokDistKanalFunctionalException.class);
+//		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=Finner ikke person");
 
 		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
+		assertThat(digitalKontaktinformasjonTo, nullValue());
 	}
 
 	@Test
