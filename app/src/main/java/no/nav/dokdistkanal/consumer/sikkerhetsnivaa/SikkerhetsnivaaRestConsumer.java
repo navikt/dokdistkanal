@@ -31,18 +31,18 @@ import org.springframework.web.client.RestTemplate;
 import javax.inject.Inject;
 
 @Slf4j
-public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
+public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 
 	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
 	private Histogram.Timer requestTimer;
 
-	public SikkerhetsnivaaRestComsumer(RestTemplate restTemplate) {
+	public SikkerhetsnivaaRestConsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
 	}
 
 	@Inject
-	public SikkerhetsnivaaRestComsumer(RestTemplateBuilder restTemplateBuilder,
+	public SikkerhetsnivaaRestConsumer(RestTemplateBuilder restTemplateBuilder,
 									   HttpComponentsClientHttpRequestFactory requestFactory,
 									   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
 									   ServiceuserAlias serviceuserAlias) {

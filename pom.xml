@@ -235,7 +235,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>1.5.10.RELEASE</version>
+				<version>1.5.11.RELEASE</version>
 				<configuration>
 					<skip>false</skip>
 					<fork>true</fork>
