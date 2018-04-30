@@ -45,10 +45,10 @@ public class DokDistKanalService {
 
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
-	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
-	private PersonV3Consumer personV3Consumer;
-	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
-	private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
+	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
+	private final PersonV3Consumer personV3Consumer;
+	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
+	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 
 	@Inject
 	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer, PersonV3Consumer personV3Consumer, DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer, SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer) {
@@ -64,14 +64,14 @@ public class DokDistKanalService {
 
 
 		if ("INGEN" .equals(dokumentTypeInfoTo.getArkivsystem())) {
-			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
+			return logAndReturn(PRINT, "Skal ikke arkiveres");
 		}
 		if (LOKAL_PRINT.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
-			return DokDistKanalResponse.builder().distribusjonsKanal(LOKAL_PRINT).build();
+			return logAndReturn(LOKAL_PRINT, "Predefinert distribusjonskanal er Lokal Print");
 		}
 		if (mottakerId.length() != 11) {
 			//Ikke personnnr
-			return DokDistKanalResponse.builder().distribusjonsKanal(PRINT).build();
+			return logAndReturn(PRINT, "Mottaker er ikke en person");
 		} else {
 			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, getConsumerId());
 			requestCounter.labels(HENT_PERSON, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();

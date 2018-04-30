@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal;
 
+import no.nav.dokdistkanal.common.DokDistKanalConfigSetter;
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration;
@@ -42,11 +43,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @SpringBootApplication
 public class Application {
 	public static void main(String[] args) {
-//		DokkanalvalgConfigSetter configSetter = new RegoppslagConfigSetter();
-//		configSetter.configureSsl();
-//		configSetter.setAppConfig();
-//		SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
+		DokDistKanalConfigSetter configSetter = new DokDistKanalConfigSetter();
+		configSetter.configureSsl();
+		configSetter.setAppConfig();
 		SpringApplication.run(Application.class, args);
 	}
-
 }

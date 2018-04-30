@@ -49,7 +49,7 @@ public class PrometheusMetrics {
 
 	public static String getConsumerId() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication == null || authentication.getName().equalsIgnoreCase("anonymousUser")) {
+		if (authentication == null || ("anonymousUser").equalsIgnoreCase(authentication.getName())) {
 			return "Ukjent";
 		}
 		return authentication.getName();

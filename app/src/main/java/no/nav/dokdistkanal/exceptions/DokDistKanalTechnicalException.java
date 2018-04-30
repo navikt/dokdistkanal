@@ -10,14 +10,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @Getter
 @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 public class DokDistKanalTechnicalException extends RuntimeException{
-	private String shortDescription = "DokDistKanalTechnicalException";
+	private final String shortDescription = "DokDistKanalTechnicalException";
 
 	public DokDistKanalTechnicalException(String message) {
 		super(message);
-	}
-
-	public DokDistKanalTechnicalException(Throwable cause) {
-		super(cause);
 	}
 
 	public DokDistKanalTechnicalException(String message, Throwable cause) {

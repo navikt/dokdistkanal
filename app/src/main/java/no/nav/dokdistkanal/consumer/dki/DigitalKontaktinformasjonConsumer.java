@@ -62,14 +62,8 @@ public class DigitalKontaktinformasjonConsumer {
 		try {
 			requestTimer = requestLatency.labels(LABEL_DOKDIST, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
-		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
+		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet|HentSikkerDigitalPostadressePersonIkkeFunnet  hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
 			return null;
-//			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=" + hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet
-//					.getMessage(), hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet);
-		} catch (HentSikkerDigitalPostadressePersonIkkeFunnet hentSikkerDigitalPostadressePersonIkkeFunnet) {
-			return null;
-//			throw new DokDistKanalFunctionalException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=" + hentSikkerDigitalPostadressePersonIkkeFunnet
-//					.getMessage(), hentSikkerDigitalPostadressePersonIkkeFunnet);
 		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing hentSikkerDigitalPostadresseSikkerhetsbegrensing) {
 			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=" + hentSikkerDigitalPostadresseSikkerhetsbegrensing
 					.getMessage(), hentSikkerDigitalPostadresseSikkerhetsbegrensing);

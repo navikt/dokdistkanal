@@ -16,7 +16,6 @@ import javax.inject.Inject;
 @Component
 public class SikkerhetsnivaaV1Check extends AbstractSelftest {
 
-	private final String url;
 	private final RestTemplate restTemplate;
 
 	@Inject
@@ -27,7 +26,6 @@ public class SikkerhetsnivaaV1Check extends AbstractSelftest {
 				SIKKERHETSNIVAAV1,
 				sikkerhetsnivaaUrl,
 				SIKKERHETSNIVAAV1);
-		this.url = sikkerhetsnivaaUrl;
 		this.restTemplate = restTemplateBuilder.requestFactory(requestFactory)
 				.rootUri(sikkerhetsnivaaUrl)
 				.build();

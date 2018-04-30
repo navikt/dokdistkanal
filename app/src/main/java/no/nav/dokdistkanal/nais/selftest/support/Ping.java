@@ -5,10 +5,7 @@ package no.nav.dokdistkanal.nais.selftest.support;
  */
 public class Ping {
 	private String name;
-	private String beskrivelse;
-	private String address;
 	private Type type;
-	private Runnable pinger;
 
 	public enum Type {
 		Soap("Soap WebService"),

@@ -17,7 +17,6 @@ import javax.inject.Inject;
 @Component
 public class DokumenttypeInfoV3Check extends AbstractSelftest {
 
-	private final String url;
 	private final RestTemplate restTemplate;
 
 	@Inject
@@ -29,7 +28,6 @@ public class DokumenttypeInfoV3Check extends AbstractSelftest {
 				DIGITALKONTAKTINFORMASJONV1,
 				dokumenttypeInfoV4Alias.getUrl(),
 				dokumenttypeInfoV4Alias.getDescription() == null ? DIGITALKONTAKTINFORMASJONV1 : dokumenttypeInfoV4Alias.getDescription());
-		this.url = dokumenttypeInfoV4Alias.getUrl();
 		this.restTemplate = restTemplateBuilder.requestFactory(requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())

@@ -11,10 +11,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class DokDistKanalFunctionalException extends Exception {
 
-	private String shortDescription = "DokDistKanalFunctionalException";
+	private final String shortDescription = "DokDistKanalFunctionalException";
 
-	public DokDistKanalFunctionalException() {
-	}
+	public DokDistKanalFunctionalException() {}
 	
 	public DokDistKanalFunctionalException(String message) {
 		super(message);
