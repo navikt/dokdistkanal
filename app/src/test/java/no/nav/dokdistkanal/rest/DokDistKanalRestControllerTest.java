@@ -13,6 +13,7 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpHeaders;
 
 public class DokDistKanalRestControllerTest {
 
@@ -29,7 +30,7 @@ public class DokDistKanalRestControllerTest {
 				.distribusjonsKanal(DistribusjonKanalCode.DITT_NAV)
 				.build();
 		when(dokDistKanalService.velgKanal(DOKUMENTTYPEID, FNR)).thenReturn(response);
-		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request);
+		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, null);
 		assertEquals(DistribusjonKanalCode.DITT_NAV, actualResponse.getDistribusjonsKanal());
 		Mockito.verify(dokDistKanalService, Mockito.times(1)).velgKanal(anyString(), anyString());
 	}
