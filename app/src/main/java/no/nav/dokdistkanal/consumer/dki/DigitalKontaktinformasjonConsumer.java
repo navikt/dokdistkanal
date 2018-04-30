@@ -3,10 +3,10 @@ package no.nav.dokdistkanal.consumer.dki;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokdistkanal.service.DokDistKanalService.DOKDISTKANAL_SERVICE;
 
 import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +60,7 @@ public class DigitalKontaktinformasjonConsumer {
 		HentSikkerDigitalPostadresseResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(DOKDISTKANAL_SERVICE, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
+			requestTimer = requestLatency.labels(LABEL_DOKDIST, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
 		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
 			return null;

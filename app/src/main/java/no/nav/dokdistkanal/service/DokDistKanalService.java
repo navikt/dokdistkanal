@@ -11,6 +11,7 @@ import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON
 import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestComsumer.HENT_PAALOGGINGSNIVAA;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_TOTAL;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
@@ -43,8 +44,6 @@ import java.time.LocalDate;
 public class DokDistKanalService {
 
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
-
-	public static final String DOKDISTKANAL_SERVICE = "DokDistKanal";
 
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private PersonV3Consumer personV3Consumer;
@@ -128,6 +127,7 @@ public class DokDistKanalService {
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode code, String reason) {
 		LOG.info("BestemKanal: Sender melding til " + code.name() + ": " + reason);
+		requestCounter.labels(LABEL_DOKDIST, "velgKanal", getConsumerId(), code.name()).inc();
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 }

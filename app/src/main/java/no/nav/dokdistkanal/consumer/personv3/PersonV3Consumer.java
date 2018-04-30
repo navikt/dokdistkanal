@@ -2,8 +2,8 @@ package no.nav.dokdistkanal.consumer.personv3;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.PERSONV3;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
 
@@ -58,7 +58,7 @@ public class PersonV3Consumer {
 		HentPersonResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, PERSONV3, HENT_PERSON).startTimer();
+			requestTimer = requestLatency.labels(LABEL_DOKDIST, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
 			return null;

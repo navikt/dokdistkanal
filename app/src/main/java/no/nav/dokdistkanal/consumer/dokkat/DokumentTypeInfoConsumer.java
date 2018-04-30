@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.consumer.dokkat;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
@@ -69,7 +69,7 @@ public class DokumentTypeInfoConsumer {
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
-			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, DOKKAT, HENT_DOKKAT_INFO).startTimer();
+			requestTimer = requestLatency.labels(LABEL_DOKDIST, DOKKAT, HENT_DOKKAT_INFO).startTimer();
 			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
 			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {

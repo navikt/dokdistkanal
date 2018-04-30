@@ -1,11 +1,11 @@
 package no.nav.dokdistkanal.rest;
 
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_FUNCTIONAL_EXCEPTION;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_SECURITY_EXCEPTION;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_TECHNICAL_EXCEPTION;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.PROCESSED_OK;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.RECEIVED;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestExceptionCounter;
@@ -44,13 +44,13 @@ public class DokDistKanalRestController {
 	@ResponseBody
 	@PostMapping(value = BESTEM_KANAL_URI_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, SERVICE_CODE_DOKDIST, "bestemKanal")
+		requestTimer = requestLatency.labels(LABEL_DOKDIST, "velgKanal", "velgKanal")
 				.startTimer();
 		try {
-			requestCounter.labels(SERVICE_CODE_DOKDIST, PrometheusLabels.REST, getConsumerId(), RECEIVED)
+			requestCounter.labels(LABEL_DOKDIST, PrometheusLabels.REST, getConsumerId(), RECEIVED)
 					.inc();
 			DokDistKanalResponse response = dokDistKanalService.velgKanal(request.getDokumentTypeId(), request.getMottakerId());
-			requestCounter.labels(SERVICE_CODE_DOKDIST, PrometheusLabels.REST, getConsumerId(), PROCESSED_OK).inc();
+			requestCounter.labels(LABEL_DOKDIST, PrometheusLabels.REST, getConsumerId(), PROCESSED_OK).inc();
 			return response;
 		} catch (Exception e) {
 			incrementExceptionMetrics(e);

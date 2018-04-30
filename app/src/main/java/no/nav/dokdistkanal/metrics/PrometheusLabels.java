@@ -19,7 +19,7 @@ public class PrometheusLabels {
 	public static final String LABEL_EVENT = "event";
 	public static final String LABEL_ERROR_TYPE = "error_type";
 
-	public static final String SERVICE_CODE_DOKDIST="DokDistKanalService";
+	public static final String LABEL_DOKDIST="DokDistKanal";
 
 	//Cache
 	public static final String CACHE_COUNTER = "cacheCounter";

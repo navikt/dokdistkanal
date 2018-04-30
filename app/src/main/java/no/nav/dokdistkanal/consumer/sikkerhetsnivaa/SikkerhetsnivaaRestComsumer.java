@@ -2,8 +2,7 @@ package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.PERSONV3;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SERVICE_CODE_DOKDIST;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.SIKKERHETSNIVAAV1;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
@@ -63,7 +62,7 @@ public class SikkerhetsnivaaRestComsumer implements SikkerhetsnivaaConsumer {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
-			requestTimer = requestLatency.labels(SERVICE_CODE_DOKDIST, SIKKERHETSNIVAAV1, HENT_PAALOGGINGSNIVAA).startTimer();
+			requestTimer = requestLatency.labels(LABEL_DOKDIST, SIKKERHETSNIVAAV1, HENT_PAALOGGINGSNIVAA).startTimer();
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
