@@ -116,7 +116,7 @@ public class CustomLettucePool implements LettucePool, InitializingBean {
 				.build());
 
 		client.setDefaultTimeout(timeout, TimeUnit.MILLISECONDS);
-		this.internalPool = new GenericObjectPool<StatefulConnection<byte[], byte[]>>(new CustomLettucePool.LettuceFactory(client, dbIndex),
+		this.internalPool = new GenericObjectPool<>(new CustomLettucePool.LettuceFactory(client, dbIndex),
 				poolConfig);
 	}
 
