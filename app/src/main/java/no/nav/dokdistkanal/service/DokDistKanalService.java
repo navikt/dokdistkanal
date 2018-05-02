@@ -58,10 +58,10 @@ public class DokDistKanalService {
 	}
 
 	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		validateInput(dokumentTypeId, mottakerId);
+
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
-
-		validateInput(dokumentTypeId, mottakerId);
 
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return logAndReturn(PRINT, "Skal ikke arkiveres");
