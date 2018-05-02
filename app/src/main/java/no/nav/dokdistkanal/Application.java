@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal;
 
-import no.nav.dokdistkanal.common.DokDistKanalConfigSetter;
 import org.apache.cxf.spring.boot.autoconfigure.CxfAutoConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration;
@@ -20,7 +19,6 @@ import org.springframework.boot.autoconfigure.web.WebClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @Configuration
 @Import(value = {
@@ -43,9 +41,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @SpringBootApplication
 public class Application {
 	public static void main(String[] args) {
-		DokDistKanalConfigSetter configSetter = new DokDistKanalConfigSetter();
-		configSetter.configureSsl();
-		configSetter.setAppConfig();
 		SpringApplication.run(Application.class, args);
 	}
 }
