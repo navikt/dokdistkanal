@@ -62,8 +62,9 @@ public class DokDistKanalService {
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
+		validateInput(dokumentTypeId, mottakerId);
 
-		if ("INGEN" .equals(dokumentTypeInfoTo.getArkivsystem())) {
+		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return logAndReturn(PRINT, "Skal ikke arkiveres");
 		}
 		if (LOKAL_PRINT.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
@@ -130,4 +131,11 @@ public class DokDistKanalService {
 		requestCounter.labels(LABEL_DOKDIST, "velgKanal", getConsumerId(), code.name()).inc();
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
+
+	private void validateInput(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException {
+		if (StringUtils.isEmpty(dokumentTypeId) || StringUtils.isEmpty(mottakerId)) {
+			throw new DokDistKanalFunctionalException("dokumentTypeId og mottakerId må ha verdi");
+		}
+	}
+
 }
