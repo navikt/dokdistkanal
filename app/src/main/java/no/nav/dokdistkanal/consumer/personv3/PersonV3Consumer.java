@@ -18,6 +18,7 @@ import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensn
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Bruker;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.NorskIdent;
+import no.nav.tjeneste.virksomhet.person.v3.informasjon.Person;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.PersonIdent;
 import no.nav.tjeneste.virksomhet.person.v3.informasjon.Personidenter;
 import no.nav.tjeneste.virksomhet.person.v3.meldinger.HentPersonRequest;
@@ -72,7 +73,7 @@ public class PersonV3Consumer {
 			requestTimer.observeDuration();
 		}
 		if (response != null && response.getPerson() != null) {
-			return mapTo((Bruker) response.getPerson());
+			return mapTo(response.getPerson());
 		}
 		return null;
 	}
@@ -97,10 +98,29 @@ public class PersonV3Consumer {
 		return request;
 	}
 
-	private PersonV3To mapTo(Bruker bruker) {
+	private PersonV3To mapTo(Person person) {
+		if (person instanceof Bruker) {
+			return mapToBruker((Bruker) person);
+		} else {
+			return mapToPerson(person);
+		}
+	}
+
+	private PersonV3To mapToPerson(Person person) {
+		XMLGregorianCalendar brukerFoedselssdato = person.getFoedselsdato() == null ? null : person.getFoedselsdato().getFoedselsdato();
+		XMLGregorianCalendar brukerDoedsdato = person.getDoedsdato() == null ? null : person.getDoedsdato().getDoedsdato();
+
+		return createTo(brukerFoedselssdato, brukerDoedsdato);
+	}
+
+	private PersonV3To mapToBruker(Bruker bruker) {
 		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato() == null ? null : bruker.getFoedselsdato().getFoedselsdato();
 		XMLGregorianCalendar brukerDoedsdato = bruker.getDoedsdato() == null ? null : bruker.getDoedsdato().getDoedsdato();
 
+		return createTo(brukerFoedselssdato, brukerDoedsdato);
+	}
+
+	private PersonV3To createTo(XMLGregorianCalendar brukerFoedselssdato, XMLGregorianCalendar brukerDoedsdato) {
 		return PersonV3To.builder()
 				.doedsdato(brukerDoedsdato == null ? null : brukerDoedsdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
 				.foedselsdato(brukerFoedselssdato == null ? null : brukerFoedselssdato.toGregorianCalendar().toZonedDateTime().toLocalDate())
