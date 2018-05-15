@@ -154,7 +154,11 @@
 			<version>${nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon}</version>
 			<classifier>jaxws</classifier>
 		</dependency>
-
+		<dependency>
+			<groupId>no.nav.tjenester.fim</groupId>
+			<artifactId>no-nav-dok-tjenester-dokdistkanal</artifactId>
+			<version>${version-tjeneste-dokdistkanal}</version>
+		</dependency>
 		<!-- test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

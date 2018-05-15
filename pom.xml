@@ -61,6 +61,7 @@
 		<wiremock-standalone.version>2.15.0</wiremock-standalone.version>
 		<retry.version>1.0.2.RELEASE</retry.version>
 		<modig-security.version>3.0.6</modig-security.version>
+		<version-tjeneste-dokdistkanal>1.0.0-SNAPSHOT</version-tjeneste-dokdistkanal>
 	</properties>
 
 	<dependencyManagement>
