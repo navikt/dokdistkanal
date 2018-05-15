@@ -56,10 +56,11 @@ public class SikkerhetsnivaaConsumerTest {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionWhenSikkerhetsnivaaNotFound() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
-		expectedException.expect(DokDistKanalFunctionalException.class);
+	public void shouldReturnFalseWhenSikkerhetsnivaaNotFound() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
-		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
+		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
+		assertThat(sikkerhetsnivaaTo.isHarLoggetPaaNivaa4(), equalTo(Boolean.FALSE));
+		assertThat(sikkerhetsnivaaTo.getPersonIdent(), equalTo(FNR));
 	}
 
 	@Test

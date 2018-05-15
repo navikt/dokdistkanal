@@ -17,7 +17,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
 public class DokDistKanalIT extends AbstractIT {
@@ -166,18 +165,12 @@ public class DokDistKanalIT extends AbstractIT {
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/dki/ditt-nav-responsebody.xml")));
 		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
-				.willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
+				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Personident ikke gydig")));
-		try {
-			DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(Boolean.TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=404)"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
-		}
+		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).build();
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 
 	}
 }

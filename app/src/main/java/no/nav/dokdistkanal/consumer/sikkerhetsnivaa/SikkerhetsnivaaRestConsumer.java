@@ -72,6 +72,10 @@ public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
 				throw new DokDistKanalSecurityException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 			}
+			if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
+				//Personen finnes ikke, returnerer false
+				return SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(false).personIdent(fnr).build();
+			}
 			throw new DokDistKanalFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 		} catch (HttpServerErrorException e) {
 			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
