@@ -113,6 +113,7 @@ public class DigitalKontaktinformasjonConsumer {
 				if (sistOppdatert.isBefore(monthsAgo18)) {
 					Mobiltelefonnummer mobiltelefonnummer = new Mobiltelefonnummer();
 					kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
+					log.info("mobilnummer sist oppdatert {}, setter mobilnummer til null", sistOppdatert);
 				} else {
 					mobiltelefonummer = kontaktinformasjon.getMobiltelefonnummer().getValue();
 				}
@@ -124,6 +125,7 @@ public class DigitalKontaktinformasjonConsumer {
 				if (sistOppdatert.isBefore(monthsAgo18)) {
 					Epostadresse epostAdresse = new Epostadresse();
 					kontaktinformasjon.setEpostadresse(epostAdresse);
+					log.info("epostadresse sist oppdatert {}, setter epostadresse til null", sistOppdatert);
 				} else {
 					epostadresse = kontaktinformasjon.getEpostadresse().getValue();
 				}
