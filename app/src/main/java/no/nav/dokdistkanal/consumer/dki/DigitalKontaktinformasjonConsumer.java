@@ -32,6 +32,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -100,35 +101,15 @@ public class DigitalKontaktinformasjonConsumer {
 
 		byte[] sertifikat = sikkerDigitalKontaktinformasjon.getSertifikat();
 
-		LocalDate monthsAgo18 = LocalDate.now().minusMonths(18);
-
 		String mobiltelefonummer = null;
 		String epostadresse = null;
 
-
 		if (kontaktinformasjon != null) {
-			//Dersom mobiltelefonnummeret er sist oppdatert for mer enn 18 måneder siden skal feltet blankes
-			if (kontaktinformasjon.getMobiltelefonnummer() != null && kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert() != null) {
-				LocalDate sistOppdatert = kontaktinformasjon.getMobiltelefonnummer().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();
-				if (sistOppdatert.isBefore(monthsAgo18)) {
-					Mobiltelefonnummer mobiltelefonnummer = new Mobiltelefonnummer();
-					kontaktinformasjon.setMobiltelefonnummer(mobiltelefonnummer);
-					log.info("mobilnummer sist oppdatert {}, setter mobilnummer til null", sistOppdatert);
-				} else {
-					mobiltelefonummer = kontaktinformasjon.getMobiltelefonnummer().getValue();
-				}
+			if(isEpostadresseValid(kontaktinformasjon.getEpostadresse())) {
+				epostadresse = kontaktinformasjon.getEpostadresse().getValue();
 			}
-
-			//Dersom epostadresse er sist oppdatert for mer enn 18 måneder siden skal feltet blankes
-			if (kontaktinformasjon.getEpostadresse() != null && kontaktinformasjon.getEpostadresse().getSistOppdatert() != null) {
-				LocalDate sistOppdatert = kontaktinformasjon.getEpostadresse().getSistOppdatert().toGregorianCalendar().toZonedDateTime().toLocalDate();
-				if (sistOppdatert.isBefore(monthsAgo18)) {
-					Epostadresse epostAdresse = new Epostadresse();
-					kontaktinformasjon.setEpostadresse(epostAdresse);
-					log.info("epostadresse sist oppdatert {}, setter epostadresse til null", sistOppdatert);
-				} else {
-					epostadresse = kontaktinformasjon.getEpostadresse().getValue();
-				}
+			if(isMobilnummerValid(kontaktinformasjon.getMobiltelefonnummer())) {
+				mobiltelefonummer = kontaktinformasjon.getMobiltelefonnummer().getValue();
 			}
 		}
 
@@ -139,6 +120,40 @@ public class DigitalKontaktinformasjonConsumer {
 				.mobiltelefonnummer(mobiltelefonummer)
 				.reservasjon(mapStringToBool(kontaktinformasjon == null ? null : kontaktinformasjon.getReservasjon()))
 				.sertifikat(StringUtils.isNotEmpty(Arrays.toString((sertifikat)))).build();
+	}
+
+	private boolean isEpostadresseValid(Epostadresse epostadresse) {
+		if(epostadresse == null) {
+			return false;
+		} else if(epostadresse.getSistOppdatert() == null && epostadresse.getSistVerifisert() == null) {
+			return false;
+		} else if(epostadresse.getSistOppdatert() != null && isValidDate(epostadresse.getSistOppdatert())) {
+			return true;
+		} else if(epostadresse.getSistVerifisert() != null && isValidDate(epostadresse.getSistVerifisert())) {
+			return true;
+		} else {
+			log.info("Epostadresse sist oppdatert {}, sist verifisert {}", epostadresse.getSistOppdatert(), epostadresse.getSistVerifisert());
+			return false;
+		}
+	}
+
+	private boolean isMobilnummerValid(Mobiltelefonnummer mobiltelefonnummer) {
+		if(mobiltelefonnummer == null) {
+			return false;
+		} else if(mobiltelefonnummer.getSistOppdatert() == null && mobiltelefonnummer.getSistVerifisert() == null) {
+			return false;
+		} else if(mobiltelefonnummer.getSistOppdatert() != null && isValidDate(mobiltelefonnummer.getSistOppdatert())) {
+			return true;
+		} else if(mobiltelefonnummer.getSistVerifisert() != null && isValidDate(mobiltelefonnummer.getSistVerifisert())) {
+			return true;
+		} else {
+			log.info("Mobilnummer sist oppdatert {}, sist verifisert {}", mobiltelefonnummer.getSistOppdatert(), mobiltelefonnummer.getSistVerifisert());
+			return false;
+		}
+	}
+
+	private boolean isValidDate(XMLGregorianCalendar dateTime) {
+		return dateTime.toGregorianCalendar().toZonedDateTime().toLocalDate().plusMonths(18).isAfter(LocalDate.now());
 	}
 
 	private boolean mapStringToBool(String bool) {
