@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.nais.selftest.support;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 
 import java.io.PrintWriter;
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by T133804 on 15.08.2017.
  */
+@Slf4j
 public abstract class AbstractSelftest {
 	protected String name;
 	protected String description;
@@ -73,6 +75,8 @@ public abstract class AbstractSelftest {
 					check.setErrorMessage(rootCause.getMessage());
 					check.setStackTrace(getStackTraceAsString(e));
 					check.setResult(isVital() ? Result.ERROR : Result.WARNING);
+					log.error("Selftest " + name + ", address=" + address + " failed.", e);
+
 				}
 			} else {
 				check.setResult(Result.UNPINGABLE);

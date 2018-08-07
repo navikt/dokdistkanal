@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Created by T133804 on 15.08.2017.
  */
 @Getter
 @Setter
+@ToString(exclude = "stackTrace")
 public class SelftestCheck {
 	
 	private String endpoint;
@@ -55,14 +57,5 @@ public class SelftestCheck {
 	
 	public void setType(Ping.Type type) {
 		this.type = type;
-	}
-	
-	@Override
-	public String toString() {
-		return "SelftestCheck{" +
-				"result=" + result +
-				", endpoint='" + endpoint + '\'' +
-				", errorMessage='" + errorMessage + '\'' +
-				'}';
 	}
 }

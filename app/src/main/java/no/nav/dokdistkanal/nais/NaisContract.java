@@ -66,7 +66,7 @@ public class NaisContract {
 
 		if (isAnyDependencyUnhealthy(results.stream().map(SelftestCheck::getResult).collect(Collectors.toList()))) {
 			isReady.dec();
-			String responseBody = APPLICATION_NOT_READY + "/n +  " + results.stream().map(SelftestCheck::getErrorMessage).collect(Collectors.toList());
+			String responseBody = APPLICATION_NOT_READY + "/n +  " + results.stream().map(SelftestCheck::toString).collect(Collectors.joining("\n"));
 			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
