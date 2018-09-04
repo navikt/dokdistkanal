@@ -27,6 +27,13 @@ public class PrometheusMetrics {
 			.help("App is ready to receive traffic")
 			.register();
 
+	public static final Gauge dependencyPingable = Gauge.build()
+			.namespace(DOK_NAMESPACE)
+			.name("dependency_ping")
+			.help("Dependency is pingable")
+			.labelNames(PrometheusLabels.LABEL_NAME)
+			.register();
+
 	public static final Counter requestCounter = Counter.build()
 			.namespace(DOK_NAMESPACE)
 			.name("request_total_counter")

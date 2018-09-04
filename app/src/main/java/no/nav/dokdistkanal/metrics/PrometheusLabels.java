@@ -9,6 +9,7 @@ public class PrometheusLabels {
 	public static final String LABEL_FUNCTIONAL_EXCEPTION = "functional";
 	public static final String LABEL_SECURITY_EXCEPTION = "security";
 
+	public static final String LABEL_NAME = "name";
 	public static final String LABEL_EXCEPTION_NAME = "exception_name";
 	public static final String LABEL_PROCESS = "process";
 	public static final String LABEL_PROCESS_CODE = "process_called";

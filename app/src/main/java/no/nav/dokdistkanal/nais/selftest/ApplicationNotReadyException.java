@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.nais.selftest.support;
+package no.nav.dokdistkanal.nais.selftest;
 
 /**
  * @author Joakim Bjørnstad, Jbit AS

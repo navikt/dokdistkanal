@@ -126,6 +126,15 @@
 			<version>${prometheus.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-circuitbreaker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-timelimiter</artifactId>
+		</dependency>
+
 		<!-- tjenester -->
 		<dependency>
 			<groupId>no.nav.modig</groupId>
@@ -154,12 +163,7 @@
 			<version>${nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon}</version>
 			<classifier>jaxws</classifier>
 		</dependency>
-<!--		<dependency>
-			<groupId>no.nav.tjenester.fim</groupId>
-			<artifactId>no-nav-dok-tjenester-dokdistkanal</artifactId>
-			<version>${version-tjeneste-dokdistkanal}</version>
-		</dependency>
--->
+
 		<!-- test -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

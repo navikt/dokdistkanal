@@ -61,7 +61,7 @@
 		<wiremock-standalone.version>2.15.0</wiremock-standalone.version>
 		<retry.version>1.0.2.RELEASE</retry.version>
 		<modig-security.version>3.0.6</modig-security.version>
-		<version-tjeneste-dokdistkanal>1.0.0-SNAPSHOT</version-tjeneste-dokdistkanal>
+		<resilience4j-circuitbreaker.version>0.13.1</resilience4j-circuitbreaker.version>
 	</properties>
 
 	<dependencyManagement>
@@ -128,8 +128,6 @@
 				<scope>test</scope>
 			</dependency>
 
-
-
 			<!--CXF dependencies-->
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
@@ -140,6 +138,16 @@
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxws</artifactId>
 				<version>${cxf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-circuitbreaker</artifactId>
+				<version>${resilience4j-circuitbreaker.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-timelimiter</artifactId>
+				<version>${resilience4j-circuitbreaker.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -1,12 +1,11 @@
 package no.nav.dokdistkanal.nais.checks;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
-
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
-import no.nav.dokdistkanal.nais.selftest.support.AbstractSelftest;
-import no.nav.dokdistkanal.nais.selftest.support.ApplicationNotReadyException;
-import no.nav.dokdistkanal.nais.selftest.support.Ping;
+import no.nav.dokdistkanal.nais.selftest.AbstractDependencyCheck;
+import no.nav.dokdistkanal.nais.selftest.ApplicationNotReadyException;
+import no.nav.dokdistkanal.nais.selftest.DependencyType;
+import no.nav.dokdistkanal.nais.selftest.Importance;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -15,19 +14,20 @@ import org.springframework.web.client.RestTemplate;
 import javax.inject.Inject;
 
 @Component
-public class DokumenttypeInfoV3Check extends AbstractSelftest {
+public class DokumenttypeInfoV4Check extends AbstractDependencyCheck {
 
+	private static final String DOKUMENTTYPEINFO_V4 = "DokumenttypeInfo_v3";
 	private final RestTemplate restTemplate;
 
 	@Inject
-	public DokumenttypeInfoV3Check(RestTemplateBuilder restTemplateBuilder,
+	public DokumenttypeInfoV4Check(RestTemplateBuilder restTemplateBuilder,
 								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 								   ServiceuserAlias serviceuserAlias) {
-		super(Ping.Type.Rest,
-				DIGITALKONTAKTINFORMASJONV1,
+		super(DependencyType.REST,
+				DOKUMENTTYPEINFO_V4,
 				dokumenttypeInfoV4Alias.getUrl(),
-				dokumenttypeInfoV4Alias.getDescription() == null ? DIGITALKONTAKTINFORMASJONV1 : dokumenttypeInfoV4Alias.getDescription());
+				Importance.CRITICAL);
 		this.restTemplate = restTemplateBuilder.requestFactory(requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
@@ -41,7 +41,7 @@ public class DokumenttypeInfoV3Check extends AbstractSelftest {
 		try {
 			restTemplate.getForEntity("/ping", String.class);
 		} catch (Exception e) {
-			throw new ApplicationNotReadyException("Could not ping "+ DIGITALKONTAKTINFORMASJONV1, e);
+			throw new ApplicationNotReadyException(String.format("%s ping failed. errorMessage=%s", DOKUMENTTYPEINFO_V4, getErrorMessage(e)), e);
 		}
 	}
 
