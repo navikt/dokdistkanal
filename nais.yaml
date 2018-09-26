@@ -13,7 +13,8 @@ healthcheck:
     path: /isReady
     initialDelay: 30
     timeout: 3
-redis: true
+redis:
+  enabled: true
 prometheus:
   enabled: true
   path: /prometheus

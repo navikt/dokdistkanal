@@ -40,8 +40,8 @@ public class CacheConfig extends CachingConfigurerSupport {
 	public static final Long HENT_PERSON_CACHE_EXPIRATION_SECONDS = TimeUnit.DAYS.toSeconds(2);
 	public static final Long STS_CACHE_EXPIRATION_SECONDS = TimeUnit.MINUTES.toSeconds(50);
 
-	@Value("${app.name}")
-	private String appName;
+	@Value("${REDIS_HOST:rfs-dokdistkanal}")
+	private String redisHost;
 
 	private final CustomRedisSerializer customRedisSerializer = new CustomRedisSerializer();
 
@@ -74,19 +74,19 @@ public class CacheConfig extends CachingConfigurerSupport {
 	@Bean
 	public LettuceConnectionFactory lettuceConnectionFactory(LettucePool lettucePool) {
 		LettuceConnectionFactory factory = new LettuceConnectionFactory(lettucePool);
-		factory.setShareNativeConnection(false);
+		factory.setShareNativeConnection(true);
 		return factory;
 	}
 
 	@Bean
 	public LettucePool lettucePool() {
 		CustomLettucePool lettucePool = new CustomLettucePool(new RedisSentinelConfiguration()
-				.master(MASTER_NAME).sentinel(new RedisNode("rfs-" + appName, 26379)));
+				.master(MASTER_NAME).sentinel(new RedisNode(redisHost, 26379)));
 		lettucePool.setClientResources(DefaultClientResources.builder()
-				.reconnectDelay(Delay.constant(100, TimeUnit.MILLISECONDS))
+				.reconnectDelay(Delay.constant(400, TimeUnit.MILLISECONDS))
 				.build());
 		lettucePool.setPoolConfig(poolConfig());
-		lettucePool.setTimeout(100);
+		lettucePool.setTimeout(400);
 		lettucePool.afterPropertiesSet();
 		return lettucePool;
 	}
@@ -98,8 +98,8 @@ public class CacheConfig extends CachingConfigurerSupport {
 		genericObjectPoolConfig.setTestOnCreate(false);
 		genericObjectPoolConfig.setTestWhileIdle(false);
 		genericObjectPoolConfig.setTestOnBorrow(false);
-		genericObjectPoolConfig.setMaxTotal(128);
-		genericObjectPoolConfig.setMaxIdle(128);
+		genericObjectPoolConfig.setMaxTotal(512);
+		genericObjectPoolConfig.setMaxIdle(512);
 		genericObjectPoolConfig.setMinIdle(0);
 		genericObjectPoolConfig.setTimeBetweenEvictionRunsMillis(3000);
 		genericObjectPoolConfig.setMinEvictableIdleTimeMillis(6000);
