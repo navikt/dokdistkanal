@@ -36,8 +36,8 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig extends CachingConfigurerSupport {
 
 	private static final String MASTER_NAME = "mymaster";
-	public static final Long DEFAULT_CACHE_EXPIRATION_SECONDS = TimeUnit.DAYS.toSeconds(2);
-	public static final Long HENT_PERSON_CACHE_EXPIRATION_SECONDS = TimeUnit.DAYS.toSeconds(2);
+	public static final Long DEFAULT_CACHE_EXPIRATION_SECONDS = TimeUnit.MINUTES.toSeconds(60);
+	public static final Long HENT_PERSON_CACHE_EXPIRATION_SECONDS = TimeUnit.MINUTES.toSeconds(60);
 	public static final Long STS_CACHE_EXPIRATION_SECONDS = TimeUnit.MINUTES.toSeconds(50);
 
 	@Value("${REDIS_HOST:rfs-dokdistkanal}")
