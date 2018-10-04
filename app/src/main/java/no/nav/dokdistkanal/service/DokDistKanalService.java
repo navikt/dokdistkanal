@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal.service;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
@@ -68,6 +69,9 @@ public class DokDistKanalService {
 		}
 		if (LOKAL_PRINT.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
 			return logAndReturn(LOKAL_PRINT, "Predefinert distribusjonskanal er Lokal Print");
+		}
+		if (INGEN_DISTRIBUSJON.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
+			return logAndReturn(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon");
 		}
 		if (mottakerId.length() != 11) {
 			//Ikke personnnr

@@ -84,6 +84,19 @@ public class DokDistKanalServiceTest {
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.LOKAL_PRINT);
 	}
 
+	@Test
+	public void shouldSetKanalIngenDistribusjonNaarIngenDistribusjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
+
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.INGEN_DISTRIBUSJON.toString(), Boolean.TRUE);
+		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
+		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR);
+		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.INGEN_DISTRIBUSJON);
+		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til INGEN_DISTRIBUSJON: Predefinert distribusjonskanal er Ingen Distribusjon"));
+		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
+		LogbackCapturingAppender.Factory.cleanUp();
+	}
+
 
 	@Test
 	public void shouldSetKanalPrintNaarIngenPerson() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
