@@ -5,6 +5,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJO
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
 import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
@@ -18,6 +19,7 @@ import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
+import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
@@ -58,8 +60,8 @@ public class DokDistKanalService {
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 	}
 
-	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		validateInput(dokumentTypeId, mottakerId);
+	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		validateInput(dokumentTypeId, mottakerId, mottakerType, brukerId);
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
@@ -73,9 +75,9 @@ public class DokDistKanalService {
 		if (INGEN_DISTRIBUSJON.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
 			return logAndReturn(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon");
 		}
-		if (mottakerId.length() != 11) {
-			//Ikke personnnr
-			return logAndReturn(PRINT, "Mottaker er ikke en person");
+
+		if (!PERSON.equals(mottakerType)) {
+			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", mottakerType.name()));
 		} else {
 			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, getConsumerId());
 			requestCounter.labels(HENT_PERSON, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
@@ -121,6 +123,10 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}
 
+			if (!mottakerId.equals(brukerId)) {
+				return logAndReturn(PRINT, "Bruker og mottaker er forskjellige");
+			}
+
 			if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {
 				return logAndReturn(DITT_NAV, "Bruker har logget på med nivaa4 de siste 18 mnd");
 			}
@@ -135,9 +141,9 @@ public class DokDistKanalService {
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 
-	private void validateInput(final String dokumentTypeId, final String mottakerId) throws DokDistKanalFunctionalException {
-		if (StringUtils.isEmpty(dokumentTypeId) || StringUtils.isEmpty(mottakerId)) {
-			throw new DokDistKanalFunctionalException("dokumentTypeId og mottakerId må ha verdi");
+	private void validateInput(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId) throws DokDistKanalFunctionalException {
+		if (StringUtils.isEmpty(dokumentTypeId) || StringUtils.isEmpty(mottakerId) || mottakerType == null || StringUtils.isEmpty(brukerId)) {
+			throw new DokDistKanalFunctionalException("dokumentTypeId, mottakerId, mottakerType og brukerId må ha verdi");
 		}
 	}
 

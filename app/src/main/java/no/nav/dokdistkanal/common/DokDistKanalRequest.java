@@ -12,4 +12,6 @@ import lombok.NoArgsConstructor;
 public class DokDistKanalRequest {
 	private String mottakerId;
 	private String dokumentTypeId;
+	private MottakerTypeCode mottakerType;
+	private String brukerId;
 }
