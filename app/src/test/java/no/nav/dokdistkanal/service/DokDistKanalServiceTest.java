@@ -106,8 +106,6 @@ public class DokDistKanalServiceTest {
 
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, BRUKERID, MottakerTypeCode.ORGANISASJON, BRUKERID);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
@@ -122,8 +120,6 @@ public class DokDistKanalServiceTest {
 
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(18)).build();
-		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(DOKUMENTTYPEID, FNR, MottakerTypeCode.SAMHANDLER_HPR, FNR);
 		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
@@ -234,7 +230,7 @@ public class DokDistKanalServiceTest {
 	}
 
 	@Test
-	public void shouldSetKanalSDPNaarMottakerIdIkkeErBrukerId() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public void shouldSetKanalPrintNaarMottakerIdIkkeErBrukerId() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
 
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
