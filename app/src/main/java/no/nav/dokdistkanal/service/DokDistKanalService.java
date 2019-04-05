@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.service;
 
+import static java.lang.String.format;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
@@ -142,8 +143,15 @@ public class DokDistKanalService {
 	}
 
 	private void validateInput(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId) throws DokDistKanalFunctionalException {
-		if (StringUtils.isEmpty(dokumentTypeId) || StringUtils.isEmpty(mottakerId) || mottakerType == null || StringUtils.isEmpty(brukerId)) {
-			throw new DokDistKanalFunctionalException("dokumentTypeId, mottakerId, mottakerType og brukerId må ha verdi");
+		assertNotNullOrEmpty("dokumentTypeId", dokumentTypeId);
+		assertNotNullOrEmpty("mottakerId", mottakerId);
+		assertNotNullOrEmpty("mottakerType", mottakerType == null ? null : mottakerType.name());
+		assertNotNullOrEmpty("brukerId", brukerId);
+	}
+
+	public static void assertNotNullOrEmpty(String fieldName, String value) throws DokDistKanalFunctionalException {
+		if (StringUtils.isEmpty(value)) {
+			throw new DokDistKanalFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 
