@@ -61,8 +61,8 @@ public class DokDistKanalService {
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 	}
 
-	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		validateInput(dokumentTypeId, mottakerId, mottakerType, brukerId);
+	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId, final Boolean erArkivert) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		validateInput(dokumentTypeId, mottakerId, mottakerType, brukerId, erArkivert);
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
 		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
@@ -128,6 +128,10 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Bruker og mottaker er forskjellige");
 			}
 
+			if (!erArkivert) {
+				return logAndReturn(PRINT, "Dokumentet er ikke arkivert");
+			}
+
 			if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {
 				return logAndReturn(DITT_NAV, "Bruker har logget på med nivaa4 de siste 18 mnd");
 			}
@@ -142,16 +146,23 @@ public class DokDistKanalService {
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 
-	private void validateInput(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId) throws DokDistKanalFunctionalException {
+	private void validateInput(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId, final Boolean erArkivert) throws DokDistKanalFunctionalException {
 		assertNotNullOrEmpty("dokumentTypeId", dokumentTypeId);
 		assertNotNullOrEmpty("mottakerId", mottakerId);
 		assertNotNullOrEmpty("mottakerType", mottakerType == null ? null : mottakerType.name());
 		assertNotNullOrEmpty("brukerId", brukerId);
+		assertNotNull("erArkivert", erArkivert);
 	}
 
-	public static void assertNotNullOrEmpty(String fieldName, String value) throws DokDistKanalFunctionalException {
+	private static void assertNotNullOrEmpty(String fieldName, String value) throws DokDistKanalFunctionalException {
 		if (StringUtils.isEmpty(value)) {
 			throw new DokDistKanalFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
+		}
+	}
+
+	private static void assertNotNull(String fieldName, Boolean value) throws DokDistKanalFunctionalException {
+		if (value == null) {
+			throw new DokDistKanalFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 

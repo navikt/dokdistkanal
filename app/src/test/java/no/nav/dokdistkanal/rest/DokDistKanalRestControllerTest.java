@@ -21,6 +21,7 @@ public class DokDistKanalRestControllerTest {
 	private final static String FNR = "***gammelt_fnr***";
 	private final static String DOKUMENTTYPEID = "DokumentType";
 	private final static MottakerTypeCode MOTTAKERTYPE_PERSON = MottakerTypeCode.PERSON;
+	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;
 
 	private DokDistKanalRequest request;
 	DokDistKanalService dokDistKanalService = mock(DokDistKanalService.class);
@@ -32,9 +33,9 @@ public class DokDistKanalRestControllerTest {
 		DokDistKanalResponse response = DokDistKanalResponse.builder()
 				.distribusjonsKanal(DistribusjonKanalCode.DITT_NAV)
 				.build();
-		when(dokDistKanalService.velgKanal(DOKUMENTTYPEID, FNR, MOTTAKERTYPE_PERSON, FNR)).thenReturn(response);
+		when(dokDistKanalService.velgKanal(DOKUMENTTYPEID, FNR, MOTTAKERTYPE_PERSON, FNR, ER_ARKIVERT_TRUE)).thenReturn(response);
 		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, null);
 		assertEquals(DistribusjonKanalCode.DITT_NAV, actualResponse.getDistribusjonsKanal());
-		Mockito.verify(dokDistKanalService, Mockito.times(1)).velgKanal(anyString(), anyString(), any(MottakerTypeCode.class), anyString());
+		Mockito.verify(dokDistKanalService, Mockito.times(1)).velgKanal(anyString(), anyString(), any(MottakerTypeCode.class), anyString(), ER_ARKIVERT_TRUE);
 	}
 }

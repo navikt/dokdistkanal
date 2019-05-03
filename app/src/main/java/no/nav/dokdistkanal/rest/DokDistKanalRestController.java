@@ -54,7 +54,7 @@ public class DokDistKanalRestController {
 			MDC.put(CALL_ID, callId);
 			requestCounter.labels(LABEL_DOKDIST, PrometheusLabels.REST, getConsumerId(), RECEIVED)
 					.inc();
-			DokDistKanalResponse response = dokDistKanalService.velgKanal(request.getDokumentTypeId(), request.getMottakerId(), request.getMottakerType(), request.getBrukerId());
+			DokDistKanalResponse response = dokDistKanalService.velgKanal(request.getDokumentTypeId(), request.getMottakerId(), request.getMottakerType(), request.getBrukerId(), request.getErArkivert());
 			requestCounter.labels(LABEL_DOKDIST, PrometheusLabels.REST, getConsumerId(), PROCESSED_OK).inc();
 			return response;
 		} catch (Exception e) {
