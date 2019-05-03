@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,14 +29,21 @@ public class DokDistKanalRestControllerTest {
 	DokDistKanalRestController dokDistKanalRestController = new DokDistKanalRestController(dokDistKanalService);
 
 	@Test
-	public void bestemKanalOK() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(FNR).mottakerType(MOTTAKERTYPE_PERSON).brukerId(FNR).build();
+	public void stabestemKanalOK() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		request = DokDistKanalRequest.builder()
+				.dokumentTypeId(DOKUMENTTYPEID)
+				.mottakerId(FNR)
+				.mottakerType(MOTTAKERTYPE_PERSON)
+				.brukerId(FNR)
+				.erArkivert(ER_ARKIVERT_TRUE)
+				.build();
 		DokDistKanalResponse response = DokDistKanalResponse.builder()
 				.distribusjonsKanal(DistribusjonKanalCode.DITT_NAV)
 				.build();
 		when(dokDistKanalService.velgKanal(DOKUMENTTYPEID, FNR, MOTTAKERTYPE_PERSON, FNR, ER_ARKIVERT_TRUE)).thenReturn(response);
 		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, null);
 		assertEquals(DistribusjonKanalCode.DITT_NAV, actualResponse.getDistribusjonsKanal());
-		Mockito.verify(dokDistKanalService, Mockito.times(1)).velgKanal(anyString(), anyString(), any(MottakerTypeCode.class), anyString(), ER_ARKIVERT_TRUE);
+		Mockito.verify(dokDistKanalService, Mockito.times(1))
+				.velgKanal(anyString(), anyString(), any(MottakerTypeCode.class), anyString(), anyBoolean());
 	}
 }
