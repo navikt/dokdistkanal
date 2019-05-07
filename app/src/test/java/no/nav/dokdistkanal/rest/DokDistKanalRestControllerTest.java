@@ -40,10 +40,10 @@ public class DokDistKanalRestControllerTest {
 		DokDistKanalResponse response = DokDistKanalResponse.builder()
 				.distribusjonsKanal(DistribusjonKanalCode.DITT_NAV)
 				.build();
-		when(dokDistKanalService.velgKanal(DOKUMENTTYPEID, FNR, MOTTAKERTYPE_PERSON, FNR, ER_ARKIVERT_TRUE)).thenReturn(response);
+		when(dokDistKanalService.velgKanal(request)).thenReturn(response);
 		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, null);
 		assertEquals(DistribusjonKanalCode.DITT_NAV, actualResponse.getDistribusjonsKanal());
 		Mockito.verify(dokDistKanalService, Mockito.times(1))
-				.velgKanal(anyString(), anyString(), any(MottakerTypeCode.class), anyString(), anyBoolean());
+				.velgKanal(request);
 	}
 }

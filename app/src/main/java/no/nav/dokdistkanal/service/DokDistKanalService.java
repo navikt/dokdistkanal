@@ -19,8 +19,8 @@ import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
+import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
-import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
@@ -61,10 +61,10 @@ public class DokDistKanalService {
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 	}
 
-	public DokDistKanalResponse velgKanal(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId, final Boolean erArkivert) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		validateInput(dokumentTypeId, mottakerId, mottakerType, brukerId, erArkivert);
+	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		validateInput(dokDistKanalRequest);
 
-		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokumentTypeId);
+		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokDistKanalRequest.getDokumentTypeId());
 		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
@@ -77,10 +77,10 @@ public class DokDistKanalService {
 			return logAndReturn(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon");
 		}
 
-		if (!PERSON.equals(mottakerType)) {
-			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", mottakerType.name()));
+		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
+			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()));
 		} else {
-			PersonV3To personTo = personV3Consumer.hentPerson(mottakerId, getConsumerId());
+			PersonV3To personTo = personV3Consumer.hentPerson(dokDistKanalRequest.getMottakerId(), getConsumerId());
 			requestCounter.labels(HENT_PERSON, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
 			if (personTo == null) {
@@ -99,7 +99,8 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Personen må være minst 18 år gammel");
 			}
 
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(mottakerId);
+			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(dokDistKanalRequest
+					.getMottakerId());
 			requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon");
@@ -118,17 +119,17 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme");
 			}
 
-			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(mottakerId);
+			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(dokDistKanalRequest.getMottakerId());
 			requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 			if (sikkerhetsnivaaTo == null) {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}
 
-			if (!mottakerId.equals(brukerId)) {
+			if (!dokDistKanalRequest.getMottakerId().equals(dokDistKanalRequest.getBrukerId())) {
 				return logAndReturn(PRINT, "Bruker og mottaker er forskjellige");
 			}
 
-			if (!erArkivert) {
+			if (!dokDistKanalRequest.getErArkivert()) {
 				return logAndReturn(PRINT, "Dokumentet er ikke arkivert");
 			}
 
@@ -146,12 +147,13 @@ public class DokDistKanalService {
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 
-	private void validateInput(final String dokumentTypeId, final String mottakerId, final MottakerTypeCode mottakerType, final String brukerId, final Boolean erArkivert) throws DokDistKanalFunctionalException {
-		assertNotNullOrEmpty("dokumentTypeId", dokumentTypeId);
-		assertNotNullOrEmpty("mottakerId", mottakerId);
-		assertNotNullOrEmpty("mottakerType", mottakerType == null ? null : mottakerType.name());
-		assertNotNullOrEmpty("brukerId", brukerId);
-		assertNotNull("erArkivert", erArkivert);
+	private void validateInput(DokDistKanalRequest dokDistKanalRequest) throws DokDistKanalFunctionalException {
+		assertNotNullOrEmpty("dokumentTypeId", dokDistKanalRequest.getDokumentTypeId());
+		assertNotNullOrEmpty("mottakerId", dokDistKanalRequest.getMottakerId());
+		assertNotNullOrEmpty("mottakerType", dokDistKanalRequest.getMottakerType() == null ?
+				null : dokDistKanalRequest.getMottakerType().name());
+		assertNotNullOrEmpty("brukerId", dokDistKanalRequest.getBrukerId());
+		assertNotNull("erArkivert", dokDistKanalRequest.getErArkivert());
 	}
 
 	private static void assertNotNullOrEmpty(String fieldName, String value) throws DokDistKanalFunctionalException {
