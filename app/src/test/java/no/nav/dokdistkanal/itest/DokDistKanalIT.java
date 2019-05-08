@@ -26,6 +26,7 @@ public class DokDistKanalIT extends AbstractIT {
 	private static final String MOTTAKERID = "***gammelt_fnr***";
 	private static final String ORGMOTTAKERID = "123456789";
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
+	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;
 
 	@Before
 	public void runBefore() {
@@ -58,8 +59,9 @@ public class DokDistKanalIT extends AbstractIT {
 	 * Komplertterer fullt brevdatasett der mottaker er person
 	 */
 	@Test
-	public void shouldGetDistribusjonskanal() throws Exception {
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+	public void shouldGetDistribusjonskanal() {
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
 	}
@@ -68,8 +70,10 @@ public class DokDistKanalIT extends AbstractIT {
 	 * Komplertterer fullt brevdatasett der mottaker er organisasjon
 	 */
 	@Test
-	public void shouldGetDistribusjonskanalPrintForOrganisasjon() throws Exception {
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(ORGMOTTAKERID).mottakerType(MottakerTypeCode.ORGANISASJON).brukerId(ORGMOTTAKERID).build();
+	public void shouldGetDistribusjonskanalPrintForOrganisasjon() {
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().mottakerId(ORGMOTTAKERID)
+				.mottakerType(MottakerTypeCode.ORGANISASJON).brukerId(ORGMOTTAKERID).build();
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
@@ -78,19 +82,24 @@ public class DokDistKanalIT extends AbstractIT {
 	 * Komplertterer fullt brevdatasett der mottaker er samhandler
 	 */
 	@Test
-	public void shouldGetDistribusjonskanalPrintForSamhandler() throws Exception {
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(SAMHANDLERMOTTAKERID).mottakerType(MottakerTypeCode.SAMHANDLER_HPR).brukerId(SAMHANDLERMOTTAKERID).build();
+	public void shouldGetDistribusjonskanalPrintForSamhandler() {
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
+				.mottakerId(SAMHANDLERMOTTAKERID)
+				.mottakerType(MottakerTypeCode.SAMHANDLER_HPR)
+				.brukerId(SAMHANDLERMOTTAKERID)
+				.build();
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
-	public void shouldThrowWhenPersonV3FailsSecurityErrorNoAccess() throws Exception {
+	public void shouldThrowWhenPersonV3FailsSecurityErrorNoAccess() {
 		stubFor(post("/VIRKSOMHET_PERSON_V3")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/personV3/hentPerson-FunksjonellFeil-SikkerhetsBegrensning-responsebody.xml")));
 
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 		try {
 			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 			assertFalse("Test did not throw exception", Boolean.TRUE);
@@ -102,25 +111,27 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromPersonPlugin() throws Exception {
+	public void shouldThrowFunctionalExceptionFromPersonPlugin() {
 		//Stub web services:
 		stubFor(post("/VIRKSOMHET_PERSON_V3")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/personV3/hentPerson-FunksjonellFeil-PersonIkkeFunnet-responsebody.xml")));
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDokkatWhenNotFound() throws Exception {
+	public void shouldThrowFunctionalExceptionFromDokkatWhenNotFound() {
 		//Stub web services:
 		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Could not find dokumenttypeId: DOKTYPENOTFOUND in repository")));
 		try {
-			DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId("DOKTYPENOTFOUND").mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().dokumentTypeId("DOKTYPENOTFOUND").build();
+
 			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
@@ -131,47 +142,50 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenKontaktinformasjonNotFound() throws Exception {
+	public void shouldThrowFunctionalExceptionFromDKIWhenKontaktinformasjonNotFound() {
 		//Stub web services:
 		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/dki/ikke-funnet.xml")));
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenPersonNotFound() throws Exception {
+	public void shouldThrowFunctionalExceptionFromDKIWhenPersonNotFound() {
 		//Stub web services:
 		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/dki/person-ikke-funnet.xml")));
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 		restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() throws Exception {
+	public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() {
 		//Stub web services:
 		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withBodyFile("treg001/dki/sikkerhet.xml")));
 		try {
-			DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.UNAUTHORIZED);
+			assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Sikkerhetsbegrensning ved kall til DIFI"));
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalSecurityException"));
 		}
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromPaaloggingsnivaaUgyldigIdent() throws Exception {
+	public void shouldThrowFunctionalExceptionFromPaaloggingsnivaaUgyldigIdent() {
 		//Stub web services:
 		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
@@ -180,9 +194,18 @@ public class DokDistKanalIT extends AbstractIT {
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Personident ikke gydig")));
-		DokDistKanalRequest request = DokDistKanalRequest.builder().dokumentTypeId(DOKUMENTTYPEID).mottakerId(MOTTAKERID).mottakerType(MottakerTypeCode.PERSON).brukerId(MOTTAKERID).build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+	}
 
+	private DokDistKanalRequest.DokDistKanalRequestBuilder baseDokDistKanalRequestBuilder() {
+		return DokDistKanalRequest.builder()
+				.dokumentTypeId(DOKUMENTTYPEID)
+				.mottakerId(MOTTAKERID)
+				.mottakerType(MottakerTypeCode.PERSON)
+				.brukerId(MOTTAKERID)
+				.erArkivert(ER_ARKIVERT_TRUE);
 	}
 }
