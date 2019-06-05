@@ -5,7 +5,8 @@ public enum DistribusjonKanalCode {
 	SDP(UtsendingkanalCode.SDP),
 	DITT_NAV(UtsendingkanalCode.NAV_NO),
 	LOKAL_PRINT(UtsendingkanalCode.L),
-	INGEN_DISTRIBUSJON(UtsendingkanalCode.INGEN_DISTRIBUSJON);
+	INGEN_DISTRIBUSJON(UtsendingkanalCode.INGEN_DISTRIBUSJON),
+	TRYGDERETTEN(UtsendingkanalCode.TRYGDERETTEN);
 
 	private final UtsendingkanalCode utsendingskanalCode;
 

@@ -6,6 +6,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJO
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
@@ -75,6 +76,9 @@ public class DokDistKanalService {
 		}
 		if (INGEN_DISTRIBUSJON.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
 			return logAndReturn(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon");
+		}
+		if (TRYGDERETTEN.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
+			return logAndReturn(TRYGDERETTEN, "Predefinert distribusjonskanal er Trygderetten");
 		}
 
 		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
