@@ -102,6 +102,18 @@ public class DokDistKanalServiceTest {
 		LogbackCapturingAppender.Factory.cleanUp();
 	}
 
+	@Test
+	public void shouldSetKanalTrygderettenNaarPredefinertTrygderetten() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
+
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.TRYGDERETTEN.toString(), Boolean.TRUE);
+		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.TRYGDERETTEN);
+		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til TRYGDERETTEN: Predefinert distribusjonskanal er Trygderetten"));
+		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
+		LogbackCapturingAppender.Factory.cleanUp();
+	}
 
 	@Test
 	public void shouldSetKanalPrintNaarOrganisasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
