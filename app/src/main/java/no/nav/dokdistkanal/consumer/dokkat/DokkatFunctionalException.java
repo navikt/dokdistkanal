@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

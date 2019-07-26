@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.itest.config;
 
-import no.nav.dokdistkanal.config.sts.STSConfig;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.ws.security.trust.STSClient;
 import org.springframework.context.annotation.Bean;

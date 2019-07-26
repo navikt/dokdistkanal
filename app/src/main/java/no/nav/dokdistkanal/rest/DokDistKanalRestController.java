@@ -10,7 +10,6 @@ import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
 import static no.nav.dokdistkanal.rest.NavHeaders.CALL_ID;
 import static no.nav.dokdistkanal.rest.NavHeaders.NAV_CALLID;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import io.prometheus.client.Histogram;
