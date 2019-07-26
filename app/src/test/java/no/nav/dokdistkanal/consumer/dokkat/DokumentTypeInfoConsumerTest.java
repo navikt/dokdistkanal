@@ -77,7 +77,7 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=400) for dokumenttypeId");
-		expectedException.expect(DokDistKanalFunctionalException.class);
+		expectedException.expect(DokkatFunctionalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}
@@ -88,13 +88,13 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med statusCode=503");
-		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expect(DokkatTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}
 
 	@Test
-	public void shouldThrowTechnicalExceptionWhenUnauthorized() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
+	public void shouldThrowSecurityExceptionWhenUnauthorized() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
@@ -111,7 +111,7 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new RuntimeException());
 
 		expectedException.expectMessage("DokumentTypeInfoConsumer feilet med message");
-		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expect(DokkatTechnicalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
 	}

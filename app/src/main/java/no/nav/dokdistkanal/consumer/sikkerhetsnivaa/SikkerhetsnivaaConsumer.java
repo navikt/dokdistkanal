@@ -5,7 +5,7 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 
 public interface SikkerhetsnivaaConsumer {
-	SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws DokDistKanalFunctionalException, DokDistKanalSecurityException;
+	SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr);
 
 	/**
 	 * ping endpoint

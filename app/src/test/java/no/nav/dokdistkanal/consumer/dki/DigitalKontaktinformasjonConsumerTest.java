@@ -98,8 +98,6 @@ public class DigitalKontaktinformasjonConsumerTest {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
 				.thenThrow(new HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet("Finner ikke konraktinfo", new KontaktinformasjonIkkeFunnet()));
 
-//		expectedException.expect(DokDistKanalFunctionalException.class);
-//		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke kontaktinformasjon for person, message=Finner ikke konraktinfo");
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 		assertThat(digitalKontaktinformasjonTo, nullValue());
 	}
@@ -108,8 +106,6 @@ public class DigitalKontaktinformasjonConsumerTest {
 	public void shouldReturnNullWhenPersonIkkeFunnet() throws Exception {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
 				.thenThrow(new HentSikkerDigitalPostadressePersonIkkeFunnet("Finner ikke person", new PersonIkkeFunnet()));
-//		expectedException.expect(DokDistKanalFunctionalException.class);
-//		expectedException.expectMessage("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon fant ikke person, message=Finner ikke person");
 
 		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);
@@ -130,7 +126,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
 		when(digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(any(HentSikkerDigitalPostadresseRequest.class)))
 				.thenThrow(new RuntimeException("Runtime Exception"));
-		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expect(DkifTechnicalException.class);
 		expectedException.expectMessage("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. message=Runtime Exception");
 
 		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR);

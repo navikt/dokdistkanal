@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.consumer.dokkat;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
@@ -63,24 +63,24 @@ public class DokumentTypeInfoConsumer {
 
 	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
 
 		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
-			requestTimer = requestLatency.labels(LABEL_DOKDIST, DOKKAT, HENT_DOKKAT_INFO).startTimer();
+			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, DOKKAT, HENT_DOKKAT_INFO).startTimer();
 			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
 			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
 				throw new DokDistKanalSecurityException("DokumentTypeInfoConsumer feilet (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 			}
-			throw new DokDistKanalFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
+			throw new DokkatFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 		} catch (HttpServerErrorException e) {
-			throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);
+			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);
 		} catch (Exception e) {
-			throw new DokDistKanalTechnicalException("DokumentTypeInfoConsumer feilet med message=" + e.getMessage(), e);
+			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med message=" + e.getMessage(), e);
 		} finally {
 			requestTimer.observeDuration();
 		}

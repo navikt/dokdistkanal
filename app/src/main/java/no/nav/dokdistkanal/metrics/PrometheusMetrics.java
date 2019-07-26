@@ -4,10 +4,14 @@ import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_CONSUMER_ID;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_ERROR_TYPE;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_EVENT;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_EXCEPTION_NAME;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_FUNCTIONAL_EXCEPTION;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_PROCESS;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_PROCESS_CALLED;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_PROCESS_CODE;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_SECURITY_EXCEPTION;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_TECHNICAL_EXCEPTION;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_TYPE;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
 import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
@@ -60,5 +64,17 @@ public class PrometheusMetrics {
 			return "Ukjent";
 		}
 		return authentication.getName();
+	}
+
+	public static void incrementTechnicalException(Exception e) {
+		requestExceptionCounter.labels(BESTEM_DISTRIBUSJON_KANAL, LABEL_TECHNICAL_EXCEPTION, e.getClass().getSimpleName()).inc();
+	}
+
+	public static void incrementSecurityException(Exception e) {
+		requestExceptionCounter.labels(BESTEM_DISTRIBUSJON_KANAL, LABEL_SECURITY_EXCEPTION, e.getClass().getSimpleName()).inc();
+	}
+
+	public static void incrementFunctionalException(Exception e) {
+		requestExceptionCounter.labels(BESTEM_DISTRIBUSJON_KANAL, LABEL_FUNCTIONAL_EXCEPTION, e.getClass().getSimpleName()).inc();
 	}
 }

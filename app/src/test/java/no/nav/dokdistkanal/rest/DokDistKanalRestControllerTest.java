@@ -41,7 +41,7 @@ public class DokDistKanalRestControllerTest {
 				.distribusjonsKanal(DistribusjonKanalCode.DITT_NAV)
 				.build();
 		when(dokDistKanalService.velgKanal(request)).thenReturn(response);
-		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, null);
+		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, "callid", null);
 		assertEquals(DistribusjonKanalCode.DITT_NAV, actualResponse.getDistribusjonsKanal());
 		Mockito.verify(dokDistKanalService, Mockito.times(1))
 				.velgKanal(request);

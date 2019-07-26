@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.consumer.personv3;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.PERSONV3;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
@@ -51,7 +51,7 @@ public class PersonV3Consumer {
 
 	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-personV3'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) throws DokDistKanalTechnicalException, DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) {
 
 		requestCounter.labels(HENT_PERSON, CACHE_COUNTER, consumerId, CACHE_MISS).inc();
 
@@ -59,7 +59,7 @@ public class PersonV3Consumer {
 		HentPersonResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(LABEL_DOKDIST, PERSONV3, HENT_PERSON).startTimer();
+			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
 			return null;
@@ -67,8 +67,8 @@ public class PersonV3Consumer {
 			throw new DokDistKanalSecurityException("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning. ConsumerId=" + consumerId + ", message=" + hentPersonSikkerhetsbegrensning
 					.getMessage(), hentPersonSikkerhetsbegrensning);
 		} catch (Exception e) {
-			throw new DokDistKanalTechnicalException("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=" + consumerId + ", message=" + e
-					.getMessage());
+			throw new PersonV3TechnicalException("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=" + consumerId +
+					", message=" + e.getMessage(), e);
 		} finally {
 			requestTimer.observeDuration();
 		}

@@ -69,8 +69,6 @@ public class PersonV3ConsumerTest {
 	public void shouldReturnNullWhenPersonIkkeFunnet() throws Exception {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new HentPersonPersonIkkeFunnet("Fant ikke person", new PersonIkkeFunnet()));
 
-//		expectedException.expect(DokDistKanalFunctionalException.class);
-//		expectedException.expectMessage("PersonV3.hentPerson fant ikke person med angitt ident");
 		personV3Consumer.hentPerson(FNR, PRINCIPAL);
 		PersonV3To personV3To = personV3Consumer.hentPerson(FNR, PRINCIPAL);
 
@@ -89,7 +87,7 @@ public class PersonV3ConsumerTest {
 	@Test
 	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
 		when(personV3.hentPerson(any(HentPersonRequest.class))).thenThrow(new RuntimeException("Feil oppstått"));
-		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expect(PersonV3TechnicalException.class);
 		expectedException.expectMessage("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=SRVDOKPROD, message=Feil oppstått");
 
 		personV3Consumer.hentPerson(FNR, PRINCIPAL);

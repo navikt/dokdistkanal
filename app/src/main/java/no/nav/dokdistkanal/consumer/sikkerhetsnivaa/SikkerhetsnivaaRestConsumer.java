@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.SIKKERHETSNIVAAV1;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
@@ -61,11 +61,11 @@ public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 	@Override
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
-	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
-			requestTimer = requestLatency.labels(LABEL_DOKDIST, SIKKERHETSNIVAAV1, HENT_PAALOGGINGSNIVAA).startTimer();
+			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, SIKKERHETSNIVAAV1, HENT_PAALOGGINGSNIVAA).startTimer();
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
@@ -76,11 +76,11 @@ public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 				//Personen finnes ikke, returnerer false
 				return SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(false).personIdent(fnr).build();
 			}
-			throw new DokDistKanalFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+			throw new SikkerhetsnivaaFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 		} catch (HttpServerErrorException e) {
-			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
 		} catch (Exception e) {
-			throw new DokDistKanalTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
+			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
 		} finally {
 			requestTimer.observeDuration();
 		}

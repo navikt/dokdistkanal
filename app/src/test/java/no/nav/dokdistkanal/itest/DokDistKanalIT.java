@@ -137,7 +137,7 @@ public class DokDistKanalIT extends AbstractIT {
 		} catch (HttpStatusCodeException e) {
 			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokumentTypeInfoConsumer feilet. (HttpStatus=404) for dokumenttypeId:DOKTYPENOTFOUND"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalFunctionalException"));
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokkatFunctionalException"));
 		}
 	}
 

@@ -3,7 +3,7 @@ package no.nav.dokdistkanal.consumer.dki;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
@@ -53,7 +53,7 @@ public class DigitalKontaktinformasjonConsumer {
 
 	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator+'-dki'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) {
 
 		requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 
@@ -61,16 +61,16 @@ public class DigitalKontaktinformasjonConsumer {
 		HentSikkerDigitalPostadresseResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(LABEL_DOKDIST, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
+			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
-		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet|HentSikkerDigitalPostadressePersonIkkeFunnet  hentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet) {
+		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet | HentSikkerDigitalPostadressePersonIkkeFunnet e) {
 			return null;
-		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing hentSikkerDigitalPostadresseSikkerhetsbegrensing) {
-			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=" + hentSikkerDigitalPostadresseSikkerhetsbegrensing
-					.getMessage(), hentSikkerDigitalPostadresseSikkerhetsbegrensing);
+		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing e) {
+			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. " +
+					"message=" + e.getMessage(), e);
 		} catch (Exception e) {
-			throw new DokDistKanalTechnicalException("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. message=" + e
-					.getMessage());
+			throw new DkifTechnicalException("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. " +
+					"message=" + e.getMessage(), e);
 		} finally {
 			requestTimer.observeDuration();
 		}
@@ -105,10 +105,10 @@ public class DigitalKontaktinformasjonConsumer {
 		String epostadresse = null;
 
 		if (kontaktinformasjon != null) {
-			if(isEpostadresseValid(kontaktinformasjon.getEpostadresse())) {
+			if (isEpostadresseValid(kontaktinformasjon.getEpostadresse())) {
 				epostadresse = kontaktinformasjon.getEpostadresse().getValue();
 			}
-			if(isMobilnummerValid(kontaktinformasjon.getMobiltelefonnummer())) {
+			if (isMobilnummerValid(kontaktinformasjon.getMobiltelefonnummer())) {
 				mobiltelefonummer = kontaktinformasjon.getMobiltelefonnummer().getValue();
 			}
 		}
@@ -123,13 +123,13 @@ public class DigitalKontaktinformasjonConsumer {
 	}
 
 	private boolean isEpostadresseValid(Epostadresse epostadresse) {
-		if(epostadresse == null) {
+		if (epostadresse == null) {
 			return false;
-		} else if(epostadresse.getSistOppdatert() == null && epostadresse.getSistVerifisert() == null) {
+		} else if (epostadresse.getSistOppdatert() == null && epostadresse.getSistVerifisert() == null) {
 			return false;
-		} else if(epostadresse.getSistOppdatert() != null && isValidDate(epostadresse.getSistOppdatert())) {
+		} else if (epostadresse.getSistOppdatert() != null && isValidDate(epostadresse.getSistOppdatert())) {
 			return true;
-		} else if(epostadresse.getSistVerifisert() != null && isValidDate(epostadresse.getSistVerifisert())) {
+		} else if (epostadresse.getSistVerifisert() != null && isValidDate(epostadresse.getSistVerifisert())) {
 			return true;
 		} else {
 			log.info("Epostadresse sist oppdatert {}, sist verifisert {}", epostadresse.getSistOppdatert(), epostadresse.getSistVerifisert());
@@ -138,13 +138,13 @@ public class DigitalKontaktinformasjonConsumer {
 	}
 
 	private boolean isMobilnummerValid(Mobiltelefonnummer mobiltelefonnummer) {
-		if(mobiltelefonnummer == null) {
+		if (mobiltelefonnummer == null) {
 			return false;
-		} else if(mobiltelefonnummer.getSistOppdatert() == null && mobiltelefonnummer.getSistVerifisert() == null) {
+		} else if (mobiltelefonnummer.getSistOppdatert() == null && mobiltelefonnummer.getSistVerifisert() == null) {
 			return false;
-		} else if(mobiltelefonnummer.getSistOppdatert() != null && isValidDate(mobiltelefonnummer.getSistOppdatert())) {
+		} else if (mobiltelefonnummer.getSistOppdatert() != null && isValidDate(mobiltelefonnummer.getSistOppdatert())) {
 			return true;
-		} else if(mobiltelefonnummer.getSistVerifisert() != null && isValidDate(mobiltelefonnummer.getSistVerifisert())) {
+		} else if (mobiltelefonnummer.getSistVerifisert() != null && isValidDate(mobiltelefonnummer.getSistVerifisert())) {
 			return true;
 		} else {
 			log.info("Mobilnummer sist oppdatert {}, sist verifisert {}", mobiltelefonnummer.getSistOppdatert(), mobiltelefonnummer.getSistVerifisert());

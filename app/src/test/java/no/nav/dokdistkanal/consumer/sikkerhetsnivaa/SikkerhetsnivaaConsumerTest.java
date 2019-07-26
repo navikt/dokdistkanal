@@ -65,7 +65,7 @@ public class SikkerhetsnivaaConsumerTest {
 
 	@Test
 	public void shouldThrowFunctionalExceptionWhenHttpStatusBadRequest() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
-		expectedException.expect(DokDistKanalFunctionalException.class);
+		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=400)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
@@ -74,14 +74,14 @@ public class SikkerhetsnivaaConsumerTest {
 
 	@Test
 	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
-		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new RuntimeException());
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
 	@Test
-	public void shouldThrowTechnicalExceptionWhenHttpStatusForbidden() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
+	public void shouldThrowSecurityExceptionWhenHttpStatusForbidden() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=403)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
@@ -90,7 +90,7 @@ public class SikkerhetsnivaaConsumerTest {
 
 	@Test
 	public void shouldThrowTechnicalExceptionWhenHttpStatusInternalServerError() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
-		expectedException.expect(DokDistKanalTechnicalException.class);
+		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=500)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
