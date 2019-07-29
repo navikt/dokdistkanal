@@ -51,7 +51,7 @@ public class DokDistKanalRestController {
 	@PostMapping(value = BESTEM_KANAL_URI_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request,
 											@RequestHeader(value = NAV_CALLID, required = false) String navCallid,
-											@RequestHeader(value = CALL_ID, required = false) String dokCallId) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+											@RequestHeader(value = CALL_ID, required = false) String dokCallId) {
 		Histogram.Timer requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, "velgKanal", "velgKanal")
 				.startTimer();
 		try {
@@ -62,7 +62,8 @@ public class DokDistKanalRestController {
 			return response;
 		} catch (DokDistKanalFunctionalException e) {
 			incrementFunctionalException(e);
-			log.warn("Funksjonell feil med melding: {}", e.getMessage(), e);
+			// ingen stacktrace på funksjonelle feil
+			log.warn("Funksjonell feil med melding: {}", e.getMessage());
 			throw e;
 		} catch (DokDistKanalTechnicalException e) {
 			incrementTechnicalException(e);

@@ -29,7 +29,6 @@ import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +146,7 @@ public class DokDistKanalService {
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 
-	private void validateInput(DokDistKanalRequest dokDistKanalRequest) throws DokDistKanalFunctionalException {
+	private void validateInput(DokDistKanalRequest dokDistKanalRequest) {
 		assertNotNullOrEmpty("dokumentTypeId", dokDistKanalRequest.getDokumentTypeId());
 		assertNotNullOrEmpty("mottakerId", dokDistKanalRequest.getMottakerId());
 		assertNotNullOrEmpty("mottakerType", dokDistKanalRequest.getMottakerType() == null ?
@@ -156,13 +155,13 @@ public class DokDistKanalService {
 		assertNotNull("erArkivert", dokDistKanalRequest.getErArkivert());
 	}
 
-	private static void assertNotNullOrEmpty(String fieldName, String value) throws DokDistKanalFunctionalException {
+	private static void assertNotNullOrEmpty(String fieldName, String value) {
 		if (StringUtils.isEmpty(value)) {
 			throw new UgyldingInputException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 
-	private static void assertNotNull(String fieldName, Boolean value) throws DokDistKanalFunctionalException {
+	private static void assertNotNull(String fieldName, Boolean value) {
 		if (value == null) {
 			throw new UgyldingInputException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
 		}
