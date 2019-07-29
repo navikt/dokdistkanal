@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import javax.ws.rs.Produces;
 
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.

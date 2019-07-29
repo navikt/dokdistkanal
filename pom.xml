@@ -8,10 +8,6 @@
 	<version>1-SNAPSHOT</version>
 	<name>dokdistkanal</name>
 
-	<prerequisites>
-		<maven>3.3.9</maven>
-	</prerequisites>
-
 	<scm>
 		<connection>scm:git:http://stash.devillo.no/scm/boaf/dokdistkanal.git</connection>
 		<developerConnection>scm:git:http://stash.devillo.no/scm/boaf/dokdistkanal.git</developerConnection>
@@ -26,7 +22,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.11.RELEASE</version>
+		<version>1.5.21.RELEASE</version>
 	</parent>
 
 
@@ -45,7 +41,6 @@
 
 	<properties>
 		<additionalparam>-Xdoclint:none</additionalparam>
-		<spring.v>1.5.11.RELEASE</spring.v>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -244,7 +239,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>1.5.11.RELEASE</version>
+				<version>1.5.21.RELEASE</version>
 				<configuration>
 					<skip>false</skip>
 					<fork>true</fork>

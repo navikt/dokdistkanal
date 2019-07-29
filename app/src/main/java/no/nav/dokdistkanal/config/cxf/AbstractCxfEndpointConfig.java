@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import javax.xml.namespace.QName;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Abstract helper class for Cxf Endpoints

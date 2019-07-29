@@ -14,11 +14,10 @@ import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON
 import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestConsumer.HENT_PAALOGGINGSNIVAA;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
 import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_TOTAL;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.LABEL_DOKDIST;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -30,8 +29,6 @@ import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +40,8 @@ import java.time.LocalDate;
 /**
  * @author Ketill Fenne, Visma Consulting
  */
-@Slf4j
 @Service
 public class DokDistKanalService {
-
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
@@ -62,7 +57,7 @@ public class DokDistKanalService {
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 	}
 
-	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) {
 		validateInput(dokDistKanalRequest);
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokDistKanalRequest.getDokumentTypeId());
@@ -147,11 +142,11 @@ public class DokDistKanalService {
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode code, String reason) {
 		LOG.info("BestemKanal: Sender melding til " + code.name() + ": " + reason);
-		requestCounter.labels(LABEL_DOKDIST, "velgKanal", getConsumerId(), code.name()).inc();
+		requestCounter.labels(BESTEM_DISTRIBUSJON_KANAL, "velgKanal", getConsumerId(), code.name()).inc();
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 
-	private void validateInput(DokDistKanalRequest dokDistKanalRequest) throws DokDistKanalFunctionalException {
+	private void validateInput(DokDistKanalRequest dokDistKanalRequest) {
 		assertNotNullOrEmpty("dokumentTypeId", dokDistKanalRequest.getDokumentTypeId());
 		assertNotNullOrEmpty("mottakerId", dokDistKanalRequest.getMottakerId());
 		assertNotNullOrEmpty("mottakerType", dokDistKanalRequest.getMottakerType() == null ?
@@ -160,15 +155,15 @@ public class DokDistKanalService {
 		assertNotNull("erArkivert", dokDistKanalRequest.getErArkivert());
 	}
 
-	private static void assertNotNullOrEmpty(String fieldName, String value) throws DokDistKanalFunctionalException {
+	private static void assertNotNullOrEmpty(String fieldName, String value) {
 		if (StringUtils.isEmpty(value)) {
-			throw new DokDistKanalFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
+			throw new UgyldingInputException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 
-	private static void assertNotNull(String fieldName, Boolean value) throws DokDistKanalFunctionalException {
+	private static void assertNotNull(String fieldName, Boolean value) {
 		if (value == null) {
-			throw new DokDistKanalFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
+			throw new UgyldingInputException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 
