@@ -17,6 +17,7 @@ import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -37,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 @Slf4j
+@PropertySource("application.properties")
 public class CacheConfig extends CachingConfigurerSupport {
 
 	public static final Duration DEFAULT_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
