@@ -6,11 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DigitalKontaktinformasjonTo {
+public class DigitalKontaktinformasjonTo implements Serializable {
 	private String epostadresse;
 	private String mobiltelefonnummer;
 	private boolean reservasjon;

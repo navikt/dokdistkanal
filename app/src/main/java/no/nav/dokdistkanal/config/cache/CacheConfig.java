@@ -25,11 +25,9 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.Duration;
 import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Jarl Øystein Samseth, Visma Consulting
@@ -64,10 +62,9 @@ public class CacheConfig extends CachingConfigurerSupport {
 	}
 
 	private RedisCacheConfiguration generateConfigWithDuration(Duration duration) {
-		RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
-		config.disableCachingNullValues();
-		config.entryTtl(duration);
-		return config;
+		return RedisCacheConfiguration.defaultCacheConfig()
+				.disableCachingNullValues()
+				.entryTtl(duration);
 	}
 
 	@Bean
