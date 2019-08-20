@@ -43,10 +43,10 @@ public class CacheConfig extends CachingConfigurerSupport {
 	public static final Duration HENT_PERSON_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
 	public static final Duration STS_CACHE_EXPIRATION_TIME = Duration.ofMinutes(50);
 
-	@Value("${redis_host:dokdistkanal-redis}")
+	@Value("${redis.host:dokdistkanal-redis}")
 	private String redisHost;
 
-	@Value("${redis_port:6379}")
+	@Value("${redis.port:6379}")
 	private int redisPort;
 
 	@Bean
