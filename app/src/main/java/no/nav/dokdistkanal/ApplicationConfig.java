@@ -1,8 +1,5 @@
 package no.nav.dokdistkanal;
 
-import io.prometheus.client.spring.boot.EnablePrometheusEndpoint;
-import io.prometheus.client.spring.boot.EnableSpringBootMetricsCollector;
-import io.prometheus.client.spring.web.EnablePrometheusTiming;
 import no.nav.dokdistkanal.config.RestConsumerConfig;
 import no.nav.dokdistkanal.config.cxf.DigitalKontaktinformasjonEndpointConfig;
 import no.nav.dokdistkanal.config.cxf.PersonV3EndpointConfig;
@@ -16,8 +13,10 @@ import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestConsumer;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
 
 @EnableConfigurationProperties({
@@ -37,9 +36,8 @@ import org.springframework.context.annotation.Import;
 		DokumentTypeInfoConsumer.class,
 		RestConsumerConfig.class
 })
-@EnablePrometheusEndpoint
-@EnablePrometheusTiming
-@EnableSpringBootMetricsCollector
 @Configuration
+@EnableAspectJAutoProxy
+@EnableAutoConfiguration
 public class ApplicationConfig {
 }

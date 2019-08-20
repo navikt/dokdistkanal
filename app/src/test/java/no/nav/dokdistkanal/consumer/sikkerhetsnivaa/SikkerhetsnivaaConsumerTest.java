@@ -64,7 +64,7 @@ public class SikkerhetsnivaaConsumerTest {
 	@Test
 	public void shouldThrowFunctionalExceptionWhenHttpStatusBadRequest() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=400)");
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=400 BAD_REQUEST)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
@@ -81,7 +81,7 @@ public class SikkerhetsnivaaConsumerTest {
 	@Test
 	public void shouldThrowSecurityExceptionWhenHttpStatusForbidden() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(DokDistKanalSecurityException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=403)");
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=403 FORBIDDEN)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
@@ -89,7 +89,7 @@ public class SikkerhetsnivaaConsumerTest {
 	@Test
 	public void shouldThrowTechnicalExceptionWhenHttpStatusInternalServerError() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
-		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=500)");
+		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=500 INTERNAL_SERVER_ERROR)");
 		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}

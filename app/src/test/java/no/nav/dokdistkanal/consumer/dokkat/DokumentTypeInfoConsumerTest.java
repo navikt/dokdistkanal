@@ -72,7 +72,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
-		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=400) for dokumenttypeId");
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=400 BAD_REQUEST) for dokumenttypeId");
 		expectedException.expect(DokkatFunctionalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
@@ -94,7 +94,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-		expectedException.expectMessage("DokumentTypeInfoConsumer feilet (HttpStatus=401) for dokumenttypeId:" + DOKTYPE);
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet (HttpStatus=401 UNAUTHORIZED) for dokumenttypeId:" + DOKTYPE);
 		expectedException.expect(DokDistKanalSecurityException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);

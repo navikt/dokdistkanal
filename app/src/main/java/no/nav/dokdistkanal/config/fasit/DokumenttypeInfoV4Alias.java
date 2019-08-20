@@ -3,7 +3,7 @@ package no.nav.dokdistkanal.config.fasit;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -15,7 +15,7 @@ import javax.validation.constraints.Min;
 @Getter
 @Setter
 @ToString
-@ConfigurationProperties("DOKUMENTTYPEINFO_V4")
+@ConfigurationProperties("dokumenttypeinfo-v4")
 @Validated
 public class DokumenttypeInfoV4Alias {
 	@NotEmpty

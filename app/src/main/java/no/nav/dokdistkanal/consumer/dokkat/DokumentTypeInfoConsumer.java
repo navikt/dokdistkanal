@@ -29,6 +29,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,11 +50,11 @@ public class DokumentTypeInfoConsumer {
 									DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 									ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
-				.requestFactory(requestFactory)
+				.requestFactory(() -> requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
-				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
-				.setConnectTimeout(dokumenttypeInfoV4Alias.getConnecttimeoutms())
-				.setReadTimeout(dokumenttypeInfoV4Alias.getReadtimeoutms())
+				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
+				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))
+				.setReadTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getReadtimeoutms()))
 				.build();
 	}
 

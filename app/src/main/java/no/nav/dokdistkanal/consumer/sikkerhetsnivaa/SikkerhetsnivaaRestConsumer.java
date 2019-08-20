@@ -31,6 +31,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
+import java.time.Duration;
 
 @Slf4j
 public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
@@ -49,11 +50,11 @@ public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 									   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
 									   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
-				.requestFactory(requestFactory)
+				.requestFactory(() -> requestFactory)
 				.rootUri(sikkerhetsnivaaV1Alias.getUrl())
-				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
-				.setConnectTimeout(sikkerhetsnivaaV1Alias.getConnecttimeoutms())
-				.setReadTimeout(sikkerhetsnivaaV1Alias.getReadtimeoutms())
+				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
+				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))
+				.setReadTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getReadtimeoutms()))
 				.build();
 	}
 
