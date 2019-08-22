@@ -1,7 +1,5 @@
 package no.nav.dokdistkanal.nais.checks;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
-
 import no.nav.dokdistkanal.config.fasit.DigitalKontaktinfoV1Alias;
 import no.nav.dokdistkanal.nais.selftest.AbstractDependencyCheck;
 import no.nav.dokdistkanal.nais.selftest.ApplicationNotReadyException;
@@ -15,12 +13,13 @@ import javax.inject.Inject;
 @Component
 public class DigitalKontaktinfoV1Check extends AbstractDependencyCheck {
 	private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+	private static final String DIGITAL_KONTAKT_INFORMASJON_V1_NAME = "digitalKontaktInformasjonV1";
 
 	@Inject
 	public DigitalKontaktinfoV1Check(DigitalKontaktinformasjonV1 personV3,
 									 DigitalKontaktinfoV1Alias digitalKontaktinfoV1Alias) {
 		super(DependencyType.SOAP,
-				DIGITALKONTAKTINFORMASJONV1,
+				DIGITAL_KONTAKT_INFORMASJON_V1_NAME,
 				digitalKontaktinfoV1Alias.getEndpointurl(),
 				Importance.WARNING);
 		this.digitalKontaktinformasjonV1 = personV3;
@@ -31,7 +30,7 @@ public class DigitalKontaktinfoV1Check extends AbstractDependencyCheck {
 		try {
 			digitalKontaktinformasjonV1.ping();
 		} catch (Exception e) {
-			throw new ApplicationNotReadyException(String.format("%s ping failed. errorMessage=%s", DIGITALKONTAKTINFORMASJONV1, getErrorMessage(e)), e);
+			throw new ApplicationNotReadyException(String.format("%s ping failed. errorMessage=%s", DIGITAL_KONTAKT_INFORMASJON_V1_NAME, getErrorMessage(e)), e);
 		}
 	}
 }

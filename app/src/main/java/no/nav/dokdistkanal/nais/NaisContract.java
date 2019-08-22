@@ -1,7 +1,7 @@
 package no.nav.dokdistkanal.nais;
 
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.isReady;
-
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.reactivex.Flowable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -36,15 +37,19 @@ public class NaisContract {
 	private static final String APPLICATION_ALIVE = "Application is alive!";
 	private static final String APPLICATION_READY = "Application is ready for traffic!";
 	private static final String APPLICATION_NOT_READY = "Application is not ready for traffic :-(";
+	private static AtomicInteger isReady = new AtomicInteger(1);
 
 	private final String appName;
 	private final String version;
 	private final List<AbstractDependencyCheck> dependencyCheckList;
 
 	@Inject
-	public NaisContract(List<AbstractDependencyCheck> dependencyCheckList,
+	public NaisContract(MeterRegistry meterRegistry,
+						List<AbstractDependencyCheck> dependencyCheckList,
 						@Value("${APP_NAME:dokdistkanal}") String appName,
 						@Value("${APP_VERSION:0}") String version) {
+		Gauge.builder("dok_app_is_ready", isReady, AtomicInteger::get).register(meterRegistry);
+
 		this.dependencyCheckList = dependencyCheckList;
 		this.appName = appName;
 		this.version = version;
@@ -57,7 +62,7 @@ public class NaisContract {
 
 	@ResponseBody
 	@RequestMapping(value = "/isReady", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity isReady() throws Exception {
+	public ResponseEntity isReady() {
 		List<DependencyCheckResult> results = new ArrayList<>();
 
 		checkCriticalDependencies(results);
@@ -65,17 +70,17 @@ public class NaisContract {
 		if (isAnyVitalDependencyUnhealthy(results.stream()
 				.map(DependencyCheckResult::getResult)
 				.collect(Collectors.toList()))) {
-			isReady.dec();
+			isReady.set(0);
 			return new ResponseEntity<>(APPLICATION_NOT_READY, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		isReady.set(1.0);
+		isReady.set(1);
 
 		return new ResponseEntity<>(APPLICATION_READY, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/internal/selftest", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public SelftestResult selftest() throws Exception {
+	public SelftestResult selftest() {
 		List<DependencyCheckResult> results = new ArrayList<>();
 		checkDependencies(results);
 		return SelftestResult.builder()
@@ -87,20 +92,20 @@ public class NaisContract {
 	}
 
 	private boolean isAnyVitalDependencyUnhealthy(List<Result> results) {
-		return results.stream().anyMatch((result) -> result.equals(Result.ERROR));
+		return results.stream().anyMatch(result -> result.equals(Result.ERROR));
 	}
 
 	private Result getOverallSelftestResult(List<DependencyCheckResult> results) {
-		if (results.stream().anyMatch((result) -> result.getResult().equals(Result.ERROR))) {
+		if (results.stream().anyMatch(result -> result.getResult().equals(Result.ERROR))) {
 			return Result.ERROR;
-		} else if (results.stream().anyMatch((result) -> result.getResult().equals(Result.WARNING))) {
+		} else if (results.stream().anyMatch(result -> result.getResult().equals(Result.WARNING))) {
 			return Result.WARNING;
 		}
 
 		return Result.OK;
 	}
 
-	private void checkCriticalDependencies(List<DependencyCheckResult> results) throws Exception {
+	private void checkCriticalDependencies(List<DependencyCheckResult> results) {
 		Flowable.fromIterable(dependencyCheckList)
 				.filter(dependency -> dependency.getImportance().equals(Importance.CRITICAL))
 				.parallel()
@@ -109,7 +114,7 @@ public class NaisContract {
 				.sequential().blockingSubscribe(results::add);
 	}
 
-	private void checkDependencies(List<DependencyCheckResult> results) throws Exception {
+	private void checkDependencies(List<DependencyCheckResult> results) {
 		Flowable.fromIterable(dependencyCheckList)
 				.parallel()
 				.runOn(Schedulers.io())

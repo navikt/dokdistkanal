@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal.service;
 
 import static java.lang.String.format;
+import static no.nav.dokdistkanal.common.ContextInfo.getConsumerId;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
@@ -8,16 +9,8 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
-import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
-import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
-import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
-import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestConsumer.HENT_PAALOGGINGSNIVAA;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_TOTAL;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -41,6 +34,7 @@ import java.time.LocalDate;
  * @author Ketill Fenne, Visma Consulting
  */
 @Service
+@Slf4j
 public class DokDistKanalService {
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
@@ -61,7 +55,6 @@ public class DokDistKanalService {
 		validateInput(dokDistKanalRequest);
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokDistKanalRequest.getDokumentTypeId());
-		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return logAndReturn(PRINT, "Skal ikke arkiveres");
@@ -80,7 +73,6 @@ public class DokDistKanalService {
 			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()));
 		} else {
 			PersonV3To personTo = personV3Consumer.hentPerson(dokDistKanalRequest.getMottakerId(), getConsumerId());
-			requestCounter.labels(HENT_PERSON, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 
 			if (personTo == null) {
 				return logAndReturn(PRINT, "Finner ikke personen i TPS");
@@ -100,7 +92,6 @@ public class DokDistKanalService {
 
 			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(dokDistKanalRequest
 					.getMottakerId());
-			requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon");
 			}
@@ -119,7 +110,6 @@ public class DokDistKanalService {
 			}
 
 			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(dokDistKanalRequest.getMottakerId());
-			requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_TOTAL).inc();
 			if (sikkerhetsnivaaTo == null) {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}
@@ -141,8 +131,7 @@ public class DokDistKanalService {
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode code, String reason) {
-		LOG.info("BestemKanal: Sender melding til " + code.name() + ": " + reason);
-		requestCounter.labels(BESTEM_DISTRIBUSJON_KANAL, "velgKanal", getConsumerId(), code.name()).inc();
+		LOG.info(String.format("BestemKanal: Sender melding til %s: %s", code.name(), reason));
 		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
 	}
 

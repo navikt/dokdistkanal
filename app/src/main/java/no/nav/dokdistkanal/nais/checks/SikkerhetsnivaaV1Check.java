@@ -1,7 +1,5 @@
 package no.nav.dokdistkanal.nais.checks;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SIKKERHETSNIVAAV1;
-
 import no.nav.dokdistkanal.nais.selftest.AbstractDependencyCheck;
 import no.nav.dokdistkanal.nais.selftest.ApplicationNotReadyException;
 import no.nav.dokdistkanal.nais.selftest.DependencyType;
@@ -18,6 +16,8 @@ import javax.inject.Inject;
 public class SikkerhetsnivaaV1Check extends AbstractDependencyCheck {
 
 	private final RestTemplate restTemplate;
+
+	private static final String SIKKERHETSNIVAAV1 = "SikkerhetsnivaaV1";
 
 	@Inject
 	public SikkerhetsnivaaV1Check(RestTemplateBuilder restTemplateBuilder,

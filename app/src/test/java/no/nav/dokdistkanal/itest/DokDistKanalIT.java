@@ -134,7 +134,7 @@ public class DokDistKanalIT extends AbstractIT {
 			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
+			assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokumentTypeInfoConsumer feilet. (HttpStatus=404 NOT_FOUND) for dokumenttypeId:DOKTYPENOTFOUND"));
 		}
 	}

@@ -1,13 +1,8 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
+import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
-import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
@@ -16,6 +11,7 @@ import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -42,7 +38,6 @@ public class DokumentTypeInfoConsumer {
 	private final RestTemplate restTemplate;
 	public static final String HENT_DOKKAT_INFO = "hentDokumentTypeInfo";
 	public static final String DOKKAT = "DOKKAT";
-	private Histogram.Timer requestTimer;
 
 	@Inject
 	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
@@ -64,13 +59,11 @@ public class DokumentTypeInfoConsumer {
 
 	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_DOKKAT_INFO}, percentiles = {0.5, 0.95}, histogram = true)
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
-
-		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);
-			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, DOKKAT, HENT_DOKKAT_INFO).startTimer();
 			DokumentTypeInfoToV4 dokumentTypeInfoToV4 = restTemplate.getForObject("/{dokumenttypeId}", DokumentTypeInfoToV4.class, uriVariables);
 			return mapTo(dokumentTypeInfoToV4);
 		} catch (HttpClientErrorException e) {
@@ -82,8 +75,6 @@ public class DokumentTypeInfoConsumer {
 			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);
 		} catch (Exception e) {
 			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med message=" + e.getMessage(), e);
-		} finally {
-			requestTimer.observeDuration();
 		}
 	}
 

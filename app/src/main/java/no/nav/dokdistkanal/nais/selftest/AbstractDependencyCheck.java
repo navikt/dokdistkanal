@@ -1,11 +1,10 @@
 package no.nav.dokdistkanal.nais.selftest;
 
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.dependencyPingable;
-
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.timelimiter.TimeLimiter;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
+import io.micrometer.core.instrument.Gauge;
 import io.vavr.control.Try;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 /**
@@ -34,8 +34,13 @@ public abstract class AbstractDependencyCheck {
 	protected String address;
 	private final CircuitBreakerRegistry circuitBreakerRegistry;
 	private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-	private final TimeLimiterConfig timeLimiterConfig = TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(2800)).cancelRunningFuture(true).build();
+	private final TimeLimiterConfig timeLimiterConfig = TimeLimiterConfig.custom()
+			.timeoutDuration(Duration.ofMillis(2800))
+			.cancelRunningFuture(true)
+			.build();
 	private final TimeLimiter timeLimiter = TimeLimiter.of(timeLimiterConfig);
+	private AtomicInteger dependencyStatus = new AtomicInteger();
+	private Gauge gauge;
 
 	public AbstractDependencyCheck(DependencyType type, String name, String address, Importance importance) {
 		this.type = type;
@@ -54,9 +59,9 @@ public abstract class AbstractDependencyCheck {
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(dependencyName);
 		Callable<DependencyCheckResult> chainedCallable = CircuitBreaker.decorateCallable(circuitBreaker, timeRestrictedCall);
 		return Try.ofCallable(chainedCallable)
-				.onSuccess(success -> dependencyPingable.labels(dependencyName).set(1))
+				.onSuccess(success -> dependencyStatus.set(1))
 				.onFailure(throwable -> {
-					dependencyPingable.labels(dependencyName).dec();
+					dependencyStatus.set(0);
 					log.error("Call to dependency={} with type={} at url={} timed out or circuitbreaker was tripped.", getName(), getType(), getAddress(), throwable);
 				})
 				.recover(throwable -> DependencyCheckResult.builder()
@@ -72,7 +77,7 @@ public abstract class AbstractDependencyCheck {
 
 	}
 
-	public Callable<DependencyCheckResult> getCheckCallable( ) {
+	private Callable<DependencyCheckResult> getCheckCallable() {
 		return () -> {
 			DependencyCheckResult.DependencyCheckResultBuilder builder = DependencyCheckResult.builder()
 					.type(getType())
@@ -83,22 +88,26 @@ public abstract class AbstractDependencyCheck {
 			Instant start = Instant.now();
 			doCheck();
 			Instant end = Instant.now();
-			Long responseTime=Duration.between(start, end).toMillis();
-			return builder.result(Result.OK).responseTime(String.valueOf(responseTime)+"ms").build();
+			long responseTime = Duration.between(start, end).toMillis();
+			return builder.result(Result.OK).responseTime(responseTime+"ms").build();
 		};
 	}
 
-	protected String getErrorMessageFromThrowable(Throwable e) {
+	private String getErrorMessageFromThrowable(Throwable e) {
 		if (e instanceof TimeoutException) {
 			return "Call to dependency timed out by circuitbreaker";
 		}
 		return e.getCause()==null?e.getMessage():e.getCause().getMessage();
 	}
-	protected String getErrorMessage(Exception e){
 
-		String message=e.getMessage().trim();
-		String causeMessage=e.getCause()==null?"":(": "+e.getCause().getMessage()+(e.getCause().getCause()==null?"":" - "+e.getCause().getCause().getMessage()));
-		return message+causeMessage;
+	protected String getErrorMessage(Exception e){
+		String message = e.getMessage().trim();
+		String causeMessage = getCauseFromException(e);
+		return message + causeMessage;
 	}
 
+	private String getCauseFromException(Exception e) {
+		String status = e.getCause().getCause() == null ? "" : " - " + e.getCause().getCause().getMessage();
+		return e.getCause() == null ? "" : (": " + e.getCause().getMessage() + status);
+	}
 }

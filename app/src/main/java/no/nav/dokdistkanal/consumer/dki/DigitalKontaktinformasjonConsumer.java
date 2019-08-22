@@ -1,19 +1,14 @@
 package no.nav.dokdistkanal.consumer.dki;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.DIGITALKONTAKTINFORMASJONV1;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
+import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
-import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadressePersonIkkeFunnet;
@@ -41,7 +36,6 @@ import java.util.Arrays;
 public class DigitalKontaktinformasjonConsumer {
 
 	private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
-	private Histogram.Timer requestTimer;
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 
@@ -53,15 +47,12 @@ public class DigitalKontaktinformasjonConsumer {
 
 	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator+'-dki'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_SIKKER_DIGITAL_POSTADRESSE}, percentiles = {0.5, 0.95}, histogram = true)
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) {
-
-		requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
-
 		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentSikkerDigitalPostadresseResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, DIGITALKONTAKTINFORMASJONV1, HENT_SIKKER_DIGITAL_POSTADRESSE).startTimer();
 			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
 		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet | HentSikkerDigitalPostadressePersonIkkeFunnet e) {
 			return null;
@@ -71,8 +62,6 @@ public class DigitalKontaktinformasjonConsumer {
 		} catch (Exception e) {
 			throw new DkifTechnicalException("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. " +
 					"message=" + e.getMessage(), e);
-		} finally {
-			requestTimer.observeDuration();
 		}
 		if (response != null && response.getSikkerDigitalKontaktinformasjon() != null) {
 			return mapTo(response.getSikkerDigitalKontaktinformasjon());

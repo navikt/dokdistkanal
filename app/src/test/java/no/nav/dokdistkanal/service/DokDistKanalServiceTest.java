@@ -78,7 +78,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("INGEN", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -86,7 +86,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.LOKAL_PRINT.toString(), Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.LOKAL_PRINT);
+		assertEquals(DistribusjonKanalCode.LOKAL_PRINT, serviceResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.INGEN_DISTRIBUSJON.toString(), Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.INGEN_DISTRIBUSJON);
+		assertEquals(DistribusjonKanalCode.INGEN_DISTRIBUSJON, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til INGEN_DISTRIBUSJON: Predefinert distribusjonskanal er Ingen Distribusjon"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -109,7 +109,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.TRYGDERETTEN.toString(), Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.TRYGDERETTEN);
+		assertEquals(DistribusjonKanalCode.TRYGDERETTEN, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til TRYGDERETTEN: Predefinert distribusjonskanal er Trygderetten"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -124,7 +124,7 @@ public class DokDistKanalServiceTest {
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().brukerId(BRUKERID)
 				.mottakerType(MottakerTypeCode.ORGANISASJON).mottakerId(BRUKERID).build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Mottaker er av typen ORGANISASJON"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -139,7 +139,7 @@ public class DokDistKanalServiceTest {
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().mottakerType(MottakerTypeCode.SAMHANDLER_HPR)
 				.build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Mottaker er av typen SAMHANDLER_HPR"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -154,7 +154,7 @@ public class DokDistKanalServiceTest {
 		PersonV3To personV3To = null;
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke personen i TPS"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -169,7 +169,7 @@ public class DokDistKanalServiceTest {
 		PersonV3To personV3To = PersonV3To.builder().doedsdato(LocalDate.now()).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personen er død"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -184,7 +184,7 @@ public class DokDistKanalServiceTest {
 		PersonV3To personV3To = PersonV3To.builder().doedsdato(null).foedselsdato(null).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personens alder er ukjent"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -200,7 +200,7 @@ public class DokDistKanalServiceTest {
 		PersonV3To personV3To = PersonV3To.builder().foedselsdato(LocalDate.now().minusYears(17).minusMonths(11)).build();
 		when(personV3Consumer.hentPerson(anyString(), anyString())).thenReturn(personV3To);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personen må være minst 18 år gammel"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -217,7 +217,7 @@ public class DokDistKanalServiceTest {
 		DigitalKontaktinformasjonTo dkiResponse = null;
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke Digital kontaktinformasjon"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -240,7 +240,7 @@ public class DokDistKanalServiceTest {
 				.mobiltelefonnummer(MOBIL).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Bruker har reservert seg"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -288,7 +288,7 @@ public class DokDistKanalServiceTest {
 				.mobiltelefonnummer(MOBIL).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.SDP);
+		assertEquals(DistribusjonKanalCode.SDP, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til SDP: Sertifikat, LeverandørAddresse og BrukerAdresse har verdi."));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -308,7 +308,7 @@ public class DokDistKanalServiceTest {
 				.leverandoerAdresse(LEVERANDORADRESSE).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Epostadresse og mobiltelefon - feltene er tomme"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -331,7 +331,7 @@ public class DokDistKanalServiceTest {
 				.mobiltelefonnummer(null).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -356,7 +356,7 @@ public class DokDistKanalServiceTest {
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.DITT_NAV);
+		assertEquals(DistribusjonKanalCode.DITT_NAV, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til DITT_NAV: Bruker har logget på med nivaa4 de siste 18 mnd"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -381,7 +381,7 @@ public class DokDistKanalServiceTest {
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Bruker har ikke logget på med nivaa4 de siste 18 mnd"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -406,7 +406,7 @@ public class DokDistKanalServiceTest {
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Paaloggingsnivaa ikke tilgjengelig"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
@@ -432,7 +432,7 @@ public class DokDistKanalServiceTest {
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().erArkivert(ER_ARKIVERT_FALSE)
 				.build());
-		assertEquals(serviceResponse.getDistribusjonsKanal(), DistribusjonKanalCode.PRINT);
+		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Dokumentet er ikke arkivert"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();

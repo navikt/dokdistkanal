@@ -24,6 +24,7 @@ public class STSConfigUtil {
 	private static final String STS_REQUEST_SAML_POLICY = "classpath:policy/requestSamlPolicy.xml";
 	private static final String STS_CLIENT_AUTHENTICATION_POLICY = "classpath:policy/untPolicy.xml";
 
+	private STSConfigUtil() {}
 	public static void configureStsRequestSamlToken(Client client, String stsUrl, String username, String password) {
 		STSClient stsClient = new STSClient(client.getBus());
 		configureSTSClient(stsClient, stsUrl, username, password);

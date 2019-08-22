@@ -1,14 +1,8 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SIKKERHETSNIVAAV1;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
+import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
-import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
@@ -18,6 +12,7 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.metrics.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -38,7 +33,8 @@ public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 
 	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
-	private Histogram.Timer requestTimer;
+
+	private static final String FEILMELDING = "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=%s)";
 
 	public SikkerhetsnivaaRestConsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
@@ -58,32 +54,28 @@ public class SikkerhetsnivaaRestConsumer implements SikkerhetsnivaaConsumer {
 				.build();
 	}
 
-
 	@Override
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
+	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PAALOGGINGSNIVAA}, percentiles = {0.5, 0.95}, histogram = true)
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
-		requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
-			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, SIKKERHETSNIVAAV1, HENT_PAALOGGINGSNIVAA).startTimer();
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
-				throw new DokDistKanalSecurityException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+				throw new DokDistKanalSecurityException(String.format(FEILMELDING, e.getStatusCode()), e);
 			}
 			if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
 				//Personen finnes ikke, returnerer false
 				return SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(false).personIdent(fnr).build();
 			}
-			throw new SikkerhetsnivaaFunctionalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+			throw new SikkerhetsnivaaFunctionalException(String.format(FEILMELDING, e.getStatusCode()), e);
 		} catch (HttpServerErrorException e) {
-			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=" + e.getStatusCode() + ")", e);
+			throw new SikkerhetsnivaaTechnicalException(String.format(FEILMELDING, e.getStatusCode()), e);
 		} catch (Exception e) {
 			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
-		} finally {
-			requestTimer.observeDuration();
 		}
 	}
 

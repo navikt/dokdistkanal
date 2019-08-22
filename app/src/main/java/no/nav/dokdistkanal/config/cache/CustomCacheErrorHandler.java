@@ -1,10 +1,5 @@
 package no.nav.dokdistkanal.config.cache;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_ERROR;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.REDIS_CACHE;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheErrorHandler;
@@ -22,7 +17,6 @@ public class CustomCacheErrorHandler implements CacheErrorHandler {
 		log.warn(String.format("Feil ved Cache Get operasjon. CacheNavn=%s, feilklasse=%s, feilmelding=%s", cache.getName(), exception
 				.getClass()
 				.getSimpleName(), exception.getMessage()));
-		requestCounter.labels(REDIS_CACHE, CACHE_ERROR, getConsumerId(), "GET").inc();
 	}
 
 	@Override
