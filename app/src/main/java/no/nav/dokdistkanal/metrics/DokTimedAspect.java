@@ -37,7 +37,7 @@ public class DokTimedAspect {
 		);
 	}
 
-	public DokTimedAspect(MeterRegistry registry, Function<ProceedingJoinPoint, Iterable<Tag>> tagsBasedOnJoinpoint) {
+	private DokTimedAspect(MeterRegistry registry, Function<ProceedingJoinPoint, Iterable<Tag>> tagsBasedOnJoinpoint) {
 		this.registry = registry;
 		this.tagsBasedOnJoinpoint = tagsBasedOnJoinpoint;
 	}
@@ -47,7 +47,7 @@ public class DokTimedAspect {
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
 
 		Metrics metrics = method.getAnnotation(Metrics.class);
-		if (metrics.value().isEmpty()) {
+		if (metrics == null || metrics.value().isEmpty()) {
 			return pjp.proceed();
 		}
 

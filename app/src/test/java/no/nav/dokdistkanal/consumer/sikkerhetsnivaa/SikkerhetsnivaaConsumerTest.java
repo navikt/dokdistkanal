@@ -30,7 +30,7 @@ public class SikkerhetsnivaaConsumerTest {
 	private static final String FNR = "***gammelt_fnr***";
 
 	private RestTemplate restTemplate;
-	private SikkerhetsnivaaRestConsumer sikkerhetsnivaaConsumer;
+	private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 
 
 	@Rule
@@ -39,7 +39,7 @@ public class SikkerhetsnivaaConsumerTest {
 	@Before
 	public void setUp() {
 		restTemplate = mock(RestTemplate.class);
-		sikkerhetsnivaaConsumer= new SikkerhetsnivaaRestConsumer(restTemplate);
+		sikkerhetsnivaaConsumer= new SikkerhetsnivaaConsumer(restTemplate);
 	}
 
 	@Test

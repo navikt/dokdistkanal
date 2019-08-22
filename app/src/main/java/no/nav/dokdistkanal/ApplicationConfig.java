@@ -13,7 +13,7 @@ import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
-import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestConsumer;
+import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.metrics.DokTimedAspect;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,7 +35,7 @@ import org.springframework.context.annotation.Import;
 		PersonV3EndpointConfig.class,
 		DigitalKontaktinformasjonConsumer.class,
 		DigitalKontaktinformasjonEndpointConfig.class,
-		SikkerhetsnivaaRestConsumer.class,
+		SikkerhetsnivaaConsumer.class,
 		DokumentTypeInfoConsumer.class,
 		RestConsumerConfig.class
 })

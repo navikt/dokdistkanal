@@ -6,7 +6,7 @@ import static no.nav.dokdistkanal.config.cache.CacheConfig.STS_CACHE_EXPIRATION_
 import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
 import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
-import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaRestConsumer.HENT_PAALOGGINGSNIVAA;
+import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
 import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
