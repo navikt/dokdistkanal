@@ -10,10 +10,6 @@ import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsum
 import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.micrometer.core.instrument.MeterRegistry;
-import org.springframework.boot.actuate.metrics.cache.CacheMetricsRegistrar;
-import org.springframework.boot.actuate.metrics.cache.CaffeineCacheMeterBinderProvider;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCache;
@@ -23,10 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
-import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,16 +34,12 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 public class LocalCacheConfig {
-
-	@Inject
-	MeterRegistry registry;
-
 	@Bean
 	@Primary
 	public CacheManager cacheManager() {
-		CacheMetricsRegistrar registrar = new CacheMetricsRegistrar(registry, Collections.singletonList(new CaffeineCacheMeterBinderProvider()));
+
 		SimpleCacheManager cacheManager = new SimpleCacheManager();
-		List<CaffeineCache> caffeineCaches = Arrays.asList(
+		cacheManager.setCaches(Arrays.asList(
 				new CaffeineCache(HENT_SIKKER_DIGITAL_POSTADRESSE, Caffeine.newBuilder()
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
 						.build()),
@@ -65,17 +54,10 @@ public class LocalCacheConfig {
 						.build()),
 				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder()
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
-						.build()));
-		CaffeineCache caffeineCache = new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
+						.build())));
+		new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
 				.expireAfterWrite(STS_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
 				.build());
-		registrar.bindCacheToRegistry(caffeineCache);
-
-		for (Cache cache : caffeineCaches) {
-			registrar.bindCacheToRegistry(cache);
-		}
-		cacheManager.setCaches(caffeineCaches);
-
 		return cacheManager;
 
 	}
