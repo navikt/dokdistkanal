@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import no.nav.dokdistkanal.config.RestConsumerConfig;
 import no.nav.dokdistkanal.config.cxf.DigitalKontaktinformasjonEndpointConfig;
 import no.nav.dokdistkanal.config.cxf.PersonV3EndpointConfig;
@@ -49,4 +50,8 @@ public class ApplicationConfig {
 		return new DokTimedAspect(meterRegistry);
 	}
 
+	@Bean
+	JvmThreadMetrics threadMetrics(){
+		return new JvmThreadMetrics();
+	}
 }
