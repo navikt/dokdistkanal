@@ -2,17 +2,12 @@ package no.nav.dokdistkanal.consumer.dokkat;
 
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
+import no.nav.dokdistkanal.consumer.CacheMissMarker;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
@@ -68,7 +63,7 @@ public class DokumentTypeInfoConsumer {
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_DOKKAT_INFO}, percentiles = {0.5, 0.95}, histogram = true)
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
 
-		requestCounter.labels(HENT_DOKKAT_INFO, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
+		CacheMissMarker.cacheMiss(HENT_DOKKAT_INFO);
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);

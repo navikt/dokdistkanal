@@ -2,12 +2,9 @@ package no.nav.dokdistkanal.consumer.dki;
 
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.consumer.CacheMissMarker;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
@@ -54,7 +51,7 @@ public class DigitalKontaktinformasjonConsumer {
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_SIKKER_DIGITAL_POSTADRESSE}, percentiles = {0.5, 0.95}, histogram = true)
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) {
 
-		requestCounter.labels(HENT_SIKKER_DIGITAL_POSTADRESSE, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
+		CacheMissMarker.cacheMiss(HENT_SIKKER_DIGITAL_POSTADRESSE);
 
 		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentSikkerDigitalPostadresseResponse response;

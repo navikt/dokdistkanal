@@ -20,14 +20,6 @@ public class PrometheusLabels {
 	public static final String LABEL_EVENT = "event";
 	public static final String LABEL_ERROR_TYPE = "error_type";
 
-	//Cache
-	public static final String CACHE_COUNTER = "cacheCounter";
-	public static final String CACHE_MISS = "cacheMiss";
-	public static final String CACHE_TOTAL = "cacheTotal";
-	public static final String CACHE_ERROR = "cacheError";
-	public static final String REDIS_CACHE = "redisCache";
-
-
 	public static final String MOTTAKERTYPE = "mottakerType";
 	public static final String PLUGIN = "plugin";
 	public static final String CONTROLLER = "controller";

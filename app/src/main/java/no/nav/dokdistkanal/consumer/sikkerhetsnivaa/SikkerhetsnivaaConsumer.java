@@ -2,14 +2,11 @@ package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
+import no.nav.dokdistkanal.consumer.CacheMissMarker;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
@@ -62,8 +59,8 @@ public class SikkerhetsnivaaConsumer {
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
+		CacheMissMarker.cacheMiss(HENT_PAALOGGINGSNIVAA);
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
-		requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);

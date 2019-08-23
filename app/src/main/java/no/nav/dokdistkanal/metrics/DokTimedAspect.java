@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.metrics;
 
 import static java.util.Arrays.asList;
 import static no.nav.dokdistkanal.config.MDCConstants.MDC_CALL_ID;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 
 import io.micrometer.core.annotation.Incubating;
 import io.micrometer.core.instrument.Counter;
@@ -17,6 +18,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.lang.reflect.Method;
 import java.util.function.Function;
@@ -40,6 +42,40 @@ public class DokTimedAspect {
 	private DokTimedAspect(MeterRegistry registry, Function<ProceedingJoinPoint, Iterable<Tag>> tagsBasedOnJoinpoint) {
 		this.registry = registry;
 		this.tagsBasedOnJoinpoint = tagsBasedOnJoinpoint;
+	}
+
+	@Around("execution (@org.springframework.cache.annotation.Cacheable * *.*(..))")
+	public Object cacheLookup(ProceedingJoinPoint pjp) throws Throwable {
+		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+
+		Cacheable cacheable = method.getAnnotation(Cacheable.class);
+		if (cacheable == null || cacheable.value().length < 1) {
+			return pjp.proceed();
+		}
+
+		Counter.builder("dok_request_total_counter")
+				.tag("process", cacheable.value()[0])
+				.tag("type", "cacheCounter")
+				.tag("consumer_name", getConsumerId())
+				.tag("event", "cacheTotal")
+				.tags(tagsBasedOnJoinpoint.apply(pjp))
+				.register(registry)
+				.increment();
+
+		return pjp.proceed();
+	}
+
+	@Around("execution (* no.nav.dokdistkanal.consumer.CacheMissMarker.*(..)) && args(cacheName)")
+	public Object incrementCacheMiss(ProceedingJoinPoint pjp, String cacheName) throws Throwable {
+		Counter.builder("dok_request_total_counter")
+				.tag("process", cacheName)
+				.tag("type", "cacheCounter")
+				.tag("consumer_name", getConsumerId())
+				.tag("event", "cacheMiss")
+				.register(registry)
+				.increment();
+
+		return pjp.proceed();
 	}
 
 	@Around("execution (@no.nav.dokdistkanal.metrics.Metrics * *.*(..))")
