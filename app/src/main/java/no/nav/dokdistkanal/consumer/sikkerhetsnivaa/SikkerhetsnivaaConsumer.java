@@ -2,6 +2,10 @@ package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
@@ -59,6 +63,7 @@ public class SikkerhetsnivaaConsumer {
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
+		requestCounter.labels(HENT_PAALOGGINGSNIVAA, CACHE_COUNTER, getConsumerId(), CACHE_MISS).inc();
 		try {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);

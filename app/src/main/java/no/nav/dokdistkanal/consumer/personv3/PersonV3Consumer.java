@@ -2,6 +2,9 @@ package no.nav.dokdistkanal.consumer.personv3;
 
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
+import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
@@ -48,6 +51,9 @@ public class PersonV3Consumer {
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PERSON}, percentiles = {0.5, 0.95}, histogram = true)
 	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) {
+
+		requestCounter.labels(HENT_PERSON, CACHE_COUNTER, consumerId, CACHE_MISS).inc();
+
 		HentPersonRequest request = mapHentPersonRequest(personidentifikator);
 		HentPersonResponse response;
 

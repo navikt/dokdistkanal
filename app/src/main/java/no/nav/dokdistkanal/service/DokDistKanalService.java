@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.service;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.common.ContextInfo.getConsumerId;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
@@ -9,6 +8,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
