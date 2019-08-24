@@ -23,6 +23,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author Ugur Alpay Cenar, Visma Consulting.
  */
 public class PrometheusMetrics {
+
+	private PrometheusMetrics() {}
+
 	public static final String DOK_NAMESPACE = "dok";
 
 	public static final Gauge isReady = Gauge.build()

@@ -13,6 +13,7 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRespon
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class SikkerhetsnivaaConsumerTest {
 
 	private RestTemplate restTemplate;
 	private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
-
+	private CacheMissMarker marker;
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -39,7 +40,9 @@ public class SikkerhetsnivaaConsumerTest {
 	@Before
 	public void setUp() {
 		restTemplate = mock(RestTemplate.class);
+		marker = mock(CacheMissMarker.class);
 		sikkerhetsnivaaConsumer= new SikkerhetsnivaaConsumer(restTemplate);
+
 	}
 
 	@Test

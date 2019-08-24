@@ -65,19 +65,6 @@ public class DokTimedAspect {
 		return pjp.proceed();
 	}
 
-	@Around("execution (* no.nav.dokdistkanal.consumer.CacheMissMarker.*(..)) && args(cacheName)")
-	public Object incrementCacheMiss(ProceedingJoinPoint pjp, String cacheName) throws Throwable {
-		Counter.builder("dok_request_total_counter")
-				.tag("process", cacheName)
-				.tag("type", "cacheCounter")
-				.tag("consumer_name", getConsumerId())
-				.tag("event", "cacheMiss")
-				.register(registry)
-				.increment();
-
-		return pjp.proceed();
-	}
-
 	@Around("execution (@no.nav.dokdistkanal.metrics.Metrics * *.*(..))")
 	public Object incrementMetrics(ProceedingJoinPoint pjp) throws Throwable {
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
@@ -113,6 +100,19 @@ public class DokTimedAspect {
 					.publishPercentiles(metrics.percentiles().length == 0 ? null : metrics.percentiles())
 					.register(registry));
 		}
+	}
+
+	@Around("execution (@no.nav.dokdistkanal.metrics.CacheMiss * *.*(..)) && args(cacheName)")
+	public Object incrementCacheMiss(ProceedingJoinPoint pjp, String cacheName) throws Throwable {
+		Counter.builder("dok_request_total_counter")
+				.tag("process", cacheName)
+				.tag("type", "cacheCounter")
+				.tag("consumer_name", getConsumerId())
+				.tag("event", "cacheTotal")
+				.tags(tagsBasedOnJoinpoint.apply(pjp))
+				.register(registry)
+				.increment();
+		return pjp.proceed();
 	}
 
 	private boolean isFunctionalException(Method method, Exception e) {

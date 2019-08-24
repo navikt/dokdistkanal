@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import no.nav.dokkat.api.tkat020.DistribusjonInfoTo;
 import no.nav.dokkat.api.tkat020.v4.DokumentProduksjonsInfoToV4;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
@@ -34,6 +35,7 @@ public class DokumentTypeInfoConsumerTest {
 
 	private RestTemplate restTemplate;
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
+	private CacheMissMarker marker;
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -41,7 +43,8 @@ public class DokumentTypeInfoConsumerTest {
 	@Before
 	public void setUp() throws Exception {
 		restTemplate = mock(RestTemplate.class);
-		dokumentTypeInfoConsumer = new DokumentTypeInfoConsumer(restTemplate);
+		marker = mock(CacheMissMarker.class);
+		dokumentTypeInfoConsumer = new DokumentTypeInfoConsumer(restTemplate, marker);
 	}
 
 	@Test

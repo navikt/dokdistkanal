@@ -6,13 +6,13 @@ import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
-import no.nav.dokdistkanal.consumer.CacheMissMarker;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import no.nav.dokdistkanal.metrics.Metrics;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -34,8 +34,8 @@ public class SikkerhetsnivaaConsumer {
 
 	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
-
 	private static final String FEILMELDING = "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=%s)";
+	private CacheMissMarker marker = new CacheMissMarker();
 
 	public SikkerhetsnivaaConsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
@@ -45,6 +45,7 @@ public class SikkerhetsnivaaConsumer {
 	public SikkerhetsnivaaConsumer(RestTemplateBuilder restTemplateBuilder,
 								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
+								   CacheMissMarker marker,
 								   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.requestFactory(() -> requestFactory)
@@ -53,13 +54,14 @@ public class SikkerhetsnivaaConsumer {
 				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))
 				.setReadTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getReadtimeoutms()))
 				.build();
+		this.marker = marker;
 	}
 
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PAALOGGINGSNIVAA}, percentiles = {0.5, 0.95}, histogram = true)
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
-		CacheMissMarker.cacheMiss(HENT_PAALOGGINGSNIVAA);
+		marker.cacheMiss(HENT_PAALOGGINGSNIVAA);
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		try {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);

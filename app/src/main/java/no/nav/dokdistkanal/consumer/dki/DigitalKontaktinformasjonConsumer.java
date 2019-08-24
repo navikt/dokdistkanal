@@ -4,12 +4,12 @@ import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.consumer.CacheMissMarker;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
+import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadressePersonIkkeFunnet;
@@ -40,10 +40,13 @@ public class DigitalKontaktinformasjonConsumer {
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 
+	private CacheMissMarker marker;
 
 	@Inject
-	public DigitalKontaktinformasjonConsumer(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1) {
+	public DigitalKontaktinformasjonConsumer(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1,
+											 CacheMissMarker marker) {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
+		this.marker = marker;
 	}
 
 	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator+'-dki'")
@@ -51,7 +54,7 @@ public class DigitalKontaktinformasjonConsumer {
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_SIKKER_DIGITAL_POSTADRESSE}, percentiles = {0.5, 0.95}, histogram = true)
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) {
 
-		CacheMissMarker.cacheMiss(HENT_SIKKER_DIGITAL_POSTADRESSE);
+		marker.cacheMiss(HENT_SIKKER_DIGITAL_POSTADRESSE);
 
 		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentSikkerDigitalPostadresseResponse response;
@@ -72,7 +75,6 @@ public class DigitalKontaktinformasjonConsumer {
 		}
 		return null;
 	}
-
 
 	private HentSikkerDigitalPostadresseRequest mapHentDigitalKontaktinformasjonRequest(final String personidentifikator) {
 		HentSikkerDigitalPostadresseRequest request = new HentSikkerDigitalPostadresseRequest();

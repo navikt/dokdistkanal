@@ -4,11 +4,11 @@ import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.consumer.CacheMissMarker;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
@@ -37,11 +37,13 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Service
 public class PersonV3Consumer {
 	private final PersonV3 personV3;
-
 	public static final String HENT_PERSON = "hentPerson";
+	private CacheMissMarker marker;
 
 	@Inject
-	public PersonV3Consumer(PersonV3 personV3) {
+	public PersonV3Consumer(PersonV3 personV3,
+							CacheMissMarker marker) {
+		this.marker = marker;
 		this.personV3 = personV3;
 	}
 
@@ -50,7 +52,7 @@ public class PersonV3Consumer {
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PERSON}, percentiles = {0.5, 0.95}, histogram = true)
 	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) {
 
-		CacheMissMarker.cacheMiss(HENT_PERSON);
+		marker.cacheMiss(HENT_PERSON);
 
 		HentPersonRequest request = mapHentPersonRequest(personidentifikator);
 		HentPersonResponse response;
