@@ -13,9 +13,11 @@ import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.lang.NonNullApi;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
@@ -44,13 +46,13 @@ public class DokTimedAspect {
 		this.tagsBasedOnJoinpoint = tagsBasedOnJoinpoint;
 	}
 
-	@Around("execution (@org.springframework.cache.annotation.Cacheable * *.*(..))")
-	public Object cacheLookup(ProceedingJoinPoint pjp) throws Throwable {
+	@Before("execution (@org.springframework.cache.annotation.Cacheable * *.*(..))")
+	public void cacheLookup(JoinPoint pjp) {
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
 
 		Cacheable cacheable = method.getAnnotation(Cacheable.class);
 		if (cacheable == null || cacheable.value().length < 1) {
-			return pjp.proceed();
+			return;
 		}
 
 		Counter.builder("dok_request_total_counter")
@@ -60,8 +62,6 @@ public class DokTimedAspect {
 				.tag("event", "cacheTotal")
 				.register(registry)
 				.increment();
-
-		return pjp.proceed();
 	}
 
 	@Around("execution (@no.nav.dokdistkanal.metrics.Metrics * *.*(..))")
