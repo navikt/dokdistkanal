@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.metrics.CacheMissMarker;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadressePersonIkkeFunnet;
@@ -46,11 +46,11 @@ public class DigitalKontaktinformasjonConsumerTest {
 	private final static String LEVERANDORADRESSE = "Leverandøradresse";
 	private final static String BRUKERADRESSE = "Brukeradresse";
 
-	private CacheMissMarker marker = mock(CacheMissMarker.class);
+	private MicrometerMetrics metrics = mock(MicrometerMetrics.class);
 	private DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1 = mock(DigitalKontaktinformasjonV1.class);
 	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = new DigitalKontaktinformasjonConsumer(
 			digitalKontaktinformasjonV1,
-			marker);
+			metrics);
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();

@@ -11,8 +11,8 @@ import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
-import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import no.nav.dokdistkanal.metrics.Metrics;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -39,13 +39,13 @@ public class DokumentTypeInfoConsumer {
 	private final RestTemplate restTemplate;
 	public static final String HENT_DOKKAT_INFO = "hentDokumentTypeInfo";
 	public static final String DOKKAT = "DOKKAT";
-	private CacheMissMarker marker;
+	private MicrometerMetrics metrics;
 
 	@Inject
 	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
 									HttpComponentsClientHttpRequestFactory requestFactory,
 									DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
-									CacheMissMarker marker,
+									MicrometerMetrics metrics,
 									ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.requestFactory(() -> requestFactory)
@@ -54,12 +54,12 @@ public class DokumentTypeInfoConsumer {
 				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))
 				.setReadTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getReadtimeoutms()))
 				.build();
-		this.marker = marker;
+		this.metrics = metrics;
 	}
 
-	public DokumentTypeInfoConsumer(RestTemplate restTemplate, CacheMissMarker marker) {
+	public DokumentTypeInfoConsumer(RestTemplate restTemplate, MicrometerMetrics metrics) {
 		this.restTemplate = restTemplate;
-		this.marker = marker;
+		this.metrics = metrics;
 	}
 
 	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
@@ -67,7 +67,7 @@ public class DokumentTypeInfoConsumer {
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_DOKKAT_INFO}, percentiles = {0.5, 0.95}, histogram = true)
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
 
-		marker.cacheMiss(HENT_DOKKAT_INFO);
+		metrics.cacheMiss(HENT_DOKKAT_INFO);
 		try {
 			Map<String, Object> uriVariables = new HashMap<>();
 			uriVariables.put("dokumenttypeId", dokumenttypeId);

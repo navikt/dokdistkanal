@@ -9,7 +9,7 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
-import no.nav.dokdistkanal.metrics.CacheMissMarker;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadressePersonIkkeFunnet;
@@ -40,13 +40,13 @@ public class DigitalKontaktinformasjonConsumer {
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 
-	private CacheMissMarker marker;
+	private MicrometerMetrics metrics;
 
 	@Inject
 	public DigitalKontaktinformasjonConsumer(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1,
-											 CacheMissMarker marker) {
+											 MicrometerMetrics metrics) {
 		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
-		this.marker = marker;
+		this.metrics = metrics;
 	}
 
 	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator+'-dki'")
@@ -54,7 +54,7 @@ public class DigitalKontaktinformasjonConsumer {
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_SIKKER_DIGITAL_POSTADRESSE}, percentiles = {0.5, 0.95}, histogram = true)
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) {
 
-		marker.cacheMiss(HENT_SIKKER_DIGITAL_POSTADRESSE);
+		metrics.cacheMiss(HENT_SIKKER_DIGITAL_POSTADRESSE);
 
 		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
 		HentSikkerDigitalPostadresseResponse response;

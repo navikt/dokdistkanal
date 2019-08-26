@@ -12,8 +12,8 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
-import no.nav.dokdistkanal.metrics.CacheMissMarker;
 import no.nav.dokdistkanal.metrics.Metrics;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,17 +35,19 @@ public class SikkerhetsnivaaConsumer {
 	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
 	private static final String FEILMELDING = "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=%s)";
-	private CacheMissMarker marker = new CacheMissMarker();
+	private MicrometerMetrics metrics;
 
-	public SikkerhetsnivaaConsumer(RestTemplate restTemplate) {
+	public SikkerhetsnivaaConsumer(RestTemplate restTemplate,
+								   MicrometerMetrics metrics) {
 		this.restTemplate = restTemplate;
+		this.metrics = metrics;
 	}
 
 	@Inject
 	public SikkerhetsnivaaConsumer(RestTemplateBuilder restTemplateBuilder,
 								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
-								   CacheMissMarker marker,
+								   MicrometerMetrics metrics,
 								   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.requestFactory(() -> requestFactory)
@@ -54,14 +56,14 @@ public class SikkerhetsnivaaConsumer {
 				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))
 				.setReadTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getReadtimeoutms()))
 				.build();
-		this.marker = marker;
+		this.metrics = metrics;
 	}
 
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PAALOGGINGSNIVAA}, percentiles = {0.5, 0.95}, histogram = true)
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
-		marker.cacheMiss(HENT_PAALOGGINGSNIVAA);
+		metrics.cacheMiss(HENT_PAALOGGINGSNIVAA);
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
 		try {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
