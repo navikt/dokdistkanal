@@ -49,19 +49,25 @@ public class DokTimedAspect {
 	@Before("execution (@org.springframework.cache.annotation.Cacheable * *.*(..))")
 	public void cacheLookup(JoinPoint pjp) {
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+		log.info("Hit a cached method "+method.getName());
 
 		Cacheable cacheable = method.getAnnotation(Cacheable.class);
 		if (cacheable == null || cacheable.value().length < 1) {
 			return;
 		}
-
-		Counter.builder("dok_request_total_counter")
+		Counter register = Counter.builder("dok_request_total_counter")
 				.tag("process", cacheable.value()[0])
 				.tag("type", "cacheCounter")
 				.tag("consumer_name", getConsumerId())
 				.tag("event", "cacheTotal")
-				.register(registry)
-				.increment();
+				.register(registry);
+		double oldValue = register.count();
+		register.increment();
+		double newValue = register.count();
+
+		log.info("Increasing cache lookup for {} from {} to {}",
+				cacheable.value()[0],
+				oldValue, newValue);
 	}
 
 	@Around("execution (@no.nav.dokdistkanal.metrics.Metrics * *.*(..))")
