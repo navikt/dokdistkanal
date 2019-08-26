@@ -21,6 +21,7 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.annotation.Order;
 
 import java.lang.reflect.Method;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import java.util.function.Function;
 @NonNullApi
 @Incubating(since = "1.0.0")
 @Slf4j
+@Order(Integer.MIN_VALUE)
 public class DokTimedAspect {
 
 	private final MeterRegistry registry;
