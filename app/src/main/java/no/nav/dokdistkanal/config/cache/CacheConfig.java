@@ -57,9 +57,6 @@ public class CacheConfig extends CachingConfigurerSupport {
 		HashMap<String, RedisCacheConfiguration> initialConfigs = new HashMap<>();
 		initialConfigs.put(STS_CACHE_NAME, generateConfigWithDuration(STS_CACHE_EXPIRATION_TIME));
 		initialConfigs.put(HENT_PERSON, generateConfigWithDuration(HENT_PERSON_CACHE_EXPIRATION_TIME));
-		initialConfigs.put(HENT_SIKKER_DIGITAL_POSTADRESSE, generateConfigWithDuration(DEFAULT_CACHE_EXPIRATION_TIME));
-		initialConfigs.put(HENT_DOKKAT_INFO, generateConfigWithDuration(DEFAULT_CACHE_EXPIRATION_TIME));
-		initialConfigs.put(HENT_PAALOGGINGSNIVAA, generateConfigWithDuration(DEFAULT_CACHE_EXPIRATION_TIME));
 
 		return RedisCacheManager.builder(connectionFactory)
 				.cacheDefaults(generateConfigWithDuration(DEFAULT_CACHE_EXPIRATION_TIME))
