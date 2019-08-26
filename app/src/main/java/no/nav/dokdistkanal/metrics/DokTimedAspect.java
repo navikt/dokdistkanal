@@ -30,7 +30,7 @@ import java.util.function.Function;
 @NonNullApi
 @Incubating(since = "1.0.0")
 @Slf4j
-@Order(Integer.MIN_VALUE)
+@Order(1)
 public class DokTimedAspect {
 
 	private final MeterRegistry registry;
