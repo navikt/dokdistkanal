@@ -22,6 +22,7 @@ import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
+import no.nav.dokdistkanal.metrics.MeterKanalValg;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,9 +131,10 @@ public class DokDistKanalService {
 		}
 	}
 
-	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode code, String reason) {
-		LOG.info(String.format("BestemKanal: Sender melding til %s: %s", code.name(), reason));
-		return DokDistKanalResponse.builder().distribusjonsKanal(code).build();
+	@MeterKanalValg
+	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason) {
+		LOG.info(String.format("BestemKanal: Sender melding til %s: %s", kanalKode.name(), reason));
+		return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
 	}
 
 	private void validateInput(DokDistKanalRequest dokDistKanalRequest) {

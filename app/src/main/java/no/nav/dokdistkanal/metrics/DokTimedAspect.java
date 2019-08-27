@@ -3,6 +3,7 @@ package no.nav.dokdistkanal.metrics;
 import static java.util.Arrays.asList;
 import static no.nav.dokdistkanal.config.MDCConstants.MDC_CALL_ID;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
 import io.micrometer.core.annotation.Incubating;
 import io.micrometer.core.instrument.Counter;
@@ -107,6 +108,17 @@ public class DokTimedAspect {
 					.publishPercentiles(metrics.percentiles().length == 0 ? null : metrics.percentiles())
 					.register(registry));
 		}
+	}
+
+	@Around("execution (@no.nav.dokdistkanal.metrics.MeterKanalValg * *.*(..)) && args(kanalKode)")
+	public Object meterKanalValg(ProceedingJoinPoint pjp, String kanalKode) throws Throwable {
+		Counter.builder("dok_request_total_counter")
+				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
+				.tag("type", "velgKanal")
+				.tag("consumer_name", getConsumerId())
+				.tag("event", kanalKode)
+				.register(registry).increment();
+		return pjp.proceed();
 	}
 
 	private boolean isFunctionalException(Method method, Exception e) {
