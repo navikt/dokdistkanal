@@ -16,19 +16,11 @@ public class MicrometerMetrics {
 	private MeterRegistry registry;
 
 	public void cacheMiss(String cacheName) {
-		log.info("Miss in the cache for {}", cacheName);
-
-		Counter register = Counter.builder("dok_request_total_counter")
+		Counter.builder("dok_request_total_counter")
 				.tag("process", cacheName)
 				.tag("type", "cacheCounter")
 				.tag("consumer_name", getConsumerId())
 				.tag("event", "cacheMiss")
-				.register(registry);
-		double oldValue = register.count();
-		register.increment();
-		double newValue = register.count();
-		log.info("Increasing cache miss for {} from {} to {}",
-				cacheName,
-				oldValue, newValue);
+				.register(registry).increment();
 	}
 }
