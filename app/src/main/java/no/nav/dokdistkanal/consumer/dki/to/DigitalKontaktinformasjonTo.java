@@ -13,6 +13,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DigitalKontaktinformasjonTo implements Serializable {
+
+	static final long serialVersionUID = 1L;
 	private String epostadresse;
 	private String mobiltelefonnummer;
 	private boolean reservasjon;

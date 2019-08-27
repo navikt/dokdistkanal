@@ -1,8 +1,11 @@
 package no.nav.dokdistkanal.config.cache;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.springframework.cache.Cache;
 import org.springframework.cache.interceptor.CacheErrorHandler;
+
+import javax.inject.Inject;
 
 /**
  * CustomCacheErrorHandler
@@ -12,11 +15,15 @@ import org.springframework.cache.interceptor.CacheErrorHandler;
  */
 @Slf4j
 public class CustomCacheErrorHandler implements CacheErrorHandler {
+
+	@Inject
+	MicrometerMetrics metrics;
 	@Override
 	public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
 		log.warn(String.format("Feil ved Cache Get operasjon. CacheNavn=%s, feilklasse=%s, feilmelding=%s", cache.getName(), exception
 				.getClass()
 				.getSimpleName(), exception.getMessage()));
+		metrics.cacheError(cache.getName(), "GET");
 	}
 
 	@Override
@@ -24,6 +31,7 @@ public class CustomCacheErrorHandler implements CacheErrorHandler {
 		log.warn(String.format("Feil ved Cache Put operasjon. CacheNavn=%s, feilklasse=%s, feilmelding=%s", cache.getName(), exception
 				.getClass()
 				.getSimpleName(), exception.getMessage()));
+		metrics.cacheError(cache.getName(), "PUT");
 	}
 
 	@Override
@@ -31,6 +39,7 @@ public class CustomCacheErrorHandler implements CacheErrorHandler {
 		log.warn(String.format("Feil ved Cache Evict operasjon. CacheNavn=%s, feilklasse=%s, feilmelding=%s", cache.getName(), exception
 				.getClass()
 				.getSimpleName(), exception.getMessage()));
+		metrics.cacheError(cache.getName(), "EVICT");
 	}
 
 	@Override
@@ -38,5 +47,6 @@ public class CustomCacheErrorHandler implements CacheErrorHandler {
 		log.warn(String.format("Feil ved Cache Clear operasjon. CacheNavn=%s, feilklasse=%s, feilmelding=%s", cache.getName(), exception
 				.getClass()
 				.getSimpleName(), exception.getMessage()));
+		metrics.cacheError(cache.getName(), "CLEAR");
 	}
 }

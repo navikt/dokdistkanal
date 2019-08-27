@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PersonV3To implements Serializable {
+	static final long serialVersionUID = 1L;
 	private LocalDate doedsdato;
 	private LocalDate foedselsdato;
 }

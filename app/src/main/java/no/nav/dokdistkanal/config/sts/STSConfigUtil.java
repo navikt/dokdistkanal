@@ -19,13 +19,13 @@ import java.util.HashMap;
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
  */
-public class STSConfigUtil {
+final class STSConfigUtil {
 
 	private static final String STS_REQUEST_SAML_POLICY = "classpath:policy/requestSamlPolicy.xml";
 	private static final String STS_CLIENT_AUTHENTICATION_POLICY = "classpath:policy/untPolicy.xml";
 
 	private STSConfigUtil() {}
-	public static void configureStsRequestSamlToken(Client client, String stsUrl, String username, String password) {
+	static void configureStsRequestSamlToken(Client client, String stsUrl, String username, String password) {
 		STSClient stsClient = new STSClient(client.getBus());
 		configureSTSClient(stsClient, stsUrl, username, password);
 
@@ -36,7 +36,7 @@ public class STSConfigUtil {
 		setClientEndpointPolicy(client, resolvePolicyReference(client, STS_REQUEST_SAML_POLICY));
 	}
 
-	protected static STSClient configureSTSClient(STSClient stsClient, String location, String username, String password) {
+	private static STSClient configureSTSClient(STSClient stsClient, String location, String username, String password) {
 
 		stsClient.setEnableAppliesTo(false);
 		stsClient.setAllowRenewing(false);

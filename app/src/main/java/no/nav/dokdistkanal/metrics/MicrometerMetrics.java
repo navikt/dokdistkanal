@@ -23,4 +23,14 @@ public class MicrometerMetrics {
 				.tag("event", "cacheMiss")
 				.register(registry).increment();
 	}
+
+	public void cacheError(String cacheName, String operation) {
+		Counter.builder("dok_request_total_counter")
+				.tag("process", cacheName)
+				.tag("type", "cacheError")
+				.tag("consumer_name", getConsumerId())
+				.tag("operation", operation)
+				.register(registry).increment();
+
+	}
 }
