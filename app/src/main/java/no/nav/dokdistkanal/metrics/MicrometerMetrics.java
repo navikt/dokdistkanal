@@ -25,7 +25,7 @@ public class MicrometerMetrics {
 	}
 
 	public void cacheError(String cacheName, String operation) {
-		Counter.builder("dok_request_total_counter")
+		Counter.builder("dok_cache_exception_counter")
 				.tag("process", cacheName)
 				.tag("type", "cacheError")
 				.tag("consumer_name", getConsumerId())
