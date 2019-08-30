@@ -86,12 +86,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		<!-- Micormeter core dependecy  -->
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-core</artifactId>
-		</dependency>
-		<!-- Micrometer Prometheus registry  -->
+		<!-- Micormeter dependecy  -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
@@ -178,7 +173,7 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-contract-wiremock</artifactId>
-			<version>1.2.1.RELEASE</version>
+			<version>2.1.1.RELEASE</version>
 		</dependency>
 	</dependencies>
 
