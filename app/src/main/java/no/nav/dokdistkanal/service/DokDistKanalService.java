@@ -10,7 +10,6 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -34,7 +33,6 @@ import java.time.LocalDate;
  * @author Ketill Fenne, Visma Consulting
  */
 @Service
-@Slf4j
 public class DokDistKanalService {
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
