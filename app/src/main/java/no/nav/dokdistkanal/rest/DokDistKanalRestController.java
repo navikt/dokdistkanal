@@ -50,7 +50,7 @@ public class DokDistKanalRestController {
 
 	@ResponseBody
 	@PostMapping(value = BESTEM_KANAL_URI_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	@Metrics(value = DOK_REQUEST, extraTags = {PROCESS_CODE, BESTEM_DISTRIBUSJON_KANAL}, percentiles = {0.5, 0.95}, histogram = true)
+	@Metrics(value = DOK_REQUEST, extraTags = {PROCESS_CODE, BESTEM_DISTRIBUSJON_KANAL}, percentiles = {0.5, 0.95}, histogram = true, logExceptions = true)
 	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request,
 											@RequestHeader(value = NAV_CALLID, required = false) String navCallid,
 											@RequestHeader(value = CALL_ID, required = false) String dokCallId) {

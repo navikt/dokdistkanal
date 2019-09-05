@@ -3,7 +3,7 @@ package no.nav.dokdistkanal.service;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +11,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -27,12 +29,13 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.util.LogbackCapturingAppender;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
@@ -58,14 +61,20 @@ public class DokDistKanalServiceTest {
 	private PersonV3Consumer personV3Consumer = mock(PersonV3Consumer.class);
 	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
 	private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer = mock(SikkerhetsnivaaConsumer.class);
-
-	private DokDistKanalService service = new DokDistKanalService(dokumentTypeInfoConsumer, personV3Consumer, digitalKontaktinformasjonConsumer, sikkerhetsnivaaConsumer);
+	private MeterRegistry registry;
+	private DokDistKanalService service;
 
 	@Mock
 	private Appender mockAppender;
 
 	@Captor
 	private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
+
+	@Before
+	public void setUp() {
+		registry = new SimpleMeterRegistry();
+		service = new DokDistKanalService(dokumentTypeInfoConsumer, personV3Consumer, digitalKontaktinformasjonConsumer, sikkerhetsnivaaConsumer, registry);
+	}
 
 	@After
 	public void tearDown() {

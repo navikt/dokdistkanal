@@ -16,7 +16,7 @@ public class MicrometerMetrics {
 	private MeterRegistry registry;
 
 	public void cacheMiss(String cacheName) {
-		Counter.builder("dok_request_total_counter")
+		Counter.builder("dok_request_counter")
 				.tag("process", cacheName)
 				.tag("type", "cacheCounter")
 				.tag("consumer_name", getConsumerId())

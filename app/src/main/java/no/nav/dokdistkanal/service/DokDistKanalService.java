@@ -9,7 +9,10 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -40,13 +43,19 @@ public class DokDistKanalService {
 	private final PersonV3Consumer personV3Consumer;
 	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
+	private final MeterRegistry registry;
 
 	@Inject
-	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer, PersonV3Consumer personV3Consumer, DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer, SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer) {
+	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
+						PersonV3Consumer personV3Consumer,
+						DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
+						SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
+						MeterRegistry registry) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
 		this.personV3Consumer = personV3Consumer;
 		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
+		this.registry = registry;
 	}
 
 	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) {
@@ -129,6 +138,13 @@ public class DokDistKanalService {
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason) {
+		Counter.builder("dok_request_counter")
+				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
+				.tag("type", "velgKanal")
+				.tag("consumer_name", getConsumerId())
+				.tag("event", kanalKode.getUtsendingskanalCode().name())
+				.register(registry).increment();
+
 		LOG.info(String.format("BestemKanal: Sender melding til %s: %s", kanalKode.name(), reason));
 		return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
 	}

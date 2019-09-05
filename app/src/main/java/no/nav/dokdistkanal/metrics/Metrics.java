@@ -20,7 +20,7 @@ public @interface Metrics{
 
 	boolean histogram() default false;
 
-	boolean logExceptions() default true;
+	boolean logExceptions() default false;
 
 
 }

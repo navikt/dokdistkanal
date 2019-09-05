@@ -59,7 +59,7 @@ public class DokTimedAspect {
 		if (cacheable == null || cacheable.value().length < 1) {
 			return;
 		}
-		Counter.builder("dok_request_total_counter")
+		Counter.builder("dok_request_counter")
 				.tag("process", cacheable.value()[0])
 				.tag("type", "cacheCounter")
 				.tag("consumer_name", getConsumerId())
@@ -81,15 +81,17 @@ public class DokTimedAspect {
 			return pjp.proceed();
 		} catch (Exception e) {
 
-			logException(method, e);
+			if(metrics.logExceptions()) {
+				logException(method, e);
 
-			Counter.builder(metrics.value() + "_exception")
-					.tags("error_type", isFunctionalException(method, e) ? "functional" : "technical")
-					.tags("exception_name", e.getClass().getSimpleName())
-					.tags(metrics.extraTags())
-					.tags(tagsBasedOnJoinpoint.apply(pjp))
-					.register(registry)
-					.increment();
+				Counter.builder(metrics.value() + "_exception")
+						.tags("error_type", isFunctionalException(method, e) ? "functional" : "technical")
+						.tags("exception_name", e.getClass().getSimpleName())
+						.tags(metrics.extraTags())
+						.tags(tagsBasedOnJoinpoint.apply(pjp))
+						.register(registry)
+						.increment();
+			}
 
 			throw e;
 
@@ -102,18 +104,6 @@ public class DokTimedAspect {
 					.publishPercentiles(metrics.percentiles().length == 0 ? null : metrics.percentiles())
 					.register(registry));
 		}
-	}
-
-	@AfterReturning(
-			value = "target(no.nav.dokdistkanal.service.DokDistKanalService) && execution(no.nav.dokdistkanal.common.DokDistKanalResponse velgKanal(no.nav.dokdistkanal.common.DokDistKanalRequest))",
-			returning = "response")
-	public void meterKanalValg(JoinPoint jp, DokDistKanalResponse response) {
-		Counter.builder("dok_request_total_counter")
-				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
-				.tag("type", "velgKanal")
-				.tag("consumer_name", getConsumerId())
-				.tag("event", response.getDistribusjonsKanal().name())
-				.register(registry).increment();
 	}
 
 	private boolean isFunctionalException(Method method, Exception e) {
