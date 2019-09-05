@@ -1,6 +1,6 @@
 package no.nav.dokdistkanal.metrics;
 
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
+import static no.nav.dokdistkanal.common.ContextUtil.getConsumerId;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;

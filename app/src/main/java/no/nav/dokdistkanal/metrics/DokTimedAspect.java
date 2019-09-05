@@ -1,9 +1,7 @@
 package no.nav.dokdistkanal.metrics;
 
 import static java.util.Arrays.asList;
-import static no.nav.dokdistkanal.config.MDCConstants.MDC_CALL_ID;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.getConsumerId;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.common.ContextUtil.getConsumerId;
 
 import io.micrometer.core.annotation.Incubating;
 import io.micrometer.core.instrument.Counter;
@@ -13,16 +11,13 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.lang.NonNullApi;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.MDC;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.annotation.Order;
 
@@ -80,10 +75,7 @@ public class DokTimedAspect {
 		try {
 			return pjp.proceed();
 		} catch (Exception e) {
-
-			if(metrics.logExceptions()) {
-				logException(method, e);
-
+			if(metrics.countExceptions()) {
 				Counter.builder(metrics.value() + "_exception")
 						.tags("error_type", isFunctionalException(method, e) ? "functional" : "technical")
 						.tags("exception_name", e.getClass().getSimpleName())
@@ -108,16 +100,6 @@ public class DokTimedAspect {
 
 	private boolean isFunctionalException(Method method, Exception e) {
 		return asList(method.getExceptionTypes()).contains(e.getClass()) || isFunctionalException(e);
-	}
-
-	private void logException(Method method, Exception e) {
-		String mdcRequestId = MDC.get(MDC_CALL_ID);
-
-		if (isFunctionalException(method, e)) {
-			log.warn(mdcRequestId + e.getMessage(), e);
-		} else {
-			log.error(mdcRequestId + e.getMessage(), e);
-		}
 	}
 
 	private boolean isFunctionalException(Throwable e) {
