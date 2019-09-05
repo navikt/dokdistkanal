@@ -43,6 +43,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<bootstrap.version>3.3.6</bootstrap.version>
 		<cxf.version>3.3.3</cxf.version>
+		<wss4j-ws-security-dom.version>2.2.4</wss4j-ws-security-dom.version>
 		<nav-person-v3-tjenestespesifikasjon.version>3.0.2</nav-person-v3-tjenestespesifikasjon.version>
 		<nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon>2.0.0</nav-digitalKontaktinformasjon-v1-tjenestespesifikasjon>
 		<dokkat-api.version>10.0.2</dokkat-api.version>
