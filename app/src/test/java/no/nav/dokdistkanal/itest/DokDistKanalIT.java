@@ -106,7 +106,6 @@ public class DokDistKanalIT extends AbstractIT {
 		} catch (HttpStatusCodeException e) {
 			assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalSecurityException"));
 		}
 	}
 
@@ -135,9 +134,8 @@ public class DokDistKanalIT extends AbstractIT {
 			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
-			assertEquals(e.getStatusCode(), HttpStatus.BAD_REQUEST);
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokumentTypeInfoConsumer feilet. (HttpStatus=404) for dokumenttypeId:DOKTYPENOTFOUND"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokkatFunctionalException"));
+			assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokumentTypeInfoConsumer feilet. (HttpStatus=404 NOT_FOUND) for dokumenttypeId:DOKTYPENOTFOUND"));
 		}
 	}
 
@@ -180,7 +178,6 @@ public class DokDistKanalIT extends AbstractIT {
 		} catch (HttpStatusCodeException e) {
 			assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
 			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Sikkerhetsbegrensning ved kall til DIFI"));
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokDistKanalSecurityException"));
 		}
 	}
 

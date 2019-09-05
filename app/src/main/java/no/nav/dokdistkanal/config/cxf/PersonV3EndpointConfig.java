@@ -8,8 +8,6 @@ import org.springframework.context.annotation.Bean;
 
 import javax.xml.namespace.QName;
 
-//import no.nav.dokdistkanal.config.security.CustomSamlTokenOutInterceptor;
-
 /**
  * Spring config for PersonV3 CXF Endpoint
  *

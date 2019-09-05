@@ -1,18 +1,15 @@
 package no.nav.dokdistkanal.consumer.personv3;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_COUNTER;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.CACHE_MISS;
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.PERSONV3;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestCounter;
-import static no.nav.dokdistkanal.metrics.PrometheusMetrics.requestLatency;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
+import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
-import io.prometheus.client.Histogram;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.metrics.Metrics;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
@@ -40,26 +37,29 @@ import javax.xml.datatype.XMLGregorianCalendar;
 @Service
 public class PersonV3Consumer {
 	private final PersonV3 personV3;
-	private Histogram.Timer requestTimer;
-
 	public static final String HENT_PERSON = "hentPerson";
 
 	@Inject
-	public PersonV3Consumer(PersonV3 personV3) {
+	private MicrometerMetrics metrics;
+
+	@Inject
+	public PersonV3Consumer(PersonV3 personV3,
+							MicrometerMetrics metrics) {
+		this.metrics = metrics;
 		this.personV3 = personV3;
 	}
 
 	@Cacheable(value = HENT_PERSON, key = "#personidentifikator+'-personV3'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PERSON}, percentiles = {0.5, 0.95}, histogram = true)
 	public PersonV3To hentPerson(final String personidentifikator, final String consumerId) {
 
-		requestCounter.labels(HENT_PERSON, CACHE_COUNTER, consumerId, CACHE_MISS).inc();
+		metrics.cacheMiss(HENT_PERSON);
 
 		HentPersonRequest request = mapHentPersonRequest(personidentifikator);
 		HentPersonResponse response;
 
 		try {
-			requestTimer = requestLatency.labels(BESTEM_DISTRIBUSJON_KANAL, PERSONV3, HENT_PERSON).startTimer();
 			response = personV3.hentPerson(request);
 		} catch (HentPersonPersonIkkeFunnet hentPersonPersonIkkeFunnet) {
 			return null;
@@ -69,8 +69,6 @@ public class PersonV3Consumer {
 		} catch (Exception e) {
 			throw new PersonV3TechnicalException("Noe gikk galt i kall til PersonV3.hentPerson. ConsumerId=" + consumerId +
 					", message=" + e.getMessage(), e);
-		} finally {
-			requestTimer.observeDuration();
 		}
 		if (response != null && response.getPerson() != null) {
 			return mapTo(response.getPerson());
@@ -107,17 +105,23 @@ public class PersonV3Consumer {
 	}
 
 	private PersonV3To mapToPerson(Person person) {
-		XMLGregorianCalendar brukerFoedselssdato = person.getFoedselsdato() == null ? null : person.getFoedselsdato().getFoedselsdato();
-		XMLGregorianCalendar brukerDoedsdato = person.getDoedsdato() == null ? null : person.getDoedsdato().getDoedsdato();
-
+		XMLGregorianCalendar brukerFoedselssdato = getFoedselssdato(person);
+		XMLGregorianCalendar brukerDoedsdato = getDoedsdato(person);
 		return createTo(brukerFoedselssdato, brukerDoedsdato);
 	}
 
 	private PersonV3To mapToBruker(Bruker bruker) {
-		XMLGregorianCalendar brukerFoedselssdato = bruker.getFoedselsdato() == null ? null : bruker.getFoedselsdato().getFoedselsdato();
-		XMLGregorianCalendar brukerDoedsdato = bruker.getDoedsdato() == null ? null : bruker.getDoedsdato().getDoedsdato();
-
+		XMLGregorianCalendar brukerFoedselssdato = getFoedselssdato(bruker);
+		XMLGregorianCalendar brukerDoedsdato = getDoedsdato(bruker);
 		return createTo(brukerFoedselssdato, brukerDoedsdato);
+	}
+
+	private XMLGregorianCalendar getFoedselssdato(Person person) {
+		return person.getFoedselsdato() == null ? null : person.getFoedselsdato().getFoedselsdato();
+	}
+
+	private XMLGregorianCalendar getDoedsdato(Person person) {
+		return person.getDoedsdato() == null ? null : person.getDoedsdato().getDoedsdato();
 	}
 
 	private PersonV3To createTo(XMLGregorianCalendar brukerFoedselssdato, XMLGregorianCalendar brukerDoedsdato) {

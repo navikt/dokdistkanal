@@ -15,7 +15,7 @@ import javax.validation.constraints.Min;
 @Getter
 @Setter
 @ToString
-@ConfigurationProperties("HENTPAALOGGINGSNIVAA_V1")
+@ConfigurationProperties("hentpaaloggingsnivaa-v1")
 @Validated
 public class SikkerhetsnivaaV1Alias {
 	@NotEmpty

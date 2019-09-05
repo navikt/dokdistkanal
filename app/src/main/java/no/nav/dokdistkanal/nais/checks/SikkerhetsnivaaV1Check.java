@@ -1,7 +1,5 @@
 package no.nav.dokdistkanal.nais.checks;
 
-import static no.nav.dokdistkanal.metrics.PrometheusLabels.SIKKERHETSNIVAAV1;
-
 import no.nav.dokdistkanal.nais.selftest.AbstractDependencyCheck;
 import no.nav.dokdistkanal.nais.selftest.ApplicationNotReadyException;
 import no.nav.dokdistkanal.nais.selftest.DependencyType;
@@ -19,15 +17,17 @@ public class SikkerhetsnivaaV1Check extends AbstractDependencyCheck {
 
 	private final RestTemplate restTemplate;
 
+	private static final String SIKKERHETSNIVAAV1 = "SikkerhetsnivaaV1";
+
 	@Inject
 	public SikkerhetsnivaaV1Check(RestTemplateBuilder restTemplateBuilder,
-								  @Value("${HENTPAALOGGINGSNIVAA_V1_URL}") String sikkerhetsnivaaUrl,
+								  @Value("${hentpaaloggingsnivaa-v1.url}") String sikkerhetsnivaaUrl,
 								  HttpComponentsClientHttpRequestFactory requestFactory) {
 		super(DependencyType.REST,
 				SIKKERHETSNIVAAV1,
 				sikkerhetsnivaaUrl,
 				Importance.WARNING);
-		this.restTemplate = restTemplateBuilder.requestFactory(requestFactory)
+		this.restTemplate = restTemplateBuilder.requestFactory(() -> requestFactory)
 				.rootUri(sikkerhetsnivaaUrl)
 				.build();
 	}

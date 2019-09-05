@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
+import java.time.Duration;
 
 @Component
 public class DokumenttypeInfoV4Check extends AbstractDependencyCheck {
@@ -28,11 +29,11 @@ public class DokumenttypeInfoV4Check extends AbstractDependencyCheck {
 				DOKUMENTTYPEINFO_V4,
 				dokumenttypeInfoV4Alias.getUrl(),
 				Importance.CRITICAL);
-		this.restTemplate = restTemplateBuilder.requestFactory(requestFactory)
+		this.restTemplate = restTemplateBuilder.requestFactory(() -> requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
-				.basicAuthorization(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
-				.setConnectTimeout(dokumenttypeInfoV4Alias.getConnecttimeoutms())
-				.setReadTimeout(dokumenttypeInfoV4Alias.getReadtimeoutms())
+				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
+				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))
+				.setReadTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getReadtimeoutms()))
 				.build();
 	}
 

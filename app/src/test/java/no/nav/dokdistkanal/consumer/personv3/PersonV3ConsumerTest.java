@@ -3,12 +3,13 @@ package no.nav.dokdistkanal.consumer.personv3;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.person.v3.binding.HentPersonSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.person.v3.binding.PersonV3;
@@ -36,7 +37,8 @@ public class PersonV3ConsumerTest {
 	private static final String PRINCIPAL = "SRVDOKPROD";
 
 	private PersonV3 personV3 = mock(PersonV3.class);
-	private PersonV3Consumer personV3Consumer = new PersonV3Consumer(personV3);
+	private MicrometerMetrics metrics = mock(MicrometerMetrics.class);
+	private PersonV3Consumer personV3Consumer = new PersonV3Consumer(personV3, metrics);
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();

@@ -19,7 +19,7 @@ public class DigitalKontaktinformasjonEndpointConfig extends AbstractCxfEndpoint
 	public static final QName PORT = new QName(BINDING_NAMESPACE_URI, "DigitalKontaktinformasjon_v1Port");
 
 	@Bean
-	public DigitalKontaktinformasjonV1 hentDigitalKontaktinformasjon  (DigitalKontaktinfoV1Alias digitalKontaktinfoV1Alias, NavAppCertAlias navAppCertAlias) {
+	public DigitalKontaktinformasjonV1 hentDigitalKontaktinformasjon(DigitalKontaktinfoV1Alias digitalKontaktinfoV1Alias, NavAppCertAlias navAppCertAlias) {
 
 		navAppCertAlias.postConstruct();
 		setWsdlUrl(WSDL_URL);

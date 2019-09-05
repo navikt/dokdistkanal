@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
+
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
  */
@@ -19,16 +21,16 @@ public class RestTemplateTestConfig {
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
 		return restTemplateBuilder
-				.requestFactory(new HttpComponentsClientHttpRequestFactory())
-				.setReadTimeout(TIMEOUT)
-				.setConnectTimeout(TIMEOUT).build();
+				.requestFactory(HttpComponentsClientHttpRequestFactory::new)
+				.setReadTimeout(Duration.ofMillis(TIMEOUT))
+				.setConnectTimeout(Duration.ofMillis(TIMEOUT)).build();
 	}
 	
 	@Bean
 	public RestTemplate restTemplateNoHeader(RestTemplateBuilder restTemplateBuilder) {
 		return restTemplateBuilder
-				.requestFactory(new HttpComponentsClientHttpRequestFactory())
-				.setReadTimeout(TIMEOUT)
-				.setConnectTimeout(TIMEOUT).build();
+				.requestFactory(HttpComponentsClientHttpRequestFactory::new)
+				.setReadTimeout(Duration.ofMillis(TIMEOUT))
+				.setConnectTimeout(Duration.ofMillis(TIMEOUT)).build();
 	}
 }

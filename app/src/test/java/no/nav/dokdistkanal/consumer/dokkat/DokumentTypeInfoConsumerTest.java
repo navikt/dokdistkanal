@@ -3,14 +3,15 @@ package no.nav.dokdistkanal.consumer.dokkat;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.dokkat.api.tkat020.DistribusjonInfoTo;
 import no.nav.dokkat.api.tkat020.v4.DokumentProduksjonsInfoToV4;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
@@ -19,7 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -34,14 +35,16 @@ public class DokumentTypeInfoConsumerTest {
 
 	private RestTemplate restTemplate;
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
+	private MicrometerMetrics metrics;
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		restTemplate = mock(RestTemplate.class);
-		dokumentTypeInfoConsumer = new DokumentTypeInfoConsumer(restTemplate);
+		metrics = mock(MicrometerMetrics.class);
+		dokumentTypeInfoConsumer = new DokumentTypeInfoConsumer(restTemplate, metrics);
 	}
 
 	@Test
@@ -72,7 +75,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 
-		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=400) for dokumenttypeId");
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet. (HttpStatus=400 BAD_REQUEST) for dokumenttypeId");
 		expectedException.expect(DokkatFunctionalException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);
@@ -94,7 +97,7 @@ public class DokumentTypeInfoConsumerTest {
 		when(restTemplate.getForObject(any(String.class), eq(DokumentTypeInfoToV4.class), any(Map.class)))
 				.thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
-		expectedException.expectMessage("DokumentTypeInfoConsumer feilet (HttpStatus=401) for dokumenttypeId:" + DOKTYPE);
+		expectedException.expectMessage("DokumentTypeInfoConsumer feilet (HttpStatus=401 UNAUTHORIZED) for dokumenttypeId:" + DOKTYPE);
 		expectedException.expect(DokDistKanalSecurityException.class);
 
 		dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE);

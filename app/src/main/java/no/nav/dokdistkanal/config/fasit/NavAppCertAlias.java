@@ -7,11 +7,11 @@ import static no.nav.modig.security.ws.AbstractSAMLOutInterceptor.SYSTEM_PROPERT
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotEmpty;
 
 /**
  * @author Joakim Bjørnstad, Jbit AS
@@ -19,7 +19,7 @@ import javax.annotation.PostConstruct;
 @Getter
 @Setter
 @ToString
-@ConfigurationProperties("SRVDOKDISTKANAL_CERT")
+@ConfigurationProperties("srvdokdistkanal-cert")
 @Validated
 public class NavAppCertAlias {
 	@NotEmpty
