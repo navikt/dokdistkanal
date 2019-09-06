@@ -3,6 +3,7 @@ package no.nav.dokdistkanal.config.cxf;
 import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 import no.nav.dokdistkanal.config.sts.STSConfig;
+import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.apache.cxf.Bus;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.interceptor.Interceptor;
@@ -28,6 +29,12 @@ public abstract class AbstractCxfEndpointConfig {
 	@Inject
 	private Bus bus;
 
+	@Inject
+	private MicrometerMetrics metrics;
+
+	@Inject
+	private STSConfig stsConfig;
+
 	private int receiveTimeout = DEFAULT_TIMEOUT;
 	private int connectTimeout = DEFAULT_TIMEOUT;
 	private final JaxWsProxyFactoryBean factoryBean = new JaxWsProxyFactoryBean();
@@ -36,9 +43,6 @@ public abstract class AbstractCxfEndpointConfig {
 		factoryBean.setProperties(new HashMap<>());
 		factoryBean.setBus(bus);
 	}
-
-	@Inject
-	private STSConfig stsConfig;
 
 	protected void setAdress(String aktoerUrl) {
 		factoryBean.setAddress(aktoerUrl);
@@ -87,6 +91,7 @@ public abstract class AbstractCxfEndpointConfig {
 
 	@Cacheable(value = STS_CACHE_NAME)
 	public void configureSTSSamlToken(Object port){
+		metrics.cacheMiss(STS_CACHE_NAME);
 		stsConfig.configureSTS(port);
 	}
 }

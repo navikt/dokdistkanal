@@ -62,9 +62,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 	}
 
 	private RedisCacheConfiguration generateConfigWithDuration(Duration duration) {
-		return RedisCacheConfiguration.defaultCacheConfig()
-				.disableCachingNullValues()
-				.entryTtl(duration);
+		return RedisCacheConfiguration.defaultCacheConfig().entryTtl(duration);
 	}
 
 	@Bean

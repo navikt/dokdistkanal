@@ -142,7 +142,7 @@ public class DokDistKanalService {
 				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
 				.tag("type", "velgKanal")
 				.tag("consumer_name", getConsumerId())
-				.tag("event", kanalKode.getUtsendingskanalCode().name())
+				.tag("event", kanalKode.name())
 				.register(registry).increment();
 
 		LOG.info(String.format("BestemKanal: Sender melding til %s: %s", kanalKode.name(), reason));
