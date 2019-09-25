@@ -25,14 +25,14 @@ fasitResources:
   used:
   - alias: securityTokenService
     resourceType: baseurl
-  - alias: "virksomhet:Person_v3"
-    resourceType: webserviceendpoint
   - alias: DokumenttypeInfo_v4
     resourceType: restservice
   - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
-  - alias: "virksomhet:DigitalKontakinformasjon_v1"
-    resourceType: webserviceendpoint
+  - alias: securityTokenService
+    resourceType: baseurl
+  - alias: security-token-service-token
+    resourceType: restservice
   - alias: srvdokdistkanal
     resourceType: credential
     propertyMap:

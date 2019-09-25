@@ -26,10 +26,5 @@
 		<appender-ref ref="stdout_json"/>
 	</logger>
 
-	<!-- Remove noise due to missing security applied to SOAP faults -->
-	<logger name="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor" level="ERROR" additivity="false">
-		<appender-ref ref="stdout_json"/>
-	</logger>
-
 	<logger name="org.springframework" level="INFO"/>
 </configuration>

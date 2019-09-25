@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
+import static no.nav.dokdistkanal.common.FunctionalUtils.isNotEmpty;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
@@ -9,12 +10,13 @@ import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokdistkanal.metrics.MicrometerMetrics;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -86,10 +88,13 @@ public class SikkerhetsnivaaConsumer {
 
 	public void ping() {
 		String ping = restTemplate.getForObject("isReady", String.class);
-		Assert.isTrue(StringUtils.isNotBlank(ping), "Sikkerhetsnivaa ping failed " + ping);
+		Assert.isTrue(isNotEmpty(ping), "Sikkerhetsnivaa ping failed " + ping);
 	}
 
 	private SikkerhetsnivaaTo mapTo(SikkerhetsnivaaResponse response) {
-		return SikkerhetsnivaaTo.builder().personIdent(response.getPersonidentifikator()).harLoggetPaaNivaa4(response.isHarbruktnivaa4()).build();
+		return SikkerhetsnivaaTo.builder()
+				.personIdent(response.getPersonidentifikator())
+				.harLoggetPaaNivaa4(response.isHarbruktnivaa4())
+				.build();
 	}
 }

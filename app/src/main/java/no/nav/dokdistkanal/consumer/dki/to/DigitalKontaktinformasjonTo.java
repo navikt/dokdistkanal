@@ -1,20 +1,18 @@
 package no.nav.dokdistkanal.consumer.dki.to;
 
+import static no.nav.dokdistkanal.common.FunctionalUtils.isNotEmpty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.Serializable;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DigitalKontaktinformasjonTo implements Serializable {
+public class DigitalKontaktinformasjonTo {
 
-	static final long serialVersionUID = 1L;
 	private String epostadresse;
 	private String mobiltelefonnummer;
 	private boolean reservasjon;
@@ -23,9 +21,8 @@ public class DigitalKontaktinformasjonTo implements Serializable {
 	private boolean sertifikat;
 
 	public boolean verifyAddress() {
-		boolean hasLeverandorAdresse = StringUtils.isNotBlank(getLeverandoerAdresse());
-		boolean hasBrukerAdresse = StringUtils.isNotBlank(getBrukerAdresse());
+		boolean hasLeverandorAdresse = isNotEmpty(getLeverandoerAdresse());
+		boolean hasBrukerAdresse = isNotEmpty(getBrukerAdresse());
 		return (sertifikat && hasLeverandorAdresse && hasBrukerAdresse);
 	}
-
 }

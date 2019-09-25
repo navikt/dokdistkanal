@@ -1,11 +1,9 @@
 package no.nav.dokdistkanal.config.cache;
 
 import static no.nav.dokdistkanal.config.cache.CacheConfig.DEFAULT_CACHE_EXPIRATION_TIME;
-import static no.nav.dokdistkanal.config.cache.CacheConfig.HENT_PERSON_CACHE_EXPIRATION_TIME;
 import static no.nav.dokdistkanal.config.cache.CacheConfig.STS_CACHE_EXPIRATION_TIME;
 import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
-import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
 import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
 import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
@@ -24,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Cachemanager for bruk ved lokalt kjøring av applikasjonen.
- *
+ * <p>
  * Redis cache krever en Redis server som for å fungere. Redis serveren som kjører på nais er ikke eksponert ut og er derfor ikke mulig å aksessere lokalt.
  * For å slippe å starte opp Redis server lokalt så vil denne klassen configurere cachemanager som kan kjøre ved lokalt kjøring av applikasjonen.
  *
@@ -44,12 +42,6 @@ public class LocalCacheConfig {
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
 						.build()),
 				new CaffeineCache(HENT_PAALOGGINGSNIVAA, Caffeine.newBuilder()
-						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
-						.build()),
-				new CaffeineCache(HENT_PERSON, Caffeine.newBuilder()
-						.expireAfterWrite(HENT_PERSON_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
-						.build()),
-				new CaffeineCache(HENT_PERSON, Caffeine.newBuilder()
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
 						.build()),
 				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder()

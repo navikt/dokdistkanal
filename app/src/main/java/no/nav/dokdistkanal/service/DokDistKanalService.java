@@ -8,6 +8,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
@@ -16,17 +17,18 @@ import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
-import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
+import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjon;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
-import no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer;
-import no.nav.dokdistkanal.consumer.personv3.to.PersonV3To;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import org.apache.commons.lang3.StringUtils;
+import no.nav.dokdistkanal.consumer.tps.Tps;
+import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentTo;
+import no.nav.dokdistkanal.exceptions.functional.UgyldingInputFunctionalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
@@ -36,26 +38,27 @@ import java.time.LocalDate;
  * @author Ketill Fenne, Visma Consulting
  */
 @Service
+@Component
 public class DokDistKanalService {
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
-	private final PersonV3Consumer personV3Consumer;
-	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
+	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 	private final MeterRegistry registry;
+	private final Tps tps;
 
 	@Inject
 	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
-						PersonV3Consumer personV3Consumer,
-						DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
+						DigitalKontaktinformasjon digitalKontaktinformasjon,
 						SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
-						MeterRegistry registry) {
+						MeterRegistry registry,
+						Tps tps) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
-		this.personV3Consumer = personV3Consumer;
-		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
+		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 		this.registry = registry;
+		this.tps = tps;
 	}
 
 	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) {
@@ -79,7 +82,7 @@ public class DokDistKanalService {
 		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
 			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()));
 		} else {
-			PersonV3To personTo = personV3Consumer.hentPerson(dokDistKanalRequest.getMottakerId(), getConsumerId());
+			TpsHentPersoninfoForIdentTo personTo = tps.tpsHentPersoninfoForIdent(dokDistKanalRequest.getMottakerId(), getConsumerId());
 
 			if (personTo == null) {
 				return logAndReturn(PRINT, "Finner ikke personen i TPS");
@@ -97,8 +100,8 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Personen må være minst 18 år gammel");
 			}
 
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(dokDistKanalRequest
-					.getMottakerId());
+			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(dokDistKanalRequest
+					.getMottakerId(), true);
 			if (dki == null) {
 				return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon");
 			}
@@ -106,13 +109,13 @@ public class DokDistKanalService {
 			if (dki.isReservasjon()) {
 				return logAndReturn(PRINT, "Bruker har reservert seg");
 			}
-			if (dokumentTypeInfoTo.isVarslingSdp() && StringUtils.isBlank(dki.getEpostadresse()) && StringUtils.isBlank(dki.getMobiltelefonnummer())) {
+			if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 				return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi");
 			}
 			if (dki.verifyAddress()) {
 				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.");
 			}
-			if (StringUtils.isBlank(dki.getEpostadresse()) && StringUtils.isBlank(dki.getMobiltelefonnummer())) {
+			if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 				return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme");
 			}
 
@@ -159,14 +162,14 @@ public class DokDistKanalService {
 	}
 
 	private static void assertNotNullOrEmpty(String fieldName, String value) {
-		if (StringUtils.isEmpty(value)) {
-			throw new UgyldingInputException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
+		if (isEmpty(value)) {
+			throw new UgyldingInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 
 	private static void assertNotNull(String fieldName, Boolean value) {
 		if (value == null) {
-			throw new UgyldingInputException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
+			throw new UgyldingInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
 		}
 	}
 

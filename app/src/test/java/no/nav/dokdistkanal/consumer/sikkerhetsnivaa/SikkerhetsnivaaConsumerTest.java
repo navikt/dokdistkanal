@@ -11,8 +11,10 @@ import static org.mockito.Mockito.when;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
 import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +43,7 @@ public class SikkerhetsnivaaConsumerTest {
 	public void setUp() {
 		restTemplate = mock(RestTemplate.class);
 		metrics = mock(MicrometerMetrics.class);
-		sikkerhetsnivaaConsumer= new SikkerhetsnivaaConsumer(restTemplate, metrics);
+		sikkerhetsnivaaConsumer = new SikkerhetsnivaaConsumer(restTemplate, metrics);
 	}
 
 	@Test
@@ -49,7 +51,8 @@ public class SikkerhetsnivaaConsumerTest {
 		SikkerhetsnivaaResponse response = new SikkerhetsnivaaResponse();
 		response.setPersonidentifikator(FNR);
 		response.setHarbruktnivaa4(Boolean.FALSE);
-		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenReturn(response);
+		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
+				.thenReturn(response);
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 		assertThat(sikkerhetsnivaaTo.isHarLoggetPaaNivaa4(), equalTo(Boolean.FALSE));
 		assertThat(sikkerhetsnivaaTo.getPersonIdent(), equalTo(FNR));
@@ -57,7 +60,8 @@ public class SikkerhetsnivaaConsumerTest {
 
 	@Test
 	public void shouldReturnFalseWhenSikkerhetsnivaaNotFound() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
-		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
+				.thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 		assertThat(sikkerhetsnivaaTo.isHarLoggetPaaNivaa4(), equalTo(Boolean.FALSE));
 		assertThat(sikkerhetsnivaaTo.getPersonIdent(), equalTo(FNR));
@@ -67,7 +71,8 @@ public class SikkerhetsnivaaConsumerTest {
 	public void shouldThrowFunctionalExceptionWhenHttpStatusBadRequest() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(SikkerhetsnivaaFunctionalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=400 BAD_REQUEST)");
-		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
+				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
@@ -76,7 +81,8 @@ public class SikkerhetsnivaaConsumerTest {
 	public void shouldThrowTechnicalExceptionWhenRuntimeException() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet");
-		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new RuntimeException());
+		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
+				.thenThrow(new RuntimeException());
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
@@ -84,7 +90,8 @@ public class SikkerhetsnivaaConsumerTest {
 	public void shouldThrowSecurityExceptionWhenHttpStatusForbidden() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(DokDistKanalSecurityException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=403 FORBIDDEN)");
-		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
+		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
+				.thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 
@@ -92,7 +99,8 @@ public class SikkerhetsnivaaConsumerTest {
 	public void shouldThrowTechnicalExceptionWhenHttpStatusInternalServerError() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		expectedException.expect(SikkerhetsnivaaTechnicalException.class);
 		expectedException.expectMessage("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=500 INTERNAL_SERVER_ERROR)");
-		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class))).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
+				.thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 		sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR);
 	}
 

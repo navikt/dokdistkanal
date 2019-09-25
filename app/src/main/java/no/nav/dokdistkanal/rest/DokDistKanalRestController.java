@@ -1,22 +1,22 @@
 package no.nav.dokdistkanal.rest;
 
-import static no.nav.dokdistkanal.config.MDCConstants.MDC_CALL_ID;
+import static no.nav.dokdistkanal.constants.MDCConstants.MDC_CALL_ID;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_REQUEST;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 import static no.nav.dokdistkanal.rest.NavHeaders.CALL_ID;
 import static no.nav.dokdistkanal.rest.NavHeaders.NAV_CALLID;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.slf4j.MDC;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -28,6 +28,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
+@Component
 public class DokDistKanalRestController {
 	public static final String BESTEM_DISTRIBUSJON_KANAL = "bestemDistribusjonKanal";
 	private static final String REST = "/rest/";
@@ -67,12 +68,16 @@ public class DokDistKanalRestController {
 	}
 
 	private String getOrCreateCallId(final String navCallid, final String dokCallId) {
-		if(isNotBlank(navCallid)) {
+		if (isNotNullOrEmpty(navCallid)) {
 			return navCallid;
 		}
-		if(isNotBlank(dokCallId)) {
+		if (isNotNullOrEmpty(dokCallId)) {
 			return dokCallId;
 		}
 		return UUID.randomUUID().toString();
+	}
+
+	private boolean isNotNullOrEmpty(String callId) {
+		return (callId != null && !callId.isEmpty());
 	}
 }
