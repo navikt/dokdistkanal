@@ -5,17 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class KontaktInfo {
+public class DkifResponseTo {
 
-	private Feil feil;
-	private DigitalKontaktinfo digitalKontaktinfo;
+	private Map<String, Melding> feil;
+	private Map<String, DigitalKontaktinfo> kontaktinfo;
 
 	@Data
-	public static class Feil {
+	public static class Melding {
 		private String melding;
 	}
 

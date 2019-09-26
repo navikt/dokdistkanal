@@ -20,7 +20,6 @@ import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.Assert;
@@ -47,12 +46,10 @@ public class SikkerhetsnivaaConsumer {
 
 	@Inject
 	public SikkerhetsnivaaConsumer(RestTemplateBuilder restTemplateBuilder,
-								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
 								   MicrometerMetrics metrics,
 								   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
-				.requestFactory(() -> requestFactory)
 				.rootUri(sikkerhetsnivaaV1Alias.getUrl())
 				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
 				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))

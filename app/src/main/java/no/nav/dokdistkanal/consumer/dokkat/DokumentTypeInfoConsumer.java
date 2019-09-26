@@ -19,7 +19,6 @@ import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -45,12 +44,10 @@ public class DokumentTypeInfoConsumer {
 
 	@Inject
 	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
-									HttpComponentsClientHttpRequestFactory requestFactory,
 									DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 									MicrometerMetrics metrics,
 									ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
-				.requestFactory(() -> requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
 				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))

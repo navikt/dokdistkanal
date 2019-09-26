@@ -23,15 +23,13 @@ resources:
     cpu: 1000m
 fasitResources:
   used:
-  - alias: securityTokenService
-    resourceType: baseurl
   - alias: DokumenttypeInfo_v4
     resourceType: restservice
   - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
   - alias: securityTokenService
-    resourceType: baseurl
-  - alias: security-token-service-token
+    resourceType: restservice
+  - alias: tpsproxy_api
     resourceType: restservice
   - alias: srvdokdistkanal
     resourceType: credential

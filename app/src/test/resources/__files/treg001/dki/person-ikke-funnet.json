@@ -1,8 +1,8 @@
 {
-  "***gammelt_fnr***": {
-    "feil": {
+  "feil": {
+    "***gammelt_fnr***": {
       "melding": "Kontaktinformasjon ikke funnet."
-    },
-    "digitalKontaktinfo": null
-  }
+    }
+  },
+  "kontaktinfo": null
 }

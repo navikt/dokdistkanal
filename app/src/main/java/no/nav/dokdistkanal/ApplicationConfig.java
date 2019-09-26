@@ -2,7 +2,6 @@ package no.nav.dokdistkanal;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import no.nav.dokdistkanal.config.RestConsumerConfig;
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
@@ -29,7 +28,6 @@ import org.springframework.context.annotation.Import;
 		DigitalKontaktinformasjonConsumer.class,
 		SikkerhetsnivaaConsumer.class,
 		DokumentTypeInfoConsumer.class,
-		RestConsumerConfig.class
 })
 @Configuration
 @EnableAspectJAutoProxy

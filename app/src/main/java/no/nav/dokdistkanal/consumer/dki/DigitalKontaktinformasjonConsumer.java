@@ -5,14 +5,14 @@ import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
 import static no.nav.dokdistkanal.constants.DomainConstants.BEARER_PREFIX;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENT;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENTER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.consumer.dki.to.KontaktInfo;
+import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
@@ -22,7 +22,6 @@ import no.nav.dokdistkanal.metrics.Metrics;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -36,7 +35,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
 import java.time.Duration;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -65,14 +63,16 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
 		HttpHeaders headers = createHeaders();
 		final String fnrTrimmed = personidentifikator.trim();
-		headers.add(NAV_PERSONIDENT, fnrTrimmed);
+		headers.add(NAV_PERSONIDENTER, fnrTrimmed);
 
 		try {
-			Map<String, KontaktInfo> response = restTemplate.exchange(dkiUrl + "/api/v1/personer/kontaktinformasjon?" + inkluderSikkerDigitalPost,
-					HttpMethod.GET, new HttpEntity<>(headers), new ParameterizedTypeReference<Map<String, KontaktInfo>>() {
-					}).getBody();
-
-			return mapDigitalKontaktinformasjon(response.get(fnrTrimmed));
+			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
+					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
+			if (response == null || response.getKontaktinfo() == null) {
+				return null;
+			} else {
+				return mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed), fnrTrimmed);
+			}
 		} catch (
 				HttpClientErrorException e) {
 			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV2.digitalKontaktinformasjon feilmelding=%s", e
@@ -84,12 +84,11 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		}
 	}
 
-	private DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(KontaktInfo kontaktInfo) {
+	private DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(DkifResponseTo.DigitalKontaktinfo digitalKontaktinfo, String fnr) {
 
-		if (kontaktInfo == null || kontaktInfo.getDigitalKontaktinfo() == null) {
+		if (digitalKontaktinfo == null) {
 			return null;
 		} else {
-			KontaktInfo.DigitalKontaktinfo digitalKontaktinfo = kontaktInfo.getDigitalKontaktinfo();
 
 			return DigitalKontaktinformasjonTo.builder()
 					.brukerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse()

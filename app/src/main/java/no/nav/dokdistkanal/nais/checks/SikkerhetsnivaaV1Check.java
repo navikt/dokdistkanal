@@ -21,13 +21,15 @@ public class SikkerhetsnivaaV1Check extends AbstractDependencyCheck {
 
 	@Inject
 	public SikkerhetsnivaaV1Check(RestTemplateBuilder restTemplateBuilder,
-								  @Value("${hentpaaloggingsnivaa-v1.url}") String sikkerhetsnivaaUrl,
-								  HttpComponentsClientHttpRequestFactory requestFactory) {
+								  @Value("${hentpaaloggingsnivaa-v1.url}") String sikkerhetsnivaaUrl
+//								  HttpComponentsClientHttpRequestFactory requestFactory
+	) {
 		super(DependencyType.REST,
 				SIKKERHETSNIVAAV1,
 				sikkerhetsnivaaUrl,
 				Importance.WARNING);
-		this.restTemplate = restTemplateBuilder.requestFactory(() -> requestFactory)
+		this.restTemplate = restTemplateBuilder
+//				.requestFactory(() -> requestFactory)
 				.rootUri(sikkerhetsnivaaUrl)
 				.build();
 	}

@@ -1,9 +1,11 @@
 {
-  "***gammelt_fnr***": {
-    "feil": {
+  "feil": {
+    "***gammelt_fnr***": {
       "melding": null
-    },
-    "digitalKontaktinfo": {
+    }
+  },
+  "kontaktinfo": {
+    "***gammelt_fnr***": {
       "epostadresse": "epost",
       "mobiltelefonnummer": "telefonnummer",
       "reservert": false,

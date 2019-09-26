@@ -27,7 +27,8 @@ public class DokDistKanalIT extends AbstractIT {
 	private static final String MOTTAKERID = "***gammelt_fnr***";
 	private static final String ORGMOTTAKERID = "123456789";
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
-	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;
+	private final static boolean ER_ARKIVERT_TRUE = true;
+	private final static boolean INKLUDER_SIKKER_DIGITALPOSTKASSE = true;
 
 	@Before
 	public void runBefore() {
@@ -51,7 +52,7 @@ public class DokDistKanalIT extends AbstractIT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/tps/happy-path.json")));
 
-		stubFor(get(urlPathMatching("/DKIF_V2/api/v1/personer/kontaktinformasjon?"))
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/dki/happy-responsebody.json")));
@@ -129,7 +130,7 @@ public class DokDistKanalIT extends AbstractIT {
 	@Test
 	public void shouldThrowFunctionalExceptionFromDKIWhenKontaktinformasjonNotFound() {
 		//Stub web services:
-		stubFor(get(urlPathMatching("/DKIF_V2/api/v1/personer/kontaktinformasjon?"))
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/dki/person-ikke-funnet.json")));
@@ -143,10 +144,9 @@ public class DokDistKanalIT extends AbstractIT {
 	@Test
 	public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() {
 		//Stub web services:
-		stubFor(get(urlPathMatching("/DKIF_V2/api/v1/personer/kontaktinformasjon?"))
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(HttpStatus.FORBIDDEN.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
-						.withBodyFile("treg001/dki/sikkerhet.json")
 				));
 		try {
 			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
@@ -162,7 +162,7 @@ public class DokDistKanalIT extends AbstractIT {
 	@Test
 	public void shouldThrowFunctionalExceptionFromPaaloggingsnivaaUgyldigIdent() {
 		//Stub web services:
-		stubFor(get(urlPathMatching("/DKIF_V2/api/v1/personer/kontaktinformasjon?"))
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/dki/ditt-nav-responsebody.json")));

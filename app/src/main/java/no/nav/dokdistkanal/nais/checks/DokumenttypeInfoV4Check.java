@@ -22,14 +22,15 @@ public class DokumenttypeInfoV4Check extends AbstractDependencyCheck {
 
 	@Inject
 	public DokumenttypeInfoV4Check(RestTemplateBuilder restTemplateBuilder,
-								   HttpComponentsClientHttpRequestFactory requestFactory,
+//								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 								   ServiceuserAlias serviceuserAlias) {
 		super(DependencyType.REST,
 				DOKUMENTTYPEINFO_V4,
 				dokumenttypeInfoV4Alias.getUrl(),
 				Importance.CRITICAL);
-		this.restTemplate = restTemplateBuilder.requestFactory(() -> requestFactory)
+		this.restTemplate = restTemplateBuilder
+//				.requestFactory(() -> requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
 				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))
