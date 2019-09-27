@@ -4,6 +4,9 @@ replicas:
   max: 4
   cpuThresholdPercentage: 50
 port: 8080
+team: teamdokumenthandtering
+vault:
+  enabled: true
 healthcheck:
   liveness:
     path: /isAlive
@@ -27,21 +30,13 @@ fasitResources:
     resourceType: restservice
   - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
-  - alias: securityTokenService
-    resourceType: restservice
-  - alias: tpsproxy_api
+  - alias: security-token-service-token
     resourceType: restservice
   - alias: srvdokdistkanal
     resourceType: credential
     propertyMap:
       username: SERVICEUSER_USERNAME
       password: SERVICEUSER_PASSWORD
-  - alias: srvdokdistkanal
-    resourceType: certificate
-    propertyMap:
-      keystorealias: SRVDOKDISTKANAL_CERT_KEYSTOREALIAS
-      keystore: SRVDOKDISTKANAL_CERT_KEYSTORE
-      password: SRVDOKDISTKANAL_CERT_PASSWORD
   exposed:
   - alias: bestemDistribusjonKanal
     resourceType: restservice
