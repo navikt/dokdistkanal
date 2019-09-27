@@ -155,7 +155,7 @@ public class DokDistKanalIT extends AbstractIT {
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
 			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Funksjonell feil ved kall mot DigitalKontaktinformasjonV2.digitalKontaktinformasjon feilmelding=403 Forbidden"));
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontakinformasjon feilmelding=403 Forbidden"));
 		}
 	}
 

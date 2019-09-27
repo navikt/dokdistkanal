@@ -46,10 +46,10 @@ public class LocalCacheConfig {
 						.build()),
 				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder()
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
+						.build()),
+				new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
+						.expireAfterWrite(STS_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
 						.build())));
-		new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
-				.expireAfterWrite(STS_CACHE_EXPIRATION_TIME.toMillis(), TimeUnit.MILLISECONDS)
-				.build());
 		return cacheManager;
 
 	}

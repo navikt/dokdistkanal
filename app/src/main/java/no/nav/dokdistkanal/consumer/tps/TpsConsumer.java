@@ -67,12 +67,11 @@ public class TpsConsumer implements Tps {
 		headers.add(NAV_PERSONIDENT, fnrTrimmed);
 		headers.add(NAV_CONSUMER_ID, consumerId);
 		TpsHentPersoninfoForIdentResponseTo response;
-		TpsHentPersoninfoForIdentTo tpsHentPersoninfoForIdentTo;
 
 		try {
 			response = restTemplate.exchange(tpsProxyUrl + "/v1/innsyn/person", HttpMethod.GET, new HttpEntity<>(headers), TpsHentPersoninfoForIdentResponseTo.class)
 					.getBody();
-			tpsHentPersoninfoForIdentTo = mapTo(response);
+			return mapTo(response);
 		} catch (HttpClientErrorException e) {
 			throw new TpsHentNavnFunctionalException(format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. feilmelding=%s", e
 					.getMessage()), e);
@@ -80,7 +79,6 @@ public class TpsConsumer implements Tps {
 			throw new TpsHentNavnTechnicalException(format("Teknisk feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e
 					.getMessage()), e);
 		}
-		return tpsHentPersoninfoForIdentTo;
 	}
 
 	private TpsHentPersoninfoForIdentTo mapTo(TpsHentPersoninfoForIdentResponseTo response) {
@@ -103,5 +101,3 @@ public class TpsConsumer implements Tps {
 		return headers;
 	}
 }
-
-

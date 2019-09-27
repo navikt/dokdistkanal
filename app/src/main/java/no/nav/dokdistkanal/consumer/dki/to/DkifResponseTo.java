@@ -22,14 +22,17 @@ public class DkifResponseTo {
 	}
 
 	@Data
+	@Builder
 	public static class DigitalKontaktinfo {
 		private String epostadresse;
+		private boolean kanVarsles;
 		private String mobiltelefonnummer;
 		private boolean reservert;
 		private SikkerDigitalPostkasse sikkerDigitalPostkasse;
 	}
 
 	@Data
+	@Builder
 	public static class SikkerDigitalPostkasse {
 		private String adresse;
 		private String leverandoerAdresse;

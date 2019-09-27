@@ -16,7 +16,6 @@ import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.slf4j.MDC;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -28,7 +27,6 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@Component
 public class DokDistKanalRestController {
 	public static final String BESTEM_DISTRIBUSJON_KANAL = "bestemDistribusjonKanal";
 	private static final String REST = "/rest/";

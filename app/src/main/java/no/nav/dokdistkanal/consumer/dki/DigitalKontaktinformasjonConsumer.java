@@ -11,6 +11,7 @@ import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.constants.MDCConstants;
+import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
@@ -43,6 +44,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	private final RestTemplate restTemplate;
 	private final String dkiUrl;
 	private final StsRestConsumer stsRestConsumer;
+	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 
@@ -71,41 +73,17 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			if (response == null || response.getKontaktinfo() == null) {
 				return null;
 			} else {
-				return mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed), fnrTrimmed);
+				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
 			}
 		} catch (
 				HttpClientErrorException e) {
-			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV2.digitalKontaktinformasjon feilmelding=%s", e
+			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontakinformasjon feilmelding=%s", e
 					.getMessage()), e);
 		} catch (
 				HttpServerErrorException e) {
-			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV2.digitalKontaktinformasjon. Feilmelding=%s", e
+			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
 					.getMessage()), e);
 		}
-	}
-
-	private DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(DkifResponseTo.DigitalKontaktinfo digitalKontaktinfo, String fnr) {
-
-		if (digitalKontaktinfo == null) {
-			return null;
-		} else {
-
-			return DigitalKontaktinformasjonTo.builder()
-					.brukerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse()
-							.getAdresse() : null)
-					.epostadresse(digitalKontaktinfo.getEpostadresse())
-					.leverandoerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse()
-							.getLeverandoerAdresse() : null)
-					.mobiltelefonnummer(digitalKontaktinfo.getMobiltelefonnummer())
-					.reservasjon(digitalKontaktinfo.isReservert())
-					.sertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse() != null && isSertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse()
-							.getLeverandoerSertifikat()))
-					.build();
-		}
-	}
-
-	private boolean isSertifikat(String leverandoerSertifikat) {
-		return leverandoerSertifikat != null && !leverandoerSertifikat.isEmpty();
 	}
 
 	private HttpHeaders createHeaders() {
