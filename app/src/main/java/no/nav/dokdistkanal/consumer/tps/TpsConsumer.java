@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
 import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentResponseTo;
 import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentTo;
-import no.nav.dokdistkanal.exceptions.functional.TpsHentNavnFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.TpsHentNavnTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import org.slf4j.MDC;
@@ -74,8 +73,8 @@ public class TpsConsumer implements Tps {
 					.getBody();
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			throw new TpsHentNavnFunctionalException(format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. feilmelding=%s", e
-					.getMessage()), e);
+			log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getMessage()));
+			return null;
 		} catch (HttpServerErrorException e) {
 			throw new TpsHentNavnTechnicalException(format("Teknisk feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e
 					.getMessage()), e);

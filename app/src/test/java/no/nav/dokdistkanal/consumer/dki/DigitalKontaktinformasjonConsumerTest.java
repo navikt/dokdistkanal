@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,10 +63,11 @@ public class DigitalKontaktinformasjonConsumerTest {
 	@Test
 	public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() throws Exception {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
-				.thenThrow(new DigitalKontaktinformasjonV2FunctionalException("Ingen adgang"));
-		expectedException.expect(DigitalKontaktinformasjonV2FunctionalException.class);
+				.thenReturn(null);
 
-		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST);
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST);
+
+		assertNull(digitalKontaktinformasjonTo);
 	}
 
 	@Test

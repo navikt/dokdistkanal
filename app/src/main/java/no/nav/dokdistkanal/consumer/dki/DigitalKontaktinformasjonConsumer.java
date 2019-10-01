@@ -15,7 +15,6 @@ import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
-import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
@@ -75,10 +74,10 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			} else {
 				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
 			}
-		} catch (
-				HttpClientErrorException e) {
-			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontakinformasjon feilmelding=%s", e
-					.getMessage()), e);
+		} catch (HttpClientErrorException e) {
+			log.warn(String.format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
+					.getMessage()));
+			return null;
 		} catch (
 				HttpServerErrorException e) {
 			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e

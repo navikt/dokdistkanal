@@ -96,12 +96,11 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromPersonPlugin() {
+	public void shouldReturnPrintWhenPersonNotFound() {
 		//Stub web services:
 		stubFor(get(urlPathMatching("/TPS/v1/innsyn/person"))
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
-						.withBodyFile("treg001/tps/tps-not-found.json")));
+				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())));
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
@@ -128,12 +127,11 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenKontaktinformasjonNotFound() {
+	public void shouldReturnPrintFromDKIWhenKontaktinformasjonNotFound() {
 		//Stub web services:
 		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
-						.withBodyFile("treg001/dki/person-ikke-funnet.json")));
+				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())));
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
@@ -142,21 +140,17 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() {
+	public void shouldReturnNullFromDKIWhenSikkerhetsbegrensning() {
 		//Stub web services:
 		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(HttpStatus.FORBIDDEN.value())
+				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 				));
-		try {
-			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(Boolean.TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontakinformasjon feilmelding=403 Forbidden"));
-		}
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test

@@ -1,14 +1,13 @@
 package no.nav.dokdistkanal.consumer.tps;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentTo;
-import no.nav.dokdistkanal.exceptions.functional.TpsHentNavnFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.TpsHentNavnTechnicalException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,12 +39,11 @@ public class TpsConsumerTest {
 
 	@Test
 	public void shouldThrowFunctionalException() throws Exception {
-		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class))).thenThrow(new TpsHentNavnFunctionalException("Fant ikke person"));
-		expectedException.expect(TpsHentNavnFunctionalException.class);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class))).thenReturn(null);
 
 		TpsHentPersoninfoForIdentTo personinfoForIdentTo = tpsConsumer.tpsHentPersoninfoForIdent(FNR);
 
-		assertThat(personinfoForIdentTo, nullValue());
+		assertNull(personinfoForIdentTo);
 	}
 
 	@Test
