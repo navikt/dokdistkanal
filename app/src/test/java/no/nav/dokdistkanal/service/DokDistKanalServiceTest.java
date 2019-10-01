@@ -162,7 +162,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		TpsHentPersoninfoForIdentTo personinfoTo = null;
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke personen i TPS"));
@@ -177,7 +177,7 @@ public class DokDistKanalServiceTest {
 		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder().doedsdato(LocalDate.now()).build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personen er død"));
@@ -195,7 +195,7 @@ public class DokDistKanalServiceTest {
 				.doedsdato(null)
 				.foedselsdato(null)
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personens alder er ukjent"));
@@ -213,7 +213,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(17).minusMonths(11))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Personen må være minst 18 år gammel"));
@@ -230,7 +230,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = null;
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
@@ -249,7 +249,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.sertifikat(SERTIFIKAT)
@@ -274,7 +274,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.reservasjon(Boolean.FALSE)
 				.mobiltelefonnummer(MOBIL).build();
@@ -301,7 +301,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.sertifikat(SERTIFIKAT)
@@ -326,7 +326,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.sertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.FALSE)
@@ -348,7 +348,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.sertifikat(SERTIFIKAT)
@@ -373,7 +373,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)
@@ -400,7 +400,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)
@@ -427,7 +427,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)
@@ -454,7 +454,7 @@ public class DokDistKanalServiceTest {
 		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString(), anyString())).thenReturn(personinfoTo);
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.reservasjon(Boolean.FALSE)

@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.service;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.common.ContextUtil.getConsumerId;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
@@ -82,7 +81,7 @@ public class DokDistKanalService {
 		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
 			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()));
 		} else {
-			TpsHentPersoninfoForIdentTo personTo = tps.tpsHentPersoninfoForIdent(dokDistKanalRequest.getMottakerId(), getConsumerId());
+			TpsHentPersoninfoForIdentTo personTo = tps.tpsHentPersoninfoForIdent(dokDistKanalRequest.getMottakerId());
 
 			if (personTo == null) {
 				return logAndReturn(PRINT, "Finner ikke personen i TPS");
@@ -144,7 +143,7 @@ public class DokDistKanalService {
 		Counter.builder("dok_request_counter")
 				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
 				.tag("type", "velgKanal")
-				.tag("consumer_name", getConsumerId())
+				.tag("consumer_name", "ukjent")
 				.tag("event", kanalKode.name())
 				.register(registry).increment();
 

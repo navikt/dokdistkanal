@@ -42,6 +42,7 @@ import java.time.LocalDate;
 @Component
 public class TpsConsumer implements Tps {
 	private static final String HENT_PERSONINFO_FOR_IDENT = "hentPersoninfoForIdent";
+	private static final String CONSUMER_ID = "srvdokdistkanal";
 
 	private final RestTemplate restTemplate;
 	private final String tpsProxyUrl;
@@ -61,11 +62,11 @@ public class TpsConsumer implements Tps {
 
 	@Metrics(value = "dok_metric", extraTags = {PROCESS_CODE, HENT_PERSONINFO_FOR_IDENT}, percentiles = {0.5, 0.95}, histogram = true)
 	@Retryable(include = TpsHentNavnTechnicalException.class, maxAttempts = 5, backoff = @Backoff(delay = DELAY_SHORT))
-	public TpsHentPersoninfoForIdentTo tpsHentPersoninfoForIdent(final String fnr, final String consumerId) {
+	public TpsHentPersoninfoForIdentTo tpsHentPersoninfoForIdent(final String fnr) {
 		final String fnrTrimmed = fnr.trim();
 		HttpHeaders headers = createHeaders();
 		headers.add(NAV_PERSONIDENT, fnrTrimmed);
-		headers.add(NAV_CONSUMER_ID, consumerId);
+		headers.add(NAV_CONSUMER_ID, CONSUMER_ID);
 		TpsHentPersoninfoForIdentResponseTo response;
 
 		try {

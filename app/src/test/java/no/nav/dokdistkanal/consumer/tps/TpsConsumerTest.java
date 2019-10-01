@@ -21,7 +21,6 @@ public class TpsConsumerTest {
 	private static final String FNR = "***gammelt_fnr***";
 	private static final LocalDate FOEDSELSDATO = LocalDate.of(1899, 12, 31);
 	private static final LocalDate DOEDSDATO = LocalDate.of(1999, 12, 31);
-	private static final String PRINCIPAL = "SRVDOKPROD";
 
 	private final TpsConsumer tpsConsumer = mock(TpsConsumer.class);
 
@@ -30,9 +29,9 @@ public class TpsConsumerTest {
 
 	@Test
 	public void shouldHentPersonOK() {
-		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class), any(String.class))).thenReturn(createResponse());
+		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class))).thenReturn(createResponse());
 
-		TpsHentPersoninfoForIdentTo personinfoForIdentTo = tpsConsumer.tpsHentPersoninfoForIdent(FNR, PRINCIPAL);
+		TpsHentPersoninfoForIdentTo personinfoForIdentTo = tpsConsumer.tpsHentPersoninfoForIdent(FNR);
 
 		assertThat(personinfoForIdentTo.getDoedsdato(), is(DOEDSDATO));
 		assertThat(personinfoForIdentTo.getFoedselsdato(), is(FOEDSELSDATO));
@@ -41,20 +40,20 @@ public class TpsConsumerTest {
 
 	@Test
 	public void shouldThrowFunctionalException() throws Exception {
-		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class), any(String.class))).thenThrow(new TpsHentNavnFunctionalException("Fant ikke person"));
+		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class))).thenThrow(new TpsHentNavnFunctionalException("Fant ikke person"));
 		expectedException.expect(TpsHentNavnFunctionalException.class);
 
-		TpsHentPersoninfoForIdentTo personinfoForIdentTo = tpsConsumer.tpsHentPersoninfoForIdent(FNR, PRINCIPAL);
+		TpsHentPersoninfoForIdentTo personinfoForIdentTo = tpsConsumer.tpsHentPersoninfoForIdent(FNR);
 
 		assertThat(personinfoForIdentTo, nullValue());
 	}
 
 	@Test
 	public void shouldThrowTechnicalException() throws Exception {
-		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class), any(String.class))).thenThrow(new TpsHentNavnTechnicalException("Feil oppstått"));
+		when(tpsConsumer.tpsHentPersoninfoForIdent(any(String.class))).thenThrow(new TpsHentNavnTechnicalException("Feil oppstått"));
 		expectedException.expect(TpsHentNavnTechnicalException.class);
 
-		tpsConsumer.tpsHentPersoninfoForIdent(FNR, PRINCIPAL);
+		tpsConsumer.tpsHentPersoninfoForIdent(FNR);
 	}
 
 	private TpsHentPersoninfoForIdentTo createResponse() {

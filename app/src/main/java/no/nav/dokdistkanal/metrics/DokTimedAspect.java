@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.metrics;
 
 import static java.util.Arrays.asList;
-import static no.nav.dokdistkanal.common.ContextUtil.getConsumerId;
 
 import io.micrometer.core.annotation.Incubating;
 import io.micrometer.core.instrument.Counter;
@@ -57,7 +56,7 @@ public class DokTimedAspect {
 		Counter.builder("dok_request_counter")
 				.tag("process", cacheable.value()[0])
 				.tag("type", "cacheCounter")
-				.tag("consumer_name", getConsumerId())
+				.tag("consumer_name", "ukjent")
 				.tag("event", "cacheTotal")
 				.register(registry).increment();
 	}
