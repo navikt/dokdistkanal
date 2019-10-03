@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.itest;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
@@ -14,6 +13,8 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.common.MottakerTypeCode;
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,8 @@ public class DokDistKanalIT extends AbstractIT {
 	private static final String MOTTAKERID = "***gammelt_fnr***";
 	private static final String ORGMOTTAKERID = "123456789";
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
-	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;
+	private final static boolean ER_ARKIVERT_TRUE = true;
+	private final static boolean INKLUDER_SIKKER_DIGITALPOSTKASSE = true;
 
 	@Before
 	public void runBefore() {
@@ -40,19 +42,20 @@ public class DokDistKanalIT extends AbstractIT {
 						.withHeader("Content-Type", "application/json")
 						.withBodyFile("treg001/paalogging/happy-response.json")));
 
-
-		stubFor(post("/STS")
+		stubFor(get(urlPathMatching("/STS"))
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("felles/sts/sts_signature-responsebody.xml")));
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("felles/sts/stsResponse_happy.json")));
 
-		stubFor(post("/VIRKSOMHET_PERSON_V3")
+		stubFor(get(urlPathMatching("/TPS/v1/innsyn/person"))
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/personV3/happypath-responsebody.xml")));
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/tps/happy-path.json")));
 
-		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/dki/happy-responsebody.xml")));
-
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/dki/happy-responsebody.json")));
 	}
 
 	/**
@@ -93,28 +96,13 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowWhenPersonV3FailsSecurityErrorNoAccess() {
-		stubFor(post("/VIRKSOMHET_PERSON_V3")
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/personV3/hentPerson-FunksjonellFeil-SikkerhetsBegrensning-responsebody.xml")));
-
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
-
-		try {
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse("Test did not throw exception", Boolean.TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("PersonV3.hentPerson feiler på grunn av sikkerhetsbegresning"));
-		}
-	}
-
-	@Test
-	public void shouldThrowFunctionalExceptionFromPersonPlugin() {
+	public void shouldReturnPrintWhenPersonNotFound() {
 		//Stub web services:
-		stubFor(post("/VIRKSOMHET_PERSON_V3")
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/personV3/hentPerson-FunksjonellFeil-PersonIkkeFunnet-responsebody.xml")));
+		stubFor(get(urlPathMatching("/TPS/v1/innsyn/person"))
+				.willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
+						.withHeader("Content-Type", "application/json")
+						.withBody("Person ikke funnet")));
+
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
@@ -140,26 +128,15 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenKontaktinformasjonNotFound() {
+	public void shouldReturnPrintFromDKIWhenKontaktinformasjonNotFound() {
 		//Stub web services:
-		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/dki/ikke-funnet.xml")));
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/dki/feilmelding-responsebody.json")));
+
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
-		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
-	}
-
-	@Test
-	public void shouldThrowFunctionalExceptionFromDKIWhenPersonNotFound() {
-		//Stub web services:
-		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/dki/person-ikke-funnet.xml")));
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
-
-		restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
@@ -167,26 +144,29 @@ public class DokDistKanalIT extends AbstractIT {
 	@Test
 	public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() {
 		//Stub web services:
-		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
-				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/dki/sikkerhet.xml")));
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+				.willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())));
+
 		try {
 			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
 			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 			assertFalse(Boolean.TRUE);
 		} catch (HttpStatusCodeException e) {
-			assertEquals(HttpStatus.UNAUTHORIZED, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. message=Sikkerhetsbegrensning ved kall til DIFI"));
+			assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon"));
 		}
 	}
 
 	@Test
 	public void shouldThrowFunctionalExceptionFromPaaloggingsnivaaUgyldigIdent() {
 		//Stub web services:
-		stubFor(post("/VIRKSOMHET_DIGITALKONTAKINFORMASJON_V1")
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
-						.withBodyFile("treg001/dki/ditt-nav-responsebody.xml")));
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/dki/ditt-nav-responsebody.json")));
+
 		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
 				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")

@@ -8,16 +8,17 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokkatFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DokkatTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -43,12 +44,10 @@ public class DokumentTypeInfoConsumer {
 
 	@Inject
 	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
-									HttpComponentsClientHttpRequestFactory requestFactory,
 									DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 									MicrometerMetrics metrics,
 									ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
-				.requestFactory(() -> requestFactory)
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
 				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))
@@ -87,11 +86,15 @@ public class DokumentTypeInfoConsumer {
 
 	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
 		String predefinertDistribusjonKanal = null;
-		if (!(dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null)) {
-			predefinertDistribusjonKanal = dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getPredefinertDistKanal();
+		if (!(dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
+				.getDistribusjonInfo() == null)) {
+			predefinertDistribusjonKanal = dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
+					.getDistribusjonInfo()
+					.getPredefinertDistKanal();
 		}
 
-		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null
+		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
+				.getDistribusjonInfo() == null
 				|| dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
 			return DokumentTypeInfoTo.builder()
 					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
@@ -101,7 +104,10 @@ public class DokumentTypeInfoConsumer {
 			return DokumentTypeInfoTo.builder()
 					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
 					.predefinertDistKanal(predefinertDistribusjonKanal)
-					.isVarslingSdp(dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels().stream()
+					.isVarslingSdp(dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
+							.getDistribusjonInfo()
+							.getDistribusjonVarsels()
+							.stream()
 							.anyMatch(
 									distribusjonVarselTo -> DistribusjonKanalCode.SDP.toString()
 											.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();

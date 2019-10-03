@@ -4,6 +4,9 @@ replicas:
   max: 4
   cpuThresholdPercentage: 50
 port: 8080
+team: teamdokumenthandtering
+vault:
+  enabled: true
 healthcheck:
   liveness:
     path: /isAlive
@@ -23,27 +26,17 @@ resources:
     cpu: 1000m
 fasitResources:
   used:
-  - alias: securityTokenService
-    resourceType: baseurl
-  - alias: "virksomhet:Person_v3"
-    resourceType: webserviceendpoint
   - alias: DokumenttypeInfo_v4
     resourceType: restservice
   - alias: HentPaaloggingsnivaa_V1
     resourceType: restservice
-  - alias: "virksomhet:DigitalKontakinformasjon_v1"
-    resourceType: webserviceendpoint
+  - alias: security-token-service-token
+    resourceType: restservice
   - alias: srvdokdistkanal
     resourceType: credential
     propertyMap:
       username: SERVICEUSER_USERNAME
       password: SERVICEUSER_PASSWORD
-  - alias: srvdokdistkanal
-    resourceType: certificate
-    propertyMap:
-      keystorealias: SRVDOKDISTKANAL_CERT_KEYSTOREALIAS
-      keystore: SRVDOKDISTKANAL_CERT_KEYSTORE
-      password: SRVDOKDISTKANAL_CERT_PASSWORD
   exposed:
   - alias: bestemDistribusjonKanal
     resourceType: restservice

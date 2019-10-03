@@ -1,0 +1,20 @@
+{
+  "feil": {
+    "***gammelt_fnr***": {
+      "melding": null
+    }
+  },
+  "kontaktinfo": {
+    "***gammelt_fnr***": {
+      "epostadresse": "epost",
+      "kanVarsles": true,
+      "mobiltelefonnummer": "telefonnummer",
+      "reservert": false,
+      "sikkerDigitalPostkasse": {
+        "adresse": "adresse",
+        "leverandoerAdresse": "leverandoerAdresse",
+        "leverandoerSertifikat": "leverandoerSertifikat"
+      }
+    }
+  }
+}

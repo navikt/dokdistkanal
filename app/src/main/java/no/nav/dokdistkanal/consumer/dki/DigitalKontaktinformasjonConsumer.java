@@ -1,167 +1,116 @@
 package no.nav.dokdistkanal.consumer.dki;
 
+import static java.lang.String.format;
+import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
+import static no.nav.dokdistkanal.constants.DomainConstants.BEARER_PREFIX;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENTER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.constants.MDCConstants;
+import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
+import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
-import no.nav.dokdistkanal.metrics.MicrometerMetrics;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.DigitalKontaktinformasjonV1;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadressePersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.binding.HentSikkerDigitalPostadresseSikkerhetsbegrensing;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.DigitalPostkasse;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Epostadresse;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Kontaktinformasjon;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.Mobiltelefonnummer;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.informasjon.SikkerDigitalKontaktinformasjon;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseRequest;
-import no.nav.tjeneste.virksomhet.digitalkontaktinformasjon.v1.meldinger.HentSikkerDigitalPostadresseResponse;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.cache.annotation.Cacheable;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import javax.inject.Inject;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
-import java.util.Arrays;
+import java.time.Duration;
 
 @Slf4j
-@Service
-public class DigitalKontaktinformasjonConsumer {
+@Component
+public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformasjon {
 
-	private final DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1;
+	private final RestTemplate restTemplate;
+	private final String dkiUrl;
+	private final StsRestConsumer stsRestConsumer;
+	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
-
-	private MicrometerMetrics metrics;
+	public static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "Ingen kontaktinformasjon er registrert på personen";
 
 	@Inject
-	public DigitalKontaktinformasjonConsumer(DigitalKontaktinformasjonV1 digitalKontaktinformasjonV1,
-											 MicrometerMetrics metrics) {
-		this.digitalKontaktinformasjonV1 = digitalKontaktinformasjonV1;
-		this.metrics = metrics;
+	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
+											 @Value("${dki_api_url}") String dkiUrl,
+											 StsRestConsumer stsRestConsumer) {
+		this.restTemplate = restTemplateBuilder
+				.setReadTimeout(Duration.ofSeconds(20))
+				.setConnectTimeout(Duration.ofSeconds(5))
+				.build();
+		this.dkiUrl = dkiUrl;
+		this.stsRestConsumer = stsRestConsumer;
 	}
 
-	@Cacheable(value = HENT_SIKKER_DIGITAL_POSTADRESSE, key = "#personidentifikator+'-dki'")
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_SIKKER_DIGITAL_POSTADRESSE}, percentiles = {0.5, 0.95}, histogram = true)
-	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator) {
-
-		metrics.cacheMiss(HENT_SIKKER_DIGITAL_POSTADRESSE);
-
-		HentSikkerDigitalPostadresseRequest request = mapHentDigitalKontaktinformasjonRequest(personidentifikator);
-		HentSikkerDigitalPostadresseResponse response;
+	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
+		HttpHeaders headers = createHeaders();
+		final String fnrTrimmed = personidentifikator.trim();
+		headers.add(NAV_PERSONIDENTER, fnrTrimmed);
 
 		try {
-			response = digitalKontaktinformasjonV1.hentSikkerDigitalPostadresse(request);
-		} catch (HentSikkerDigitalPostadresseKontaktinformasjonIkkeFunnet | HentSikkerDigitalPostadressePersonIkkeFunnet e) {
+			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
+					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
+
+			if (isValidRespons(response, fnrTrimmed)) {
+				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
+			} else {
+				String errorMsg = getErrorMsg(response, fnrTrimmed);
+
+				if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
+					return null;
+				} else {
+					throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s",
+							errorMsg));
+				}
+			}
+		} catch (HttpClientErrorException e) {
+			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
+					.getMessage()), e);
+		} catch (HttpServerErrorException e) {
+			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
+					.getMessage()), e);
+		}
+	}
+
+	private boolean isValidRespons(DkifResponseTo response, String fnr) {
+		return response != null && response.getKontaktinfo() != null && response.getKontaktinfo().get(fnr) != null;
+	}
+
+	private String getErrorMsg(DkifResponseTo response, String fnr) {
+		if (response == null || response.getFeil() == null) {
 			return null;
-		} catch (HentSikkerDigitalPostadresseSikkerhetsbegrensing e) {
-			throw new DokDistKanalSecurityException("DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon feiler på grunn av sikkerhetsbegresning. " +
-					"message=" + e.getMessage(), e);
-		} catch (Exception e) {
-			throw new DkifTechnicalException("Noe gikk galt i kall til DigitalKontaktinformasjonV1.hentDigitakKontaktinformasjon. " +
-					"message=" + e.getMessage(), e);
-		}
-		if (response != null && response.getSikkerDigitalKontaktinformasjon() != null) {
-			return mapTo(response.getSikkerDigitalKontaktinformasjon());
-		}
-		return null;
-	}
-
-	private HentSikkerDigitalPostadresseRequest mapHentDigitalKontaktinformasjonRequest(final String personidentifikator) {
-		HentSikkerDigitalPostadresseRequest request = new HentSikkerDigitalPostadresseRequest();
-		request.setPersonident(personidentifikator);
-		return request;
-	}
-
-	private DigitalKontaktinformasjonTo mapTo(SikkerDigitalKontaktinformasjon sikkerDigitalKontaktinformasjon) {
-
-		DigitalPostkasse digitalPostkasse = null;
-		if (sikkerDigitalKontaktinformasjon.getSikkerDigitalPostkasse() != null) {
-			digitalPostkasse = sikkerDigitalKontaktinformasjon.getSikkerDigitalPostkasse();
-		}
-
-		Kontaktinformasjon kontaktinformasjon = null;
-		if (sikkerDigitalKontaktinformasjon.getDigitalKontaktinformasjon() != null) {
-			kontaktinformasjon = sikkerDigitalKontaktinformasjon.getDigitalKontaktinformasjon();
-		}
-
-		byte[] sertifikat = sikkerDigitalKontaktinformasjon.getSertifikat();
-
-		String mobiltelefonummer = null;
-		String epostadresse = null;
-
-		if (kontaktinformasjon != null) {
-			if (isEpostadresseValid(kontaktinformasjon.getEpostadresse())) {
-				epostadresse = kontaktinformasjon.getEpostadresse().getValue();
-			}
-			if (isMobilnummerValid(kontaktinformasjon.getMobiltelefonnummer())) {
-				mobiltelefonummer = kontaktinformasjon.getMobiltelefonnummer().getValue();
-			}
-		}
-
-		return DigitalKontaktinformasjonTo.builder()
-				.leverandoerAdresse(digitalPostkasse == null ? null : digitalPostkasse.getLeverandoerAdresse())
-				.brukerAdresse(digitalPostkasse == null ? null : digitalPostkasse.getBrukerAdresse())
-				.epostadresse(epostadresse)
-				.mobiltelefonnummer(mobiltelefonummer)
-				.reservasjon(mapStringToBool(kontaktinformasjon == null ? null : kontaktinformasjon.getReservasjon()))
-				.sertifikat(StringUtils.isNotEmpty(Arrays.toString((sertifikat)))).build();
-	}
-
-	private boolean isEpostadresseValid(Epostadresse epostadresse) {
-		if (epostadresse == null) {
-			return false;
-		} else if (epostadresse.getSistOppdatert() == null && epostadresse.getSistVerifisert() == null) {
-			return false;
-		} else if (epostadresse.getSistOppdatert() != null && isValidDate(epostadresse.getSistOppdatert())) {
-			return true;
-		} else if (epostadresse.getSistVerifisert() != null && isValidDate(epostadresse.getSistVerifisert())) {
-			return true;
 		} else {
-			log.info("Epostadresse sist oppdatert {}, sist verifisert {}", epostadresse.getSistOppdatert(), epostadresse.getSistVerifisert());
-			return false;
+			return response.getFeil().get(fnr).getMelding();
 		}
 	}
 
-	private boolean isMobilnummerValid(Mobiltelefonnummer mobiltelefonnummer) {
-		if (mobiltelefonnummer == null) {
-			return false;
-		} else if (mobiltelefonnummer.getSistOppdatert() == null && mobiltelefonnummer.getSistVerifisert() == null) {
-			return false;
-		} else if (mobiltelefonnummer.getSistOppdatert() != null && isValidDate(mobiltelefonnummer.getSistOppdatert())) {
-			return true;
-		} else if (mobiltelefonnummer.getSistVerifisert() != null && isValidDate(mobiltelefonnummer.getSistVerifisert())) {
-			return true;
-		} else {
-			log.info("Mobilnummer sist oppdatert {}, sist verifisert {}", mobiltelefonnummer.getSistOppdatert(), mobiltelefonnummer.getSistVerifisert());
-			return false;
-		}
-	}
-
-	private boolean isValidDate(XMLGregorianCalendar dateTime) {
-		return dateTime.toGregorianCalendar().toZonedDateTime().toLocalDate().plusMonths(18).isAfter(LocalDate.now());
-	}
-
-	private boolean mapStringToBool(String bool) {
-		if (StringUtils.isBlank(bool)) {
-			return true;
-		}
-		switch (bool.toLowerCase()) {
-			case "ja":
-				return true;
-			case "true":
-				return true;
-			default:
-				return false;
-		}
+	private HttpHeaders createHeaders() {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + stsRestConsumer.getOidcToken());
+		headers.add(NAV_CONSUMER_ID, APP_NAME);
+		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
+		return headers;
 	}
 }

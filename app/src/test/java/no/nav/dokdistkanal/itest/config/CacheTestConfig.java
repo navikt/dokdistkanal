@@ -1,9 +1,8 @@
 package no.nav.dokdistkanal.itest.config;
 
-import static no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer.HENT_SIKKER_DIGITAL_POSTADRESSE;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
-import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
 import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
+import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.actuate.metrics.cache.CacheMetricsRegistrar;
@@ -22,6 +21,7 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
@@ -46,9 +46,8 @@ public class CacheTestConfig {
 
 		SimpleCacheManager cacheManager = new SimpleCacheManager();
 		List<NoOpCache> noOpCaches = Arrays.asList(
-				new NoOpCache(HENT_SIKKER_DIGITAL_POSTADRESSE),
-				new NoOpCache(HENT_PERSON),
 				new NoOpCache(HENT_DOKKAT_INFO),
+				new NoOpCache(STS_CACHE_NAME),
 				new NoOpCache(HENT_PAALOGGINGSNIVAA));
 		for (Cache cache : noOpCaches) {
 			registrar.bindCacheToRegistry(cache);

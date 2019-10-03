@@ -7,7 +7,6 @@ import no.nav.dokdistkanal.nais.selftest.ApplicationNotReadyException;
 import no.nav.dokdistkanal.nais.selftest.DependencyType;
 import no.nav.dokdistkanal.nais.selftest.Importance;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,14 +21,13 @@ public class DokumenttypeInfoV4Check extends AbstractDependencyCheck {
 
 	@Inject
 	public DokumenttypeInfoV4Check(RestTemplateBuilder restTemplateBuilder,
-								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 								   ServiceuserAlias serviceuserAlias) {
 		super(DependencyType.REST,
 				DOKUMENTTYPEINFO_V4,
 				dokumenttypeInfoV4Alias.getUrl(),
 				Importance.CRITICAL);
-		this.restTemplate = restTemplateBuilder.requestFactory(() -> requestFactory)
+		this.restTemplate = restTemplateBuilder
 				.rootUri(dokumenttypeInfoV4Alias.getUrl())
 				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
 				.setConnectTimeout(Duration.ofMillis(dokumenttypeInfoV4Alias.getConnecttimeoutms()))

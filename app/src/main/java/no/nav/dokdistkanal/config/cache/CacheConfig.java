@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.config.cache;
 
-import static no.nav.dokdistkanal.consumer.personv3.PersonV3Consumer.HENT_PERSON;
 import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 import io.lettuce.core.ClientOptions;
@@ -40,7 +39,6 @@ import java.util.HashMap;
 public class CacheConfig extends CachingConfigurerSupport {
 
 	public static final Duration DEFAULT_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
-	public static final Duration HENT_PERSON_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
 	public static final Duration STS_CACHE_EXPIRATION_TIME = Duration.ofMinutes(50);
 
 	@Value("${redis.hostname:dokdistkanal-redis}")
@@ -53,7 +51,6 @@ public class CacheConfig extends CachingConfigurerSupport {
 	public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
 		HashMap<String, RedisCacheConfiguration> initialConfigs = new HashMap<>();
 		initialConfigs.put(STS_CACHE_NAME, generateConfigWithDuration(STS_CACHE_EXPIRATION_TIME));
-		initialConfigs.put(HENT_PERSON, generateConfigWithDuration(HENT_PERSON_CACHE_EXPIRATION_TIME));
 
 		return RedisCacheManager.builder(connectionFactory)
 				.cacheDefaults(generateConfigWithDuration(DEFAULT_CACHE_EXPIRATION_TIME))
@@ -110,7 +107,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 
 	@Bean
 	@Override
-	public CacheErrorHandler errorHandler(){
+	public CacheErrorHandler errorHandler() {
 		return new CustomCacheErrorHandler();
 	}
 

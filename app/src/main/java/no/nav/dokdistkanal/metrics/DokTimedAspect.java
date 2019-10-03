@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.metrics;
 
 import static java.util.Arrays.asList;
-import static no.nav.dokdistkanal.common.ContextUtil.getConsumerId;
 
 import io.micrometer.core.annotation.Incubating;
 import io.micrometer.core.instrument.Counter;
@@ -11,7 +10,7 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.lang.NonNullApi;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -57,7 +56,7 @@ public class DokTimedAspect {
 		Counter.builder("dok_request_counter")
 				.tag("process", cacheable.value()[0])
 				.tag("type", "cacheCounter")
-				.tag("consumer_name", getConsumerId())
+				.tag("consumer_name", "ukjent")
 				.tag("event", "cacheTotal")
 				.register(registry).increment();
 	}
@@ -75,7 +74,7 @@ public class DokTimedAspect {
 		try {
 			return pjp.proceed();
 		} catch (Exception e) {
-			if(metrics.countExceptions()) {
+			if (metrics.countExceptions()) {
 				Counter.builder(metrics.value() + "_exception")
 						.tags("error_type", isFunctionalException(method, e) ? "functional" : "technical")
 						.tags("exception_name", e.getClass().getSimpleName())

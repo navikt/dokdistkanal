@@ -48,7 +48,7 @@ public abstract class AbstractIT {
 
 	@Before
 	public void setUp() {
-		LOCAL_ENDPOINT_URL ="http://localhost:"+ LOCALPORT;
+		LOCAL_ENDPOINT_URL = "http://localhost:" + LOCALPORT;
 		clearCachene();
 	}
 

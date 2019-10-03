@@ -6,7 +6,6 @@ import no.nav.dokdistkanal.nais.selftest.DependencyType;
 import no.nav.dokdistkanal.nais.selftest.Importance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -21,13 +20,13 @@ public class SikkerhetsnivaaV1Check extends AbstractDependencyCheck {
 
 	@Inject
 	public SikkerhetsnivaaV1Check(RestTemplateBuilder restTemplateBuilder,
-								  @Value("${hentpaaloggingsnivaa-v1.url}") String sikkerhetsnivaaUrl,
-								  HttpComponentsClientHttpRequestFactory requestFactory) {
+								  @Value("${hentpaaloggingsnivaa-v1.url}") String sikkerhetsnivaaUrl
+	) {
 		super(DependencyType.REST,
 				SIKKERHETSNIVAAV1,
 				sikkerhetsnivaaUrl,
 				Importance.WARNING);
-		this.restTemplate = restTemplateBuilder.requestFactory(() -> requestFactory)
+		this.restTemplate = restTemplateBuilder
 				.rootUri(sikkerhetsnivaaUrl)
 				.build();
 	}

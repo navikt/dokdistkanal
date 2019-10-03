@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
+import static no.nav.dokdistkanal.common.FunctionalUtils.isNotEmpty;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
@@ -9,16 +10,16 @@ import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.exceptions.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokdistkanal.metrics.MicrometerMetrics;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.util.Assert;
@@ -45,12 +46,10 @@ public class SikkerhetsnivaaConsumer {
 
 	@Inject
 	public SikkerhetsnivaaConsumer(RestTemplateBuilder restTemplateBuilder,
-								   HttpComponentsClientHttpRequestFactory requestFactory,
 								   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
 								   MicrometerMetrics metrics,
 								   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
-				.requestFactory(() -> requestFactory)
 				.rootUri(sikkerhetsnivaaV1Alias.getUrl())
 				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
 				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))
@@ -86,10 +85,13 @@ public class SikkerhetsnivaaConsumer {
 
 	public void ping() {
 		String ping = restTemplate.getForObject("isReady", String.class);
-		Assert.isTrue(StringUtils.isNotBlank(ping), "Sikkerhetsnivaa ping failed " + ping);
+		Assert.isTrue(isNotEmpty(ping), "Sikkerhetsnivaa ping failed " + ping);
 	}
 
 	private SikkerhetsnivaaTo mapTo(SikkerhetsnivaaResponse response) {
-		return SikkerhetsnivaaTo.builder().personIdent(response.getPersonidentifikator()).harLoggetPaaNivaa4(response.isHarbruktnivaa4()).build();
+		return SikkerhetsnivaaTo.builder()
+				.personIdent(response.getPersonidentifikator())
+				.harLoggetPaaNivaa4(response.isHarbruktnivaa4())
+				.build();
 	}
 }
