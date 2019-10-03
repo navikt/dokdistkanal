@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
 import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentResponseTo;
 import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentTo;
+import no.nav.dokdistkanal.exceptions.functional.TpsHentNavnFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.TpsHentNavnTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import org.slf4j.MDC;
@@ -21,6 +22,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -42,6 +44,7 @@ import java.time.LocalDate;
 public class TpsConsumer implements Tps {
 	private static final String HENT_PERSONINFO_FOR_IDENT = "hentPersoninfoForIdent";
 	private static final String CONSUMER_ID = "srvdokdistkanal";
+	private static final String PERSON_IKKE_FUNNET_ERROR_MSG = "Person ikke funnet";
 
 	private final RestTemplate restTemplate;
 	private final String tpsProxyUrl;
@@ -73,8 +76,14 @@ public class TpsConsumer implements Tps {
 					.getBody();
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getMessage()));
-			return null;
+			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode()) && e.getMessage() != null && e.getResponseBodyAsString()
+					.contains(PERSON_IKKE_FUNNET_ERROR_MSG)) {
+				log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getMessage()));
+				return null;
+			} else {
+				throw new TpsHentNavnFunctionalException(format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. feilmelding=%s", e
+						.getMessage()), e);
+			}
 		} catch (HttpServerErrorException e) {
 			throw new TpsHentNavnTechnicalException(format("Teknisk feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e
 					.getMessage()), e);

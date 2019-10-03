@@ -15,6 +15,7 @@ import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
@@ -46,6 +47,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
+	public static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "Ingen kontaktinformasjon er registrert på personen";
 
 	@Inject
 	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
@@ -69,17 +71,23 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		try {
 			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
 					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
-			if (response == null || response.getKontaktinfo() == null) {
+
+			String errorMsg = (response == null) ? null : (response.getFeil() == null ? null : response.getFeil()
+					.get(fnrTrimmed)
+					.getMelding());
+
+			if (response != null && response.getKontaktinfo() != null) {
+				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
+			} else if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
 				return null;
 			} else {
-				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
+				throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s",
+						errorMsg));
 			}
 		} catch (HttpClientErrorException e) {
-			log.warn(String.format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
-					.getMessage()));
-			return null;
-		} catch (
-				HttpServerErrorException e) {
+			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
+					.getMessage()), e);
+		} catch (HttpServerErrorException e) {
 			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
 					.getMessage()), e);
 		}

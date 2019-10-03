@@ -99,8 +99,9 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldReturnPrintWhenPersonNotFound() {
 		//Stub web services:
 		stubFor(get(urlPathMatching("/TPS/v1/innsyn/person"))
-				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())));
+				.willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
+						.withHeader("Content-Type", "application/json")
+						.withBody("Person ikke funnet")));
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
@@ -130,8 +131,9 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldReturnPrintFromDKIWhenKontaktinformasjonNotFound() {
 		//Stub web services:
 		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())));
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/dki/feilmelding-responsebody.json")));
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
@@ -140,17 +142,21 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldReturnNullFromDKIWhenSikkerhetsbegrensning() {
+	public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() {
 		//Stub web services:
 		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(HttpStatus.NOT_FOUND.value())
-						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
-				));
+				.willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())));
 
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+		try {
+			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
-		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+			assertFalse(Boolean.TRUE);
+		} catch (HttpStatusCodeException e) {
+			assertEquals(HttpStatus.BAD_REQUEST, e.getStatusCode());
+			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon"));
+		}
 	}
 
 	@Test

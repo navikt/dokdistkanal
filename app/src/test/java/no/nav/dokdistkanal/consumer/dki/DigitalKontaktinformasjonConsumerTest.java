@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,8 +64,16 @@ public class DigitalKontaktinformasjonConsumerTest {
 	@Test
 	public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() throws Exception {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
-				.thenReturn(null);
+				.thenThrow(new DigitalKontaktinformasjonV2FunctionalException("Funksjonell feil"));
+		expectedException.expect(DigitalKontaktinformasjonV2FunctionalException.class);
 
+		digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST);
+	}
+
+	@Test
+	public void dhouldReturnNullWhenNoKontaktinfo() {
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
+				.thenReturn(null);
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST);
 
 		assertNull(digitalKontaktinformasjonTo);
