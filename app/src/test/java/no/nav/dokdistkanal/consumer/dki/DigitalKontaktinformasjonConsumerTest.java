@@ -71,7 +71,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 	}
 
 	@Test
-	public void dhouldReturnNullWhenNoKontaktinfo() {
+	public void shouldReturnNullWhenNoKontaktinfo() {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
 				.thenReturn(null);
 		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST);

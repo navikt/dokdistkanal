@@ -76,7 +76,7 @@ public class TpsConsumer implements Tps {
 					.getBody();
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode()) && e.getMessage() != null && e.getResponseBodyAsString()
+			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode()) && e.getResponseBodyAsString() != null && e.getResponseBodyAsString()
 					.contains(PERSON_IKKE_FUNNET_ERROR_MSG)) {
 				log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getMessage()));
 				return null;

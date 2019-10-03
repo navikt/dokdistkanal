@@ -72,17 +72,17 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
 					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
 
-			String errorMsg = (response == null) ? null : (response.getFeil() == null ? null : response.getFeil()
-					.get(fnrTrimmed)
-					.getMelding());
-
-			if (response != null && response.getKontaktinfo() != null) {
+			if (isValidRespons(response, fnrTrimmed)) {
 				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
-			} else if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
-				return null;
 			} else {
-				throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s",
-						errorMsg));
+				String errorMsg = getErrorMsg(response, fnrTrimmed);
+
+				if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
+					return null;
+				} else {
+					throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s",
+							errorMsg));
+				}
 			}
 		} catch (HttpClientErrorException e) {
 			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
@@ -90,6 +90,18 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		} catch (HttpServerErrorException e) {
 			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
 					.getMessage()), e);
+		}
+	}
+
+	private boolean isValidRespons(DkifResponseTo response, String fnr) {
+		return response != null && response.getKontaktinfo() != null && response.getKontaktinfo().get(fnr) != null;
+	}
+
+	private String getErrorMsg(DkifResponseTo response, String fnr) {
+		if (response == null || response.getFeil() == null) {
+			return null;
+		} else {
+			return response.getFeil().get(fnr).getMelding();
 		}
 	}
 
