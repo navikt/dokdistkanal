@@ -51,7 +51,7 @@ public class DokDistKanalRestController {
 			return response;
 		} catch (DokDistKanalFunctionalException e) {
 			// ingen stacktrace på funksjonelle feil
-			log.warn("Funksjonell feil med melding: {}", e.getMessage());
+			log.warn("Funksjonell feil med melding: {}", e.getMessage(), e);
 			throw e;
 		} catch (DokDistKanalTechnicalException e) {
 			log.error("Teknisk feil med melding: {}", e.getMessage(), e);
