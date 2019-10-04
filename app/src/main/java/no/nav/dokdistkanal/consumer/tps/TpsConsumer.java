@@ -78,11 +78,11 @@ public class TpsConsumer implements Tps {
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode()) && e.getResponseBodyAsString() != null && e.getResponseBodyAsString()
 					.contains(PERSON_IKKE_FUNNET_ERROR_MSG)) {
-				log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getMessage()));
+				log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getResponseBodyAsString()), e);
 				return null;
 			} else {
 				throw new TpsHentNavnFunctionalException(format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. feilmelding=%s", e
-						.getMessage()), e);
+						.getResponseBodyAsString()), e);
 			}
 		} catch (HttpServerErrorException e) {
 			throw new TpsHentNavnTechnicalException(format("Teknisk feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e
