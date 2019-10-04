@@ -45,6 +45,7 @@ public class TpsConsumer implements Tps {
 	private static final String HENT_PERSONINFO_FOR_IDENT = "hentPersoninfoForIdent";
 	private static final String CONSUMER_ID = "srvdokdistkanal";
 	private static final String PERSON_IKKE_FUNNET_ERROR_MSG = "Person ikke funnet";
+	private static final String PERSON_ER_DOED = "Person er død";
 
 	private final RestTemplate restTemplate;
 	private final String tpsProxyUrl;
@@ -80,6 +81,10 @@ public class TpsConsumer implements Tps {
 					.contains(PERSON_IKKE_FUNNET_ERROR_MSG)) {
 				log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getResponseBodyAsString()), e);
 				return null;
+			} else if (HttpStatus.BAD_REQUEST.equals(e.getStatusCode()) && e.getResponseBodyAsString() != null && e.getResponseBodyAsString()
+					.contains(PERSON_ER_DOED)) {
+				log.warn(String.format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e.getResponseBodyAsString()), e);
+				return dodPersonRespons();
 			} else {
 				throw new TpsHentNavnFunctionalException(format("Funksjonell feil ved kall mot tpsProxy:hentPersoninfoForIdent. feilmelding=%s", e
 						.getResponseBodyAsString()), e);
@@ -88,6 +93,12 @@ public class TpsConsumer implements Tps {
 			throw new TpsHentNavnTechnicalException(format("Teknisk feil ved kall mot tpsProxy:hentPersoninfoForIdent. Feilmelding=%s", e
 					.getMessage()), e);
 		}
+	}
+
+	private TpsHentPersoninfoForIdentTo dodPersonRespons() {
+		return TpsHentPersoninfoForIdentTo.builder()
+				.doedsdato(LocalDate.now())
+				.build();
 	}
 
 	private TpsHentPersoninfoForIdentTo mapTo(TpsHentPersoninfoForIdentResponseTo response) {
