@@ -95,6 +95,20 @@ public class DokDistKanalIT extends AbstractIT {
 		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
+	/**
+	 * Komplertterer fullt brevdatasett der mottaker er samhandler utenlandsk organisasjon
+	 */
+	@Test
+	public void shouldGetDistribusjonskanalPrintForSamhandlerUtenlandskOrganisasjon() {
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
+				.mottakerId(SAMHANDLERMOTTAKERID)
+				.mottakerType(MottakerTypeCode.SAMHANDLER_UTL_ORG)
+				.brukerId(SAMHANDLERMOTTAKERID)
+				.build();
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+	}
+
 	@Test
 	public void shouldReturnPrintWhenPersonNotFound() {
 		//Stub web services:
