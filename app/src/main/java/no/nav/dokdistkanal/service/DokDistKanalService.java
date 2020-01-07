@@ -41,6 +41,9 @@ import java.time.LocalDate;
 public class DokDistKanalService {
 	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 
+	private static final String AARSOPPGAVE_DOKUMENTTYPEID_1 = "000053";
+	private static final String AARSOPPGAVE_DOKUMENTTYPEID_2 = "000077";
+
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
@@ -123,7 +126,9 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}
 
-			if (!dokDistKanalRequest.getMottakerId().equals(dokDistKanalRequest.getBrukerId())) {
+			//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
+			if (!isDokumentTypeIdUsedForAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
+					.equals(dokDistKanalRequest.getBrukerId())) {
 				return logAndReturn(PRINT, "Bruker og mottaker er forskjellige");
 			}
 
@@ -137,6 +142,10 @@ public class DokDistKanalService {
 
 			return logAndReturn(PRINT, "Bruker har ikke logget på med nivaa4 de siste 18 mnd");
 		}
+	}
+
+	private boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
+		return ((AARSOPPGAVE_DOKUMENTTYPEID_1).equals(dokumentTypeId) || (AARSOPPGAVE_DOKUMENTTYPEID_2).equals(dokumentTypeId));
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason) {

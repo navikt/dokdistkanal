@@ -46,6 +46,7 @@ public class DokDistKanalServiceTest {
 
 	private final static String FNR = "***gammelt_fnr***";
 	private final static String DOKUMENTTYPEID = "DokumentType";
+	private final static String DOKUMENTTYPEID_AARSOPPGAVE = "000053";
 	private final static String EPOSTADRESSE = "adresse@test.no";
 	private final static String MOBIL = "123 45 678";
 	private final static boolean SERTIFIKAT = true;
@@ -288,6 +289,34 @@ public class DokDistKanalServiceTest {
 
 		assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Bruker og mottaker er forskjellige"));
+		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
+		LogbackCapturingAppender.Factory.cleanUp();
+	}
+
+	@Test
+	public void shouldSetKanalDittNavNaarMottakerIdIkkeErBrukerIdAndDokumentTypeIdIsAarsoppgave() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		capture = LogbackCapturingAppender.Factory.weaveInto(DokDistKanalService.LOG);
+
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.TRUE);
+		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
+		TpsHentPersoninfoForIdentTo personinfoTo = TpsHentPersoninfoForIdentTo.builder()
+				.foedselsdato(LocalDate.now().minusYears(18))
+				.build();
+		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
+		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
+				.reservasjon(Boolean.FALSE)
+				.mobiltelefonnummer(MOBIL).build();
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
+		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
+
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().brukerId(BRUKERID)
+				.dokumentTypeId(DOKUMENTTYPEID_AARSOPPGAVE)
+				.mottakerId(ANNEN_BRUKERID)
+				.build());
+
+		assertEquals(DistribusjonKanalCode.DITT_NAV, serviceResponse.getDistribusjonsKanal());
+		assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til DITT_NAV: Bruker har logget på med nivaa4 de siste 18 mnd"));
 		assertThat(capture.getCapturedLogLevel(), is(Level.INFO));
 		LogbackCapturingAppender.Factory.cleanUp();
 	}
