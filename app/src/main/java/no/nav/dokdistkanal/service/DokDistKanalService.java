@@ -123,7 +123,8 @@ public class DokDistKanalService {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig");
 			}
 
-			if (!dokDistKanalRequest.getMottakerId().equals(dokDistKanalRequest.getBrukerId())) {
+			if (!isDokumentTypeIdUsedForAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
+					.equals(dokDistKanalRequest.getBrukerId())) {
 				return logAndReturn(PRINT, "Bruker og mottaker er forskjellige");
 			}
 
@@ -137,6 +138,11 @@ public class DokDistKanalService {
 
 			return logAndReturn(PRINT, "Bruker har ikke logget på med nivaa4 de siste 18 mnd");
 		}
+	}
+
+	//DokumentTypeId brukt for aarsoppgave
+	private boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
+		return (("000053").equals(dokumentTypeId) || ("000077").equals(dokumentTypeId));
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason) {
