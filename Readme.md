@@ -22,11 +22,6 @@ Noen secrets må settes - se https://fasit.adeo.no/instances/4712125
 # Systembruker
 export SRVDOKDISTKANAL_USERNAME=srvdokdistkanal
 export SRVDOKDISTKANAL_***passord=gammelt_passord***>
-
-# System cert
-export SRVDOKDISTKANAL_CERT_KEYSTORE=<keystorepath>
-export SRVDOKDISTKANAL_CERT_KEYSTOREALIAS=<keystorealias>   # Default app-key
-export SRVDOKDISTKANAL_CERT_***passord=gammelt_passord***>
 ```
 
 Kjøre appen med mvn spring boot plugin. Truststore finnes på Fasit som `nav_truststore` alias. 
