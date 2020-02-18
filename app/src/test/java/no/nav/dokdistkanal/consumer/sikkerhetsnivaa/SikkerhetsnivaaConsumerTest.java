@@ -30,7 +30,7 @@ import org.springframework.web.client.RestTemplate;
 @RunWith(MockitoJUnitRunner.class)
 public class SikkerhetsnivaaConsumerTest {
 
-	private static final String FNR = "***gammelt_fnr***";
+	private static final String FNR = "12345678910";
 
 	private RestTemplate restTemplate;
 	private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;

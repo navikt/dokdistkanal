@@ -32,7 +32,7 @@ import java.util.Map;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DokumentTypeInfoConsumerTest {
-	private static final String DOKTYPE = "***gammelt_fnr***";
+	private static final String DOKTYPE = "12345678910";
 	private static final String ARKIVSYSTEM = "JOARK";
 
 	private RestTemplate restTemplate;

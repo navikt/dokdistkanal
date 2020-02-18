@@ -1,0 +1,50 @@
+kind: Application
+apiVersion: nais.io/v1alpha1
+metadata:
+  name: dokdistkanal
+  namespace: {{ NAMESPACE }}
+  labels:
+    team: teamdokumenthandtering
+spec:
+  env:
+    - name: DOKUMENTTYPEINFO_V4_URL
+      value: {{ DOKUMENTTYPEINFO_V4_URL }}
+    - name: HENTPAALOGGINGSNIVAA_V1_URL
+      value: {{ HENTPAALOGGINGSNIVAA_V1_URL }}
+    - name: SECURITY_TOKEN_SERVICE_TOKEN_URL
+      value: {{ SECURITY_TOKEN_SERVICE_TOKEN_URL }}
+    - name: DKI_API_URL
+      value: {{ DKI_API_URL }}
+    - name: TPSPROXY_API_URL
+      value: {{ TPSPROXY_API_URL }}
+  image: {{ image }}
+  ingresses:
+    {{#each INGRESSES}}
+       - {{this }}
+      {{/each}}
+  liveness:
+    path: /isAlive
+    port: 8080
+    initialDelay: 30
+    failureThreshold: 10
+  port: 8080
+  prometheus:
+    enabled: true
+    path: /actuator/prometheus
+  readiness:
+    path: /isReady
+    port: 8080
+    initialDelay: 30
+    timeout: 3
+  replicas:
+    min: 2
+    max: 4
+    cpuThresholdPercentage: 50
+  resources:
+    limits:
+      cpu: 1000m
+  vault:
+    enabled: true
+    paths:
+      - kvPath: {{ SRVDOKDISTKANAL }}
+        mountPath: /var/run/secrets/nais.io/srvdokdistkanal

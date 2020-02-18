@@ -44,7 +44,7 @@ import java.time.LocalDate;
 @RunWith(MockitoJUnitRunner.class)
 public class DokDistKanalServiceTest {
 
-	private final static String FNR = "***gammelt_fnr***";
+	private final static String FNR = "12345678931";
 	private final static String DOKUMENTTYPEID = "DokumentType";
 	private final static String DOKUMENTTYPEID_AARSOPPGAVE = "000053";
 	private final static String EPOSTADRESSE = "adresse@test.no";
@@ -52,8 +52,8 @@ public class DokDistKanalServiceTest {
 	private final static boolean SERTIFIKAT = true;
 	private final static String LEVERANDORADRESSE = "Leverandøradresse";
 	private final static String BRUKERADRESSE = "Brukeradresse";
-	private final static String BRUKERID = "***gammelt_fnr***";
-	private final static String ANNEN_BRUKERID = "***gammelt_fnr***";
+	private final static String BRUKERID = "55443322110";
+	private final static String ANNEN_BRUKERID = "01122334455";
 	private final static Boolean ER_ARKIVERT_FALSE = Boolean.FALSE;
 	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;
 

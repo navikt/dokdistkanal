@@ -1,11 +1,11 @@
 {
   "feil": {
-    "***gammelt_fnr***": {
+    "12345678901": {
       "melding": null
     }
   },
   "kontaktinfo": {
-    "***gammelt_fnr***": {
+    "12345678901": {
       "epostadresse": "epost",
       "kanVarsles": true,
       "mobiltelefonnummer": "telefonnummer",

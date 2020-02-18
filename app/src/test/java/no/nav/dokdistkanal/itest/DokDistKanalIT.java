@@ -24,7 +24,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 public class DokDistKanalIT extends AbstractIT {
 
 	private static final String DOKUMENTTYPEID = "000009";
-	private static final String MOTTAKERID = "***gammelt_fnr***";
+	private static final String MOTTAKERID = "12345678901";
 	private static final String ORGMOTTAKERID = "123456789";
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
 	private final static boolean ER_ARKIVERT_TRUE = true;

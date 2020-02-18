@@ -19,7 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DigitalKontaktinformasjonConsumerTest {
-	private final static String FNR = "***gammelt_fnr***";
+	private final static String FNR = "12345678901";
 	private final static String EPOSTADRESSE = "adresse@test.no";
 	private final static String MOBIL = "123 45 678";
 	private final static boolean RESERVASJON = true;

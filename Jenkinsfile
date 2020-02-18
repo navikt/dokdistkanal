@@ -1,6 +1,6 @@
-naisPipeline {
+naiseratorPipeline {
     applicationName = "dokdistkanal"
     javaVersion = "11"
-    dockerfileDir = "./app"
-    deployEnvironmentT = "t8,t5,q1"
+    dockerfileDir = "."
+    deployEnvironmentQ = "q0,q1,q2"
 }
