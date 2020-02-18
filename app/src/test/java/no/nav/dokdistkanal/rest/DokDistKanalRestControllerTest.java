@@ -16,7 +16,7 @@ import org.mockito.Mockito;
 
 public class DokDistKanalRestControllerTest {
 
-	private final static String FNR = "***gammelt_fnr***";
+	private final static String FNR = "12345678931";
 	private final static String DOKUMENTTYPEID = "DokumentType";
 	private final static MottakerTypeCode MOTTAKERTYPE_PERSON = MottakerTypeCode.PERSON;
 	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;

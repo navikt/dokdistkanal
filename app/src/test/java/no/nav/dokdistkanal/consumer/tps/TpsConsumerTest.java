@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 
 public class TpsConsumerTest {
-	private static final String FNR = "***gammelt_fnr***";
+	private static final String FNR = "99999999999";
 	private static final LocalDate FOEDSELSDATO = LocalDate.of(1899, 12, 31);
 	private static final LocalDate DOEDSDATO = LocalDate.of(1999, 12, 31);
 
