@@ -50,6 +50,8 @@
 		<modig-security.version>3.0.6</modig-security.version>
 		<resilience4j-circuitbreaker.version>0.13.1</resilience4j-circuitbreaker.version>
 		<httpclient.version>4.5.8</httpclient.version>
+		<logstash.version>6.3</logstash.version>
+		<javax.version>1</javax.version>
 	</properties>
 
 	<dependencyManagement>
@@ -57,12 +59,12 @@
 			<dependency>
 				<groupId>net.logstash.logback</groupId>
 				<artifactId>logstash-logback-encoder</artifactId>
-				<version>4.10</version>
+				<version>${logstash.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>javax.inject</groupId>
 				<artifactId>javax.inject</artifactId>
-				<version>1</version>
+				<version>${javax.version}</version>
 			</dependency>
 
 			<!-- Provided dependencies -->
