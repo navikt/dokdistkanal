@@ -25,6 +25,4 @@
 	<logger name="no.nav.dokdistkanal" level="INFO" additivity="false">
 		<appender-ref ref="stdout_json"/>
 	</logger>
-
-	<logger name="org.springframework" level="INFO"/>
 </configuration>
