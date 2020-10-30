@@ -1,12 +1,5 @@
 package no.nav.dokdistkanal.consumer.tps;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import no.nav.dokdistkanal.consumer.tps.to.TpsHentPersoninfoForIdentTo;
 import no.nav.dokdistkanal.exceptions.technical.TpsHentNavnTechnicalException;
 import org.junit.Rule;
@@ -15,6 +8,13 @@ import org.junit.rules.ExpectedException;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TpsConsumerTest {
 	private static final String FNR = "99999999999";

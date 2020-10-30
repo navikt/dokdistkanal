@@ -17,4 +17,4 @@ Spørsmål knyttet til koden eller prosjektet kan rettes mot:
 
 ## For NAV-ansatte
 
-Interne henvendelser kan sendes via Slack i kanalen #team_dok_komponenter.
+Interne henvendelser kan sendes via Slack i kanalen [#team_dokumentløsninger](https://nav-it.slack.com/archives/C6W9E5GPJ).

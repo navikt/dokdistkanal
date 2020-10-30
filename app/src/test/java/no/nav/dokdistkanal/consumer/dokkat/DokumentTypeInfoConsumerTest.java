@@ -1,13 +1,5 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
@@ -29,6 +21,14 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DokumentTypeInfoConsumerTest {
