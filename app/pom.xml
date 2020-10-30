@@ -12,10 +12,6 @@
     <packaging>jar</packaging>
     <name>dokdistkanal :: App</name>
 
-    <properties>
-        <start-class>no.nav.dokdistkanal.Application</start-class>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -108,18 +104,16 @@
         </dependency>
     </dependencies>
 
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <finalName>app</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <finalName>app</finalName>
+                    <mainClass>no.nav.dokdistkanal.Application</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
