@@ -124,6 +124,20 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
+	public void shouldReturnPrintWhenSertifikatNotValid() {
+		//Stub web services:
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/dki/ugyldig-sertifikat-responsebody.json")));
+
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+	}
+
+	@Test
 	public void shouldThrowFunctionalExceptionFromDokkatWhenNotFound() {
 		//Stub web services:
 		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
