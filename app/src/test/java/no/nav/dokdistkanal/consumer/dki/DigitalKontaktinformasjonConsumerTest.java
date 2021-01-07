@@ -27,7 +27,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 	private final static String BRUKERADRESSE = "Brukeradresse";
 	private final static boolean INKLUDER_SIKKER_DIGITAL_POST = true;
 
-	private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
+	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -41,7 +41,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		assertThat(digitalKontaktinformasjonTo.getEpostadresse(), is(EPOSTADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getMobiltelefonnummer(), is(MOBIL));
 		assertThat(digitalKontaktinformasjonTo.isReservasjon(), is(RESERVASJON));
-		assertThat(digitalKontaktinformasjonTo.isSertifikat(), is(Boolean.TRUE));
+		assertThat(digitalKontaktinformasjonTo.isGyldigSertifikat(), is(Boolean.TRUE));
 		assertThat(digitalKontaktinformasjonTo.getBrukerAdresse(), is(BRUKERADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getLeverandoerAdresse(), is(LEVERANDORADRESSE));
 	}
@@ -58,7 +58,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		assertNull(digitalKontaktinformasjonTo.getLeverandoerAdresse());
 		assertNull(digitalKontaktinformasjonTo.getMobiltelefonnummer());
 		assertFalse(digitalKontaktinformasjonTo.isReservasjon());
-		assertFalse(digitalKontaktinformasjonTo.isSertifikat());
+		assertFalse(digitalKontaktinformasjonTo.isGyldigSertifikat());
 	}
 
 	@Test
@@ -94,7 +94,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 				.mobiltelefonnummer(MOBIL)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
-				.sertifikat(true)
+				.gyldigSertifikat(true)
 				.brukerAdresse(BRUKERADRESSE)
 				.build();
 	}

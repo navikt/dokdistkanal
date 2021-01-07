@@ -18,11 +18,11 @@ public class DigitalKontaktinformasjonTo {
 	private boolean reservasjon;
 	private String leverandoerAdresse;
 	private String brukerAdresse;
-	private boolean sertifikat;
+	private boolean gyldigSertifikat;
 
 	public boolean verifyAddress() {
 		boolean hasLeverandorAdresse = isNotEmpty(getLeverandoerAdresse());
 		boolean hasBrukerAdresse = isNotEmpty(getBrukerAdresse());
-		return (sertifikat && hasLeverandorAdresse && hasBrukerAdresse);
+		return (gyldigSertifikat && hasLeverandorAdresse && hasBrukerAdresse);
 	}
 }

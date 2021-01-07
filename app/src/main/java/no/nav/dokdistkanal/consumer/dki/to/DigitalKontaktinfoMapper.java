@@ -3,8 +3,9 @@ package no.nav.dokdistkanal.consumer.dki.to;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
@@ -24,13 +25,13 @@ public class DigitalKontaktinfoMapper {
                             .getLeverandoerAdresse() : null)
                     .mobiltelefonnummer(digitalKontaktinfo.isKanVarsles() ? digitalKontaktinfo.getMobiltelefonnummer() : null)
                     .reservasjon(digitalKontaktinfo.isReservert())
-                    .sertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse() != null && isSertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse()
+                    .gyldigSertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse() != null && isSertifikatPresentAndValid(digitalKontaktinfo.getSikkerDigitalPostkasse()
                             .getLeverandoerSertifikat()))
                     .build();
         }
     }
 
-    private boolean isSertifikat(String leverandoerSertifikat) {
+    private boolean isSertifikatPresentAndValid(String leverandoerSertifikat) {
         return leverandoerSertifikat != null && !leverandoerSertifikat.isEmpty() && isSertifikatValid(leverandoerSertifikat);
     }
 
@@ -43,11 +44,14 @@ public class DigitalKontaktinfoMapper {
             X509Certificate cert = (X509Certificate) certFactory.generateCertificate(inputStream);
             cert.checkValidity();
             return true;
-        } catch (CertificateException e) {
-            log.warn("Leverandørsertifikatet har utløpt eller er ikke gyldig enda. Feilmelding: {}", e.getMessage());
+        } catch (CertificateExpiredException e) {
+            log.warn("Leverandørsertifikatet har utløpt. Feilmelding: {}", e.getMessage(), e);
+            return false;
+        } catch (CertificateNotYetValidException e) {
+            log.warn("Leverandørsertifikatet er ikke gyldig enda. Feilmelding: {}", e.getMessage(), e);
             return false;
         } catch (Exception e) {
-            log.warn("Ukjent feil ved validering av leverandørsertifikatets gyldighet. Feilmelding: {}.", e.getMessage());
+            log.warn("Ukjent feil ved validering av leverandørsertifikatets gyldighet. Feilmelding: {}.", e.getMessage(), e);
             return false;
         }
     }
