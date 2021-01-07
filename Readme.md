@@ -1,6 +1,6 @@
 # dokdistkanal
 
-* [Funksjonelle Krav](#funksjonelle-krav)
+* [Funksjonelle krav](#funksjonelle-krav)
 * [Distribusjon av tjenesten (deployment)](#distribusjon-av-tjenesten-deployment)
 * [Utviklingsmiljø](#utviklingsmilj)
 * [Drift og støtte](#drift-og-sttte)
@@ -23,11 +23,11 @@ Push/merge til master branch vil teste, bygge og deploye til produksjonsmiljø o
 * Maven
 
 ### Kjøre prosjektet lokalt
-For å kjøre opp applikasjonen lokal, bruk profile `nais` og systemvariabler hentet fra vault: [System variabler](https://vault.adeo.no/ui/vault/secrets/secret/show/dokument/dokdistkanal) 
+For å kjøre opp applikasjonen lokalt, bruk profile `nais` og systemvariabler hentet fra vault: [System variabler](https://vault.adeo.no/ui/vault/secrets/secret/show/dokument/dokdistkanal) 
 
-### Bygge app.jar og kjøre tester
+### Kjøre tester og bygge app.jar
 
-`mvn clean package`/`mvn clean install`
+`mvn clean verify`/`mvn clean package`
 
 ####NB!
 Testene MapDigitalKontaktinformasjonTest og DokDistKanalIT bruker testsertifikater utsendt fra DigiPost. 

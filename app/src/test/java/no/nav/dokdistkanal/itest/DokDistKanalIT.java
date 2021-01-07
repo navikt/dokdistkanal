@@ -23,8 +23,6 @@ import static org.junit.Assert.assertFalse;
 
 public class DokDistKanalIT extends AbstractIT {
 
-	//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023. Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
-
 	private static final String DOKUMENTTYPEID = "000009";
 	private static final String MOTTAKERID = "12345678901";
 	private static final String ORGMOTTAKERID = "123456789";
@@ -54,6 +52,8 @@ public class DokDistKanalIT extends AbstractIT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/tps/happy-path.json")));
 
+		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
+		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
 		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())

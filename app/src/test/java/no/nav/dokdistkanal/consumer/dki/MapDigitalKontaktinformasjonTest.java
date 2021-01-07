@@ -13,9 +13,7 @@ import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MapDigitalKontaktinformajonTest {
-
-    //LEVERANDOER_SERTIFIKAT_GYLDIG er utsendt av DigDir og har utløpsdato februar 2023. Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
+public class MapDigitalKontaktinformasjonTest {
 
     private static final String EPOSTADRESSE = "epostadresse";
     private static final String MOBILTELEFONNUMMER = "mobiltelefonnummer";
@@ -30,6 +28,8 @@ public class MapDigitalKontaktinformajonTest {
     private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
 
+    //LEVERANDOER_SERTIFIKAT_GYLDIG er utsendt av DigDir og har utløpsdato februar 2023.
+    //Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
     @Test
     public void shouldMapOk() {
         DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_GYLDIG));
@@ -41,7 +41,7 @@ public class MapDigitalKontaktinformajonTest {
     }
 
     @Test
-    public void mapWithoutKanVarsles() {
+    public void shouldMapWithoutKanVarsles() {
         DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_FALSE, LEVERANDOER_SERTIFIKAT_GYLDIG));
         assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
         assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
@@ -50,7 +50,7 @@ public class MapDigitalKontaktinformajonTest {
     }
 
     @Test
-    public void mapWithoutGyldigSertifikat() {
+    public void shouldMapWithoutGyldigSertifikat() {
         DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_UGYLDIG));
         assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
         assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());

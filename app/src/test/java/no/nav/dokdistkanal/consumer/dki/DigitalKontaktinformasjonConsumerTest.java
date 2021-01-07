@@ -13,6 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,7 +42,7 @@ public class DigitalKontaktinformasjonConsumerTest {
 		assertThat(digitalKontaktinformasjonTo.getEpostadresse(), is(EPOSTADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getMobiltelefonnummer(), is(MOBIL));
 		assertThat(digitalKontaktinformasjonTo.isReservasjon(), is(RESERVASJON));
-		assertThat(digitalKontaktinformasjonTo.isGyldigSertifikat(), is(Boolean.TRUE));
+		assertTrue(digitalKontaktinformasjonTo.isGyldigSertifikat());
 		assertThat(digitalKontaktinformasjonTo.getBrukerAdresse(), is(BRUKERADRESSE));
 		assertThat(digitalKontaktinformasjonTo.getLeverandoerAdresse(), is(LEVERANDORADRESSE));
 	}
