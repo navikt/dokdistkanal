@@ -253,7 +253,7 @@ public class DokDistKanalServiceTest {
 		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
-				.sertifikat(SERTIFIKAT)
+				.gyldigSertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.TRUE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
@@ -333,7 +333,7 @@ public class DokDistKanalServiceTest {
 		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
-				.sertifikat(SERTIFIKAT)
+				.gyldigSertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
@@ -357,7 +357,7 @@ public class DokDistKanalServiceTest {
 				.build();
 		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.sertifikat(SERTIFIKAT)
+				.gyldigSertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
@@ -380,7 +380,7 @@ public class DokDistKanalServiceTest {
 		when(tpsConsumer.tpsHentPersoninfoForIdent(anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
-				.sertifikat(SERTIFIKAT)
+				.gyldigSertifikat(SERTIFIKAT)
 				.reservasjon(Boolean.FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(null)

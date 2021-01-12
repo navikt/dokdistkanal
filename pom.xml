@@ -46,7 +46,7 @@
         <logstash.version>6.4</logstash.version>
         <javax.version>1</javax.version>
         <rxjava.version>2.2.20</rxjava.version>
-        <spring-cloud-contract-wiremock.version>2.2.4.RELEASE</spring-cloud-contract-wiremock.version>
+        <spring-cloud-contract-wiremock.version>2.2.5.RELEASE</spring-cloud-contract-wiremock.version>
     </properties>
 
     <dependencyManagement>

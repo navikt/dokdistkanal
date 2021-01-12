@@ -52,6 +52,8 @@ public class DokDistKanalIT extends AbstractIT {
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/tps/happy-path.json")));
 
+		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
+		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
 		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
 				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
 						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
@@ -116,6 +118,20 @@ public class DokDistKanalIT extends AbstractIT {
 				.willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Person ikke funnet")));
+
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+	}
+
+	@Test
+	public void shouldReturnPrintWhenSertifikatNotValid() {
+		//Stub web services:
+		stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+				.willReturn(aResponse().withStatus(HttpStatus.OK.value())
+						.withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+						.withBodyFile("treg001/dki/ugyldig-sertifikat-responsebody.json")));
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
