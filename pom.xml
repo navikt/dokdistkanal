@@ -43,7 +43,7 @@
         <java.version>11</java.version>
         <dokkat-api.version>11.0.6</dokkat-api.version>
         <resilience4j-circuitbreaker.version>1.6.1</resilience4j-circuitbreaker.version>
-        <logstash.version>6.4</logstash.version>
+        <logstash.version>6.5</logstash.version>
         <javax.version>1</javax.version>
         <rxjava.version>2.2.20</rxjava.version>
         <spring-cloud-contract-wiremock.version>2.2.5.RELEASE</spring-cloud-contract-wiremock.version>
