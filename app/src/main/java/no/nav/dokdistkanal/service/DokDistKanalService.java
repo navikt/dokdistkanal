@@ -1,16 +1,5 @@
 package no.nav.dokdistkanal.service;
 
-import static java.lang.String.format;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
-import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
-import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
-
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
@@ -19,7 +8,7 @@ import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjon;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
-import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.consumer.tps.Tps;
@@ -32,6 +21,17 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+
+import static java.lang.String.format;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 
 /**
  * @author Ketill Fenne, Visma Consulting

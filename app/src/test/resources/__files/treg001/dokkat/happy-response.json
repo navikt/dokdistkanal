@@ -1,63 +1,17 @@
 {
-  "dokumenttypeId" : "000044",
-  "dokumentTittel" : "Brev fra NAV",
   "dokumentType" : "U",
-  "dokumentKategori" : "B",
-  "sensitivt" : true,
-  "tema" : null,
-  "behandlingstema" : null,
   "arkivSystem" : "JOARK",
-  "artifaktId" : null,
   "dokumentProduksjonsInfo" : {
-    "vedlegg" : false,
-    "eksternVedlegg" : false,
-    "ikkeRedigerbarMalId" : "MF_000044",
-    "redigerbarMalId" : null,
-    "malLogikkFil" : "Infotrygd",
-    "malXsdReferanse" : "infotrygdbrev/infotrygd_000044.xsd",
-    "spraakInfos" : [ ],
     "distribusjonInfo" : {
-      "predefinertDistKanal" : null,
-      "portoklasse" : "A",
-      "sikkerhetsnivaa" : 4,
-      "distribusjonVarsels" : [ {
-        "varseltypeId" : "DittNAV_000002",
-        "varselForDistribusjonKanal" : "DITT_NAV",
-        "changeStamp" : {
-          "opprettetAv" : "srvdokkat",
-          "opprettetDato" : [ 2018, 1, 31, 15, 19, 55, 370000000 ],
-          "endretAv" : null,
-          "endretDato" : null
+      "predefinertDistKanal": null,
+      "distribusjonVarsels": [
+        {
+          "varselForDistribusjonKanal": "DITT_NAV"
+        },
+        {
+          "varselForDistribusjonKanal": "SDP"
         }
-      }, {
-        "varseltypeId" : "SDP_000002",
-        "varselForDistribusjonKanal" : "SDP",
-        "changeStamp" : {
-          "opprettetAv" : "srvdokkat",
-          "opprettetDato" : [ 2018, 1, 31, 15, 19, 55, 368000000 ],
-          "endretAv" : null,
-          "endretDato" : null
-        }
-      } ],
-      "changeStamp" : {
-        "opprettetAv" : "srvdokkat",
-        "opprettetDato" : [ 2018, 1, 31, 15, 19, 55, 366000000 ],
-        "endretAv" : null,
-        "endretDato" : null
-      }
-    },
-    "changeStamp" : {
-      "opprettetAv" : "srvdokkat",
-      "opprettetDato" : [ 2016, 12, 12, 16, 35, 59, 110000000 ],
-      "endretAv" : "srvdokkat",
-      "endretDato" : [ 2018, 1, 31, 15, 19, 55, 370000000 ]
+      ]
     }
-  },
-  "dokumentMottakInfo" : null,
-  "changeStamp" : {
-    "opprettetAv" : "srvdokkat",
-    "opprettetDato" : [ 2016, 12, 12, 16, 35, 59, 110000000 ],
-    "endretAv" : "srvdokkat",
-    "endretDato" : [ 2017, 1, 11, 11, 55, 48, 525000000 ]
   }
 }

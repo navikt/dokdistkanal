@@ -5,15 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class DokumentTypeInfoTo implements Serializable {
-	static final long serialVersionUID = 1L;
-	private String arkivsystem;
+@AllArgsConstructor
+public class DistribusjonInfoTo {
 	private String predefinertDistKanal;
-	private boolean isVarslingSdp;
+	private List<DistribusjonVarselTo> distribusjonVarsels = new ArrayList();
 }
