@@ -13,7 +13,7 @@ import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
-import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.consumer.tps.TpsConsumer;
