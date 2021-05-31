@@ -1,14 +1,13 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
-import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.consumer.dokkat.to.DistribusjonInfoTo;
+import no.nav.dokdistkanal.consumer.dokkat.to.DokumentProduksjonsInfoToV4;
+import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoToV4;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokkatFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokkatTechnicalException;
 import no.nav.dokdistkanal.metrics.MicrometerMetrics;
-import no.nav.dokkat.api.tkat020.DistribusjonInfoTo;
-import no.nav.dokkat.api.tkat020.v4.DokumentProduksjonsInfoToV4;
-import no.nav.dokkat.api.tkat020.v4.DokumentTypeInfoToV4;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

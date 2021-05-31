@@ -41,7 +41,6 @@
 
     <properties>
         <java.version>11</java.version>
-        <dokkat-api.version>11.0.6</dokkat-api.version>
         <resilience4j-circuitbreaker.version>1.6.1</resilience4j-circuitbreaker.version>
         <logstash.version>6.5</logstash.version>
         <javax.version>1</javax.version>
@@ -51,11 +50,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>no.nav.dokkat</groupId>
-                <artifactId>dokkat-api</artifactId>
-                <version>${dokkat-api.version}</version>
-            </dependency>
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
