@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.consumer.pdl;
+package no.nav.dokdistkanal.exceptions.functional;
 
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 

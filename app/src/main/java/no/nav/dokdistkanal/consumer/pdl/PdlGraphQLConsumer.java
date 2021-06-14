@@ -3,6 +3,8 @@ package no.nav.dokdistkanal.consumer.pdl;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
+import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.PdlHentPersonTechnicalException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
@@ -57,7 +59,7 @@ public class PdlGraphQLConsumer {
                     .header(HEADER_PDL_TEMA, tema)
                     .body(mapRequest(aktoerId));
 
-            log.debug("Henter fødselsnummer og navn for {} aktørId", aktoerId);
+            log.debug("Henter person info for {} aktørId", aktoerId);
 
             final PDLHentPersonResponse response = requireNonNull(restTemplate.exchange(requestEntity, PDLHentPersonResponse.class).getBody());
 
@@ -68,6 +70,8 @@ public class PdlGraphQLConsumer {
             }
         } catch (HttpClientErrorException e) {
             throw new PdlFunctionalException("Kunne ikke hente person fra pdl.", e);
+        } catch (HttpServerErrorException e) {
+            throw new PdlHentPersonTechnicalException("Teknisk feil ved kall mot PDL.", e);
         }
 
     }

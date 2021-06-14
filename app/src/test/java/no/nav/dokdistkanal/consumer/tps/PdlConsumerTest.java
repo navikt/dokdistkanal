@@ -1,12 +1,11 @@
 package no.nav.dokdistkanal.consumer.tps;
 
 import no.nav.dokdistkanal.consumer.pdl.HentPersoninfo;
-import no.nav.dokdistkanal.consumer.pdl.PdlFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
