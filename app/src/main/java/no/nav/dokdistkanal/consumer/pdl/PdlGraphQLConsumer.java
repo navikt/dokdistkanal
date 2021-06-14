@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.consumer.pdl;
 
 
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,10 +45,7 @@ public class PdlGraphQLConsumer {
     }
 
     @Retryable(include = HttpServerErrorException.class)
-    public PDLHentPersonResponse hentPerson(final String aktoerId, final String tema) {
-        if (StringUtil.isNullOrEmpty(aktoerId)) {
-            return null;
-        }
+    public HentPersoninfo hentPerson(final String aktoerId, final String tema) {
         try {
             final UriComponents uri = UriComponentsBuilder.fromHttpUrl(pdlUrl).build();
             final String serviceUserToken = "Bearer " + stsConsumer.getOidcToken();
@@ -62,40 +58,47 @@ public class PdlGraphQLConsumer {
                     .body(mapRequest(aktoerId));
 
             log.debug("Henter fødselsnummer og navn for {} aktørId", aktoerId);
+
             final PDLHentPersonResponse response = requireNonNull(restTemplate.exchange(requestEntity, PDLHentPersonResponse.class).getBody());
 
-            if (Objects.isNull(response.getPdlError())) {
-                return response;
-
+            if (Objects.isNull(response.getErrors()) || response.getErrors().isEmpty()) {
+                return mapPersonInfo(response);
             } else {
-
-                throw new PdlFunctionalException("Kunne ikke hente person fra Pdl" + response.getPdlError());
+                throw new PdlFunctionalException("Kunne ikke hente person fra Pdl" + response.getErrors());
             }
         } catch (HttpClientErrorException e) {
             throw new PdlFunctionalException("Kunne ikke hente person fra pdl.", e);
         }
 
-
     }
 
 
-    public PDLRequest mapRequest(final String aktoerId) {
-        final HashMap<String, Object> variables = new HashMap<>();
-        variables.put("identer", aktoerId);
+    private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
+        if (Objects.isNull(response.getData().getHentPerson())) {
+            throw new PdlFunctionalException("Kunne ikke hente person fra Pdl" + response.getErrors());
+        } else {
+            PDLHentPersonResponse.HentPerson hentPerson = response.getData().getHentPerson();
+            return HentPersoninfo.builder()
+                    .doedsdato((hentPerson != null ? hentPerson.getDoedsfall() : null) == null ? null : hentPerson.getDoedsfall().stream().map(PDLHentPersonResponse.Doedsfall::getDoedsdato).findAny().orElse(null))
+                    .foedselsdato((hentPerson != null ? hentPerson.getFoedsel() : null) == null ? null : hentPerson.getFoedsel().stream().map(PDLHentPersonResponse.Foedsel::getFoedselsdato).findAny().orElse(null))
+                    .build();
+        }
+    }
 
-        return PDLRequest.builder().query("query($ident: ID!){\n" +
+
+    private PDLRequest mapRequest(final String aktoerId) {
+        final HashMap<String, Object> variables = new HashMap<>();
+        variables.put("ident", aktoerId);
+
+        return PDLRequest.builder().query("query hentPerson($ident: ID!){\n" +
                 "  hentPerson(ident: $ident){\n" +
                 "      doedsfall{\n" +
                 "        doedsdato\n" +
                 "      }\n" +
                 "    foedsel{\n" +
-                "      foedselsaar\n" +
                 "    \tfoedselsdato\n" +
                 "    }\n" +
-                "    folkeregisteridentifikator{\n" +
-                "      identifikasjonsnummer\n" +
-                "    }\n" +
                 "  }\n" +
-                "}").variables(variables).build();
+                "}\n").variables(variables).build();
     }
 }

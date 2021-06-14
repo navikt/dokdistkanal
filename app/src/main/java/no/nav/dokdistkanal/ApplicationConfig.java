@@ -8,7 +8,6 @@ import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
-import no.nav.dokdistkanal.consumer.tps.TpsConsumer;
 import no.nav.dokdistkanal.metrics.DokTimedAspect;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +23,6 @@ import org.springframework.context.annotation.Import;
 })
 
 @Import({
-		TpsConsumer.class,
 		DigitalKontaktinformasjonConsumer.class,
 		SikkerhetsnivaaConsumer.class,
 		DokumentTypeInfoConsumer.class,

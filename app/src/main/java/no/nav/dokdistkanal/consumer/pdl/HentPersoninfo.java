@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.consumer.tps.to;
+package no.nav.dokdistkanal.consumer.pdl;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,7 @@ import java.time.LocalDate;
 
 @Builder
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class TpsHentPersoninfoForIdentTo {
+public class HentPersoninfo {
 	private LocalDate doedsdato;
 	private LocalDate foedselsdato;
 }

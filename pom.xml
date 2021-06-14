@@ -9,13 +9,6 @@
     <version>1-SNAPSHOT</version>
     <name>dokdistkanal</name>
 
-    <scm>
-        <connection>scm:git:http://stash.devillo.no/scm/boaf/dokdistkanal.git</connection>
-        <developerConnection>scm:git:http://stash.devillo.no/scm/boaf/dokdistkanal.git</developerConnection>
-        <url>http://stash.devillo.no/projects/BOAF/repos/dokdistkanal</url>
-        <tag>HEAD</tag>
-    </scm>
-
     <modules>
         <module>app</module>
     </modules>
@@ -45,7 +38,7 @@
         <logstash.version>6.5</logstash.version>
         <javax.version>1</javax.version>
         <rxjava.version>2.2.20</rxjava.version>
-        <spring-cloud-contract-wiremock.version>2.2.5.RELEASE</spring-cloud-contract-wiremock.version>
+        <spring-cloud-contract-wiremock.version>3.0.3</spring-cloud-contract-wiremock.version>
     </properties>
 
     <dependencyManagement>

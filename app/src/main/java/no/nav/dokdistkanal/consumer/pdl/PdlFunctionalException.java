@@ -1,6 +1,8 @@
 package no.nav.dokdistkanal.consumer.pdl;
 
-public class PdlFunctionalException extends RuntimeException {
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+
+public class PdlFunctionalException extends DokDistKanalFunctionalException {
 
     public PdlFunctionalException(String message) {
         super(message);
