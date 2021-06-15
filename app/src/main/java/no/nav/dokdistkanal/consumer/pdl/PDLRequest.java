@@ -11,14 +11,12 @@ import java.util.Map;
 @Builder
 public class PDLRequest {
 
-    private final String query;
-    private final Map<String, Object> variables;
+	private final String query;
+	private final Map<String, Object> variables;
 
-    @JsonCreator
-    public PDLRequest(@JsonProperty("query") String query, @JsonProperty("variables") Map<String, Object> variables) {
-        this.query = query;
-        this.variables = variables;
-    }
-
-
+	@JsonCreator
+	public PDLRequest(@JsonProperty("query") String query, @JsonProperty("variables") Map<String, Object> variables) {
+		this.query = query;
+		this.variables = variables;
+	}
 }

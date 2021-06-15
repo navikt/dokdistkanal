@@ -19,23 +19,10 @@
         <version>2.4.5</version>
     </parent>
 
-    <distributionManagement>
-        <repository>
-            <id>m2internal</id>
-            <name>NAV Internal Repository</name>
-            <url>dav:http://maven.adeo.no/nexus/content/repositories/m2internal</url>
-        </repository>
-        <snapshotRepository>
-            <id>m2snapshot</id>
-            <name>NAV Snapshot Repository</name>
-            <url>dav:http://maven.adeo.no/nexus/content/repositories/m2snapshot</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <properties>
         <java.version>11</java.version>
         <resilience4j-circuitbreaker.version>1.6.1</resilience4j-circuitbreaker.version>
-        <logstash.version>6.5</logstash.version>
+        <logstash.version>6.6</logstash.version>
         <javax.version>1</javax.version>
         <rxjava.version>2.2.20</rxjava.version>
         <spring-cloud-contract-wiremock.version>3.0.3</spring-cloud-contract-wiremock.version>

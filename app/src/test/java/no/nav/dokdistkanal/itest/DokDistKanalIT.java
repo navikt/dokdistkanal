@@ -48,11 +48,6 @@ public class DokDistKanalIT extends AbstractIT {
                         .withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
                         .withBodyFile("felles/sts/stsResponse_happy.json")));
 
-        stubFor(get(urlPathMatching("/TPS/v1/innsyn/person"))
-                .willReturn(aResponse().withStatus(HttpStatus.OK.value())
-                        .withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
-                        .withBodyFile("treg001/tps/happy-path.json")));
-
         //leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
         //Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
         stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
@@ -124,12 +119,21 @@ public class DokDistKanalIT extends AbstractIT {
     }
 
     @Test
+    public void shouldReturnPrintWhenPersonErDoed() {
+        //Stub web services:
+        stubFor(post("/graphql").willReturn(aResponse().withStatus(HttpStatus.OK.value())
+                .withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+                .withBodyFile("pdl/pdl_doedperson_response.json")));
+
+        DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
+
+        DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+        assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+    }
+
+    @Test
     public void shouldReturnPrintWhenPersonNotFound() {
         //Stub web services:
-        stubFor(get(urlPathMatching("/TPS/v1/innsyn/person"))
-                .willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("Person ikke funnet")));
         stubFor(post("/graphql").willReturn(aResponse().withStatus(HttpStatus.OK.value())
                 .withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
                 .withBodyFile("pdl/pdl_ok_response.json")));
