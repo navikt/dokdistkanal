@@ -59,7 +59,7 @@ public class PdlGraphQLConsumer {
                     .header(HEADER_PDL_TEMA, tema)
                     .body(mapRequest(aktoerId));
 
-            log.debug("Henter person info for {} aktørId", aktoerId);
+            log.debug("Henter personinfo for aktørId={}", aktoerId);
 
             final PDLHentPersonResponse response = requireNonNull(restTemplate.exchange(requestEntity, PDLHentPersonResponse.class).getBody());
 
