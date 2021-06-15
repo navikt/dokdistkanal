@@ -15,8 +15,8 @@ spec:
       value: {{ SECURITY_TOKEN_SERVICE_TOKEN_URL }}
     - name: DKI_API_URL
       value: {{ DKI_API_URL }}
-    - name: TPSPROXY_API_URL
-      value: {{ TPSPROXY_API_URL }}
+    - name: PDL_URL
+      value: {{ PDL_URL }}
   image: {{ image }}
   ingresses:
     {{#each INGRESSES}}

@@ -3,16 +3,17 @@ package no.nav.dokdistkanal.consumer.dki;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(MockitoJUnitRunner.class)
+
+@ExtendWith(MockitoExtension.class)
 public class MapDigitalKontaktinformasjonTest {
 
     private static final String EPOSTADRESSE = "epostadresse";

@@ -3,7 +3,7 @@
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://sikkerhetsnivaa-q1.nais.preprod.local/",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
   "DKI_API_URL": "https://dkif.nais.preprod.local",
-  "TPSPROXY_API_URL": "https://tps-proxy-q0.nais.preprod.local/api",
+  "PDL_URL": "https://pdl-api.dev.adeo.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "NAMESPACE": "q0",
   "INGRESSES": [
