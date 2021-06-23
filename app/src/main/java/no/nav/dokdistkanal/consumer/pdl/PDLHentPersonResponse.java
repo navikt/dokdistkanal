@@ -47,6 +47,15 @@ public class PDLHentPersonResponse {
 
 	@Data
 	static class PdlErrorExtensionTo {
+		private String code;
+		private ErrorDetails details;
 		private String classification;
+	}
+
+	@Data
+	static class ErrorDetails {
+		private String type;
+		private String cause;
+		private String policy;
 	}
 }
