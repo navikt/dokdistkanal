@@ -43,7 +43,8 @@ import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIB
 @Component
 public class DokDistKanalService {
     public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
-    private static final Pattern FNR_SIMPLE_REGEX = Pattern.compile("[0-7]\\d{10}");
+    // Fødselsnummer eller D-nummer i folkeregisteret
+    private static final Pattern FOLKEREGISTERIDENT_REGEX = Pattern.compile("[0-7]\\d{10}");
     private static final String ONLY_ONES = "11111111111";
 
     private static final String AARSOPPGAVE_DOKUMENTTYPEID_1 = "000053";
@@ -89,8 +90,8 @@ public class DokDistKanalService {
         if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
             return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()));
         } else {
-            boolean isFnr = FNR_SIMPLE_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
-            HentPersoninfo hentPersoninfo = isFnr ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), dokDistKanalRequest.getTema()) : null;
+            boolean isFolkeregisterident  = FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
+            HentPersoninfo hentPersoninfo = isFolkeregisterident  ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), dokDistKanalRequest.getTema()) : null;
 
             if (hentPersoninfo == null) {
                 return logAndReturn(PRINT, "Finner ikke personen i PDL");
