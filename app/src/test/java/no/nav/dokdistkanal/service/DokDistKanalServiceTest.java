@@ -158,7 +158,7 @@ public class DokDistKanalServiceTest {
         when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersonResponse);
         DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
         assertEquals(DistribusjonKanalCode.PRINT, serviceResponse.getDistribusjonsKanal());
-        assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke personen i TPS"));
+        assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Finner ikke personen i PDL"));
         LogbackCapturingAppender.Factory.cleanUp();
     }
 

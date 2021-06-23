@@ -26,6 +26,8 @@ public class DokDistKanalIT extends AbstractIT {
 
     private static final String DOKUMENTTYPEID = "000009";
     private static final String MOTTAKERID = "12345678901";
+    private final static String BOST_MOTTAKERID = "80000123456";
+    private final static String ONLY_ONE_MOTTAKERID = "11111111111";
     private static final String ORGMOTTAKERID = "123456789";
     private static final String SAMHANDLERMOTTAKERID = "987654321";
     private final static boolean ER_ARKIVERT_TRUE = true;
@@ -70,9 +72,33 @@ public class DokDistKanalIT extends AbstractIT {
         assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
     }
 
+
+    @Test
+    public void shouldReturnPrintForBOSTIdenter() {
+        DokDistKanalRequest request = dokDistKanalRequestBuilder(BOST_MOTTAKERID).build();
+
+        stubFor(post("/graphql").willReturn(aResponse().withStatus(HttpStatus.OK.value())
+                .withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+                .withBodyFile("pdl/pdl_ok_response.json")));
+        DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+        assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+    }
+
     /**
-     * Komplertterer fullt brevdatasett der mottaker er organisasjon
+     * Komplertterer fullt brevdatasett der mottaker er person
      */
+    @Test
+    public void shouldReturnPrintForIdenterWhichErOnlyOne() {
+        DokDistKanalRequest request = dokDistKanalRequestBuilder(ONLY_ONE_MOTTAKERID).build();
+
+        stubFor(post("/graphql").willReturn(aResponse().withStatus(HttpStatus.OK.value())
+                .withHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType())
+                .withBodyFile("pdl/pdl_ok_response.json")));
+        DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+        assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
+    }
+
+
     @Test
     public void shouldGetDistribusjonskanalPrintForOrganisasjon() {
         DokDistKanalRequest request = baseDokDistKanalRequestBuilder().mottakerId(ORGMOTTAKERID).tema("PEN")
@@ -265,4 +291,15 @@ public class DokDistKanalIT extends AbstractIT {
                 .brukerId(MOTTAKERID)
                 .erArkivert(ER_ARKIVERT_TRUE);
     }
+
+    private DokDistKanalRequest.DokDistKanalRequestBuilder dokDistKanalRequestBuilder(String mottakerId) {
+        return DokDistKanalRequest.builder()
+                .dokumentTypeId(DOKUMENTTYPEID)
+                .mottakerId(mottakerId)
+                .mottakerType(MottakerTypeCode.PERSON)
+                .brukerId(mottakerId)
+                .erArkivert(ER_ARKIVERT_TRUE)
+                .tema("PEN");
+    }
+
 }

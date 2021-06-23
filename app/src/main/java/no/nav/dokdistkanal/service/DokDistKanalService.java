@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.service;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.time.LocalDate;
+import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
@@ -36,10 +38,13 @@ import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIB
 /**
  * @author Ketill Fenne, Visma Consulting
  */
+@Slf4j
 @Service
 @Component
 public class DokDistKanalService {
     public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
+    private static final Pattern FNR_SIMPLE_REGEX = Pattern.compile("[0-7]\\d{10}");
+    private static final String ONLY_ONES = "11111111111";
 
     private static final String AARSOPPGAVE_DOKUMENTTYPEID_1 = "000053";
     private static final String AARSOPPGAVE_DOKUMENTTYPEID_2 = "000077";
@@ -84,9 +89,11 @@ public class DokDistKanalService {
         if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
             return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()));
         } else {
-            HentPersoninfo hentPersoninfo = pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), dokDistKanalRequest.getTema());
+            boolean isFnr = FNR_SIMPLE_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
+            HentPersoninfo hentPersoninfo = isFnr ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), dokDistKanalRequest.getTema()) : null;
+
             if (hentPersoninfo == null) {
-                return logAndReturn(PRINT, "Finner ikke personen i TPS");
+                return logAndReturn(PRINT, "Finner ikke personen i PDL");
             }
 
             if (hentPersoninfo.getDoedsdato() != null) {
