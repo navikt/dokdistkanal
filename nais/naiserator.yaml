@@ -17,10 +17,12 @@ spec:
       value: {{ DKI_API_URL }}
     - name: PDL_URL
       value: {{ PDL_URL }}
+    - name: APPD_NAME
+      value: {{ APPD_NAME }}
   image: {{ image }}
   ingresses:
     {{#each INGRESSES}}
-       - {{this }}
+       - {{this}}
       {{/each}}
   liveness:
     path: /isAlive
@@ -48,3 +50,5 @@ spec:
     paths:
       - kvPath: {{ SRVDOKDISTKANAL }}
         mountPath: /var/run/secrets/nais.io/srvdokdistkanal
+      - kvPath: {{APPDYNAMICS}}
+        mountPath: /var/run/secrets/nais.io/appdynamics
