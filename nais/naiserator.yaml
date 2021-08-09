@@ -22,8 +22,8 @@ spec:
   image: {{ image }}
   ingresses:
     {{#each INGRESSES}}
-       - {{this}}
-      {{/each}}
+       - {{ this }}
+    {{/each}}
   liveness:
     path: /isAlive
     port: 8080
