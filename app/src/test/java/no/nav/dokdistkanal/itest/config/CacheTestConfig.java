@@ -1,9 +1,5 @@
 package no.nav.dokdistkanal.itest.config;
 
-import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
-import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
-import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.actuate.metrics.cache.CacheMetricsRegistrar;
 import org.springframework.boot.actuate.metrics.cache.CaffeineCacheMeterBinderProvider;
@@ -15,12 +11,15 @@ import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
+import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
+import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 
 /**
@@ -34,11 +33,6 @@ public class CacheTestConfig {
 
 	@Inject
 	MeterRegistry registry;
-
-	@Bean
-	public LettuceConnectionFactory lettuceConnectionFactory() {
-		return new LettuceConnectionFactory();
-	}
 
 	@Bean
 	public CacheManager cacheManager() {
