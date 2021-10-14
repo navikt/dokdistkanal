@@ -1,4 +1,6 @@
 {
+  "MIN_REPLICAS": 1,
+  "MAX_REPLICAS": 2,
   "DOKUMENTTYPEINFO_V4_URL": "https://app-q0.adeo.no/dokkat/rest/dokumenttypeinfo/v4",
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://sikkerhetsnivaa.dev.intern.nav.no/",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
