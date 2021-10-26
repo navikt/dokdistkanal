@@ -1,4 +1,6 @@
 {
+  "APP_NAME": "dokdistkanal-t4",
+  "APPD_NAME": "dokdistkanal-t4",
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
   "DOKUMENTTYPEINFO_V4_URL": "https://dokkat-t4.nais.preprod.local/dokkat/rest/dokumenttypeinfo/v4",
@@ -7,7 +9,7 @@
   "DKI_API_URL": "https://dkif.dev.intern.nav.no",
   "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/test/srvdokdistkanal",
-  "APP_NAME": "dokdistkanal-t4",
+  "APPDYNAMICS": "/apikey/appdynamics/dev",
   "NAMESPACE": "teamdokumenthandtering",
   "INGRESSES": [
     "https://dokdistkanal-t4.nais.preprod.local",
