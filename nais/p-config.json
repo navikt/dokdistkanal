@@ -9,6 +9,7 @@
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/prod",
   "APPD_NAME": "dokdistkanal",
+  "APP_NAME": "dokdistkanal",
   "NAMESPACE": "teamdokumenthandtering",
   "INGRESSES": [
     "https://dokdistkanal.nais.adeo.no",

@@ -9,6 +9,7 @@
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "APPD_NAME": "dokdistkanal-q2",
+  "APP_NAME": "dokdistkanal",
   "NAMESPACE": "teamdokumenthandtering",
   "INGRESSES": [
     "https://dokdistkanal-q2.nais.preprod.local",
