@@ -9,7 +9,6 @@
   "DKI_API_URL": "https://dkif.dev.intern.nav.no",
   "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/test/srvdokdistkanal",
-  "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "NAMESPACE": "teamdokumenthandtering",
   "INGRESSES": [
