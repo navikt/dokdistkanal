@@ -7,12 +7,10 @@
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://api-gw-t0.adeo.no/ekstern/difi/idporten-oidc-provider/token",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
   "DKI_API_URL": "https://dkif.dev.intern.nav.no",
-  "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
+  "PDL_URL": "https://pdl-api-q1.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/test/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
-  "NAMESPACE": "teamdokumenthandtering",
   "INGRESSES": [
-    "https://dokdistkanal-t0.nais.preprod.local",
     "https://dokdistkanal-t0.dev.intern.nav.no"
   ]
 }

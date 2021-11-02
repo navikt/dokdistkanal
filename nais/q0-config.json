@@ -9,8 +9,7 @@
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "APPD_NAME": "dokdistkanal-q0",
-  "APP_NAME": "dokdistkanal",
-  "NAMESPACE": "q0",
+  "APP_NAME": "dokdistkanal-q0",
   "INGRESSES": [
     "https://dokdistkanal-q0.nais.preprod.local",
     "https://dokdistkanal-q0.dev.intern.nav.no"
