@@ -8,8 +8,8 @@
   "PDL_URL": "https://pdl-api.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
-  "APPD_NAME": "dokdistkanal-q2",
-  "NAMESPACE": "teamdokumenthandtering",
+  "APPD_NAME": "dokdistkanal",
+  "APP_NAME": "dokdistkanal",
   "INGRESSES": [
     "https://dokdistkanal-q2.nais.preprod.local",
     "https://dokdistkanal-q2.dev.intern.nav.no",
