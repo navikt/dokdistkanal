@@ -1,0 +1,17 @@
+{
+  "MIN_REPLICAS": 1,
+  "MAX_REPLICAS": 2,
+  "DOKUMENTTYPEINFO_V4_URL": "https://app-q5.adeo.no/dokkat/rest/dokumenttypeinfo/v4",
+  "HENTPAALOGGINGSNIVAA_V1_URL": "https://sikkerhetsnivaa.dev.intern.nav.no/",
+  "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
+  "DKI_API_URL": "https://dkif.dev.intern.nav.no",
+  "PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
+  "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
+  "APPDYNAMICS": "/apikey/appdynamics/dev",
+  "APPD_NAME": "dokdistkanal-q5",
+  "APP_NAME": "dokdistkanal-q5",
+  "INGRESSES": [
+    "https://dokdistkanal-q5.nais.preprod.local",
+    "https://dokdistkanal-q5.dev.intern.nav.no"
+  ]
+}
