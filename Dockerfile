@@ -1,9 +1,9 @@
-FROM adoptopenjdk:11-jre as builder
+FROM adoptopenjdk:17-jre as builder
 WORKDIR build
 COPY app/target/app.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
-FROM navikt/java:11-appdynamics
+FROM navikt/java:17-appdynamics
 WORKDIR app
 COPY --from=builder build/dependencies/ ./
 COPY --from=builder build/snapshot-dependencies/ ./
