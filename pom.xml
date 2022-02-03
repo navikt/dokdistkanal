@@ -22,10 +22,9 @@
     <properties>
         <java.version>17</java.version>
         <resilience4j-circuitbreaker.version>1.7.1</resilience4j-circuitbreaker.version>
-        <logstash.version>6.6</logstash.version>
+        <logstash.version>7.0.1</logstash.version>
         <javax.version>1</javax.version>
-        <rxjava.version>2.2.21</rxjava.version>
-        <spring-cloud-contract-wiremock.version>3.0.3</spring-cloud-contract-wiremock.version>
+        <spring-cloud-contract-wiremock.version>3.1.0</spring-cloud-contract-wiremock.version>
         <maven-toolchains-plugin.version>3.0.0</maven-toolchains-plugin.version>
     </properties>
 
@@ -50,11 +49,6 @@
                 <groupId>io.github.resilience4j</groupId>
                 <artifactId>resilience4j-timelimiter</artifactId>
                 <version>${resilience4j-circuitbreaker.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.reactivex.rxjava2</groupId>
-                <artifactId>rxjava</artifactId>
-                <version>${rxjava.version}</version>
             </dependency>
 
             <!-- Provided dependencies -->
