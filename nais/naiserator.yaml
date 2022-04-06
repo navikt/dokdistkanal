@@ -45,6 +45,7 @@ spec:
   resources:
     limits:
       cpu: 1000m
+      memory: 1024Mi
   vault:
     enabled: true
     paths:

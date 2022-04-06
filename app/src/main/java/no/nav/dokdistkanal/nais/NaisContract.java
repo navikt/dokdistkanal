@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,7 +43,7 @@ public class NaisContract {
 	private final String version;
 	private final List<AbstractDependencyCheck> dependencyCheckList;
 
-	@Inject
+	@Autowired
 	public NaisContract(MeterRegistry meterRegistry,
 						List<AbstractDependencyCheck> dependencyCheckList,
 						@Value("${APP_NAME:dokdistkanal}") String appName,

@@ -9,7 +9,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Component
 public class SikkerhetsnivaaV1Check extends AbstractDependencyCheck {
@@ -18,7 +18,7 @@ public class SikkerhetsnivaaV1Check extends AbstractDependencyCheck {
 
 	private static final String SIKKERHETSNIVAAV1 = "SikkerhetsnivaaV1";
 
-	@Inject
+	@Autowired
 	public SikkerhetsnivaaV1Check(RestTemplateBuilder restTemplateBuilder,
 								  @Value("${hentpaaloggingsnivaa-v1.url}") String sikkerhetsnivaaUrl
 	) {

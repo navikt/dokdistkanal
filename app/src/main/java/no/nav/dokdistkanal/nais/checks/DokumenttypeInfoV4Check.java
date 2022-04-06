@@ -10,7 +10,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 
 @Component
@@ -19,7 +19,7 @@ public class DokumenttypeInfoV4Check extends AbstractDependencyCheck {
 	private static final String DOKUMENTTYPEINFO_V4 = "DokumenttypeInfo_v3";
 	private final RestTemplate restTemplate;
 
-	@Inject
+	@Autowired
 	public DokumenttypeInfoV4Check(RestTemplateBuilder restTemplateBuilder,
 								   DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 								   ServiceuserAlias serviceuserAlias) {

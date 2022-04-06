@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 
@@ -56,7 +56,7 @@ public class DokDistKanalService {
     private final MeterRegistry registry;
     private final PdlGraphQLConsumer pdlGraphQLConsumer;
 
-    @Inject
+    @Autowired
     DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
                         DigitalKontaktinformasjon digitalKontaktinformasjon,
                         SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,

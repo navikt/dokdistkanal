@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
@@ -30,10 +30,10 @@ public abstract class AbstractIT {
 
     protected String LOCAL_ENDPOINT_URL;
 
-    @Inject
+    @Autowired
     private CacheManager cacheManager;
 
-    @Inject
+    @Autowired
     protected RestTemplate restTemplate;
 
 

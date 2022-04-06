@@ -25,7 +25,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class DokumentTypeInfoConsumer {
 	public static final String DOKKAT = "DOKKAT";
 	private MicrometerMetrics metrics;
 
-	@Inject
+	@Autowired
 	public DokumentTypeInfoConsumer(RestTemplateBuilder restTemplateBuilder,
 									DokumenttypeInfoV4Alias dokumenttypeInfoV4Alias,
 									MicrometerMetrics metrics,
