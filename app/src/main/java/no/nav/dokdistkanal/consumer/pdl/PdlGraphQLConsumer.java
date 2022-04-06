@@ -18,7 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Objects;
@@ -40,7 +40,7 @@ public class PdlGraphQLConsumer {
 	private final StsRestConsumer stsConsumer;
 	private final String pdlUrl;
 
-	@Inject
+	@Autowired
 	public PdlGraphQLConsumer(RestTemplateBuilder restTemplateBuilder, StsRestConsumer stsConsumer, @Value("${pdl.url}") String pdlUrl) {
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(2L))

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +31,7 @@ import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 @EnableCaching
 public class CacheTestConfig {
 
-	@Inject
+	@Autowired
 	MeterRegistry registry;
 
 	@Bean

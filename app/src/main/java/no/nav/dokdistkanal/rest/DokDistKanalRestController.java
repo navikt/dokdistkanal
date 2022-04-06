@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.inject.Inject;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.UUID;
 
 @Slf4j
@@ -34,7 +34,7 @@ public class DokDistKanalRestController {
 
 	private final DokDistKanalService dokDistKanalService;
 
-	@Inject
+	@Autowired
 	public DokDistKanalRestController(DokDistKanalService dokDistKanalService) {
 		this.dokDistKanalService = dokDistKanalService;
 	}
