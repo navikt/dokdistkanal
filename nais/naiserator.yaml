@@ -65,5 +65,3 @@ spec:
     application:
       enabled: true
       tenant: {{AZURE_TENANT}}
-  tokenx:
-    enabled: true
