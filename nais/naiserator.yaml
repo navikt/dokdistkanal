@@ -65,3 +65,4 @@ spec:
     application:
       enabled: true
       tenant: {{AZURE_TENANT}}
+    webproxy: true
