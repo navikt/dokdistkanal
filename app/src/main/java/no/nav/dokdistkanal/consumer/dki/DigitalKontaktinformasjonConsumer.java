@@ -66,9 +66,9 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	private void pingDkif() {
 		try {
 			HttpHeaders headers = createHeaders();
-			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/ping",
-					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
-
+			String response = restTemplate.exchange(dkiUrl + "/rest/ping",
+					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
+			log.info("Pinget Dkif: "+response);
 		} catch (Exception e) {
 			log.error("Klarte ikke koble til Digdir KRR: "+e.getMessage());
 		}
