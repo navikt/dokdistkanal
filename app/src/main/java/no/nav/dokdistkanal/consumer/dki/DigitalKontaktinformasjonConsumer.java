@@ -10,6 +10,9 @@ import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.azure.AzureTokenConsumer;
+import no.nav.dokdistkanal.azure.TokenConsumer;
+import no.nav.dokdistkanal.azure.TokenResponse;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
@@ -43,7 +46,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 
 	private final RestTemplate restTemplate;
 	private final String dkiUrl;
-	private final StsRestConsumer stsRestConsumer;
+	private final TokenConsumer tokenConsumer;
 	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
@@ -51,14 +54,26 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 
 	@Autowired
 	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
-											 @Value("${dki_api_url}") String dkiUrl,
-											 StsRestConsumer stsRestConsumer) {
+											 @Value("${digdir_krr_proxy_url}") String dkiUrl,
+											 TokenConsumer tokenConsumer) {
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
 				.build();
 		this.dkiUrl = dkiUrl;
-		this.stsRestConsumer = stsRestConsumer;
+		this.tokenConsumer = tokenConsumer;
+		pingDkif();
+	}
+
+	private void pingDkif() {
+		try {
+			HttpHeaders headers = createHeaders();
+			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/ping",
+					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
+
+		} catch (Exception e) {
+			log.error("Klarte ikke koble til Digdir KRR: "+e.getMessage());
+		}
 	}
 
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
@@ -69,7 +84,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		headers.add(NAV_PERSONIDENTER, fnrTrimmed);
 
 		try {
-			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
+			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
 					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
 
 			if (isValidRespons(response, fnrTrimmed)) {
@@ -106,9 +121,10 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	private HttpHeaders createHeaders() {
+		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + stsRestConsumer.getOidcToken());
+		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + clientCredentialToken.getAccess_token());
 		headers.add(NAV_CONSUMER_ID, APP_NAME);
 		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
 		return headers;

@@ -6,7 +6,7 @@
   "DOKUMENTTYPEINFO_V4_URL": "https://app-t4.adeo.no/dokkat/rest/dokumenttypeinfo/v4",
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://api-gw-t4.adeo.no/ekstern/difi/idporten-oidc-provider/token",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
-  "DKI_API_URL": "https://dkif.dev.intern.nav.no",
+  "DIGDIR_KRR_PROXY_URL": "https://dkif.dev.intern.nav.no",
   "PDL_URL": "https://pdl-api-q1.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/test/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
