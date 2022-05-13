@@ -60,10 +60,9 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 				.build();
 		this.dkiUrl = dkiUrl;
 		this.tokenConsumer = tokenConsumer;
-		pingDkif();
 	}
 
-	private void pingDkif() {
+	public void pingDkif() {
 		try {
 			HttpHeaders headers = createHeaders();
 			String response = restTemplate.exchange(dkiUrl + "/rest/ping",

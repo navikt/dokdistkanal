@@ -1,5 +1,7 @@
 package no.nav.dokdistkanal.azure;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import no.nav.dokdistkanal.DokdistkanalProperties;
 import org.apache.http.HttpHost;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -7,6 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.util.Collections;
 
+import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -59,6 +63,9 @@ public class AzureTokenConsumer implements TokenConsumer {
 		}
 	}
 
+	@Retry(name = AZURE_TOKEN_INSTANCE)
+	@CircuitBreaker(name = AZURE_TOKEN_INSTANCE)
+	@Cacheable(AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE)
 	public TokenResponse getClientCredentialToken() {
 		try {
 			HttpHeaders headers = createHeaders();
