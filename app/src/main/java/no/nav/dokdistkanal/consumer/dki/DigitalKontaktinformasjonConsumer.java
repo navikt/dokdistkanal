@@ -60,16 +60,19 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 				.build();
 		this.dkiUrl = dkiUrl;
 		this.tokenConsumer = tokenConsumer;
+		pingDkif();
 	}
 
 	public void pingDkif() {
+		HttpHeaders headers =  null;
 		try {
-			HttpHeaders headers = createHeaders();
+			headers = createHeaders();
 			String response = restTemplate.exchange(dkiUrl + "/rest/ping",
 					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
-			log.info("Pinget Dkif: "+response);
+			log.info("Pinget Dkif: " + response);
 		} catch (Exception e) {
-			log.error("Klarte ikke koble til Digdir KRR: "+e.getMessage());
+			log.error("Klarte ikke koble til Digdir KRR: " + e.getMessage());
+			log.info(headers.get(HttpHeaders.AUTHORIZATION).stream().toString());
 		}
 	}
 
