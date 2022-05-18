@@ -7,6 +7,7 @@ import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerRequest;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
@@ -28,6 +29,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
@@ -85,20 +87,10 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
 		HttpHeaders headers = createHeaders();
 		final String fnrTrimmed = personidentifikator.trim();
-		headers.add(NAV_PERSONIDENT, fnrTrimmed);
-
+		PostPersonerRequest postPersonRequest = PostPersonerRequest.builder().personidenter(Arrays.asList(fnrTrimmed)).build();
+		HttpEntity<String> request = new HttpEntity(postPersonRequest, headers);
 		try {
-			String resp = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
-					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
-			log.info(resp);
-			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
-					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
-			if(response.getKontaktinfo()!=null) {
-				log.info(response.getKontaktinfo().toString());
-			}
-			if(response.getFeil()!=null){
-				log.info(response.getFeil().toString());
-			}
+			DkifResponseTo response = restTemplate.postForEntity(dkiUrl + "/rest/v1/personer?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost, request, DkifResponseTo.class).getBody();
 			if (isValidRespons(response, fnrTrimmed)) {
 				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
 			} else {
