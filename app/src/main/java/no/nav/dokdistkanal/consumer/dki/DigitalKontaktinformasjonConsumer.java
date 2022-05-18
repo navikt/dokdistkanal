@@ -62,7 +62,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 				.build();
 		this.dkiUrl = dkiUrl;
 		this.tokenConsumer = tokenConsumer;
-		pingDkif();
 	}
 
 	public void pingDkif() {
@@ -72,9 +71,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			String response = restTemplate.exchange(dkiUrl + "/rest/ping",
 					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
 			log.info("Pinget Dkif: " + response);
-			for(String authHeaders : headers.get(HttpHeaders.AUTHORIZATION)){
-				log.info(authHeaders);
-			}
 		} catch (Exception e) {
 			log.error("Klarte ikke pinge Digdir KRR: " + e.getMessage());
 
@@ -90,9 +86,10 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		PostPersonerRequest postPersonRequest = PostPersonerRequest.builder().personidenter(Arrays.asList(fnrTrimmed)).build();
 		HttpEntity<String> request = new HttpEntity(postPersonRequest, headers);
 		try {
+			String test = restTemplate.postForEntity(dkiUrl + "/rest/v1/personer?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost, request, String.class).getBody();
 			DkifResponseTo response = restTemplate.postForEntity(dkiUrl + "/rest/v1/personer?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost, request, DkifResponseTo.class).getBody();
 			if (isValidRespons(response, fnrTrimmed)) {
-				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
+				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getPersoner().get(fnrTrimmed));
 			} else {
 				String errorMsg = getErrorMsg(response, fnrTrimmed);
 
@@ -113,7 +110,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	private boolean isValidRespons(DkifResponseTo response, String fnr) {
-		return response != null && response.getKontaktinfo() != null && response.getKontaktinfo().get(fnr) != null;
+		return response != null && response.getPersoner() != null && response.getPersoner().get(fnr) != null;
 	}
 
 	private String getErrorMsg(DkifResponseTo response, String fnr) {
@@ -125,12 +122,12 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	private HttpHeaders createHeaders() {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken();
+		//TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken();
 		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + clientCredentialToken.getAccess_token());
-		headers.add(NAV_CONSUMER_ID, APP_NAME);
-		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
+		//headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.set(HttpHeaders.AUTHORIZATION, "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6ImpTMVhvMU9XRGpfNTJ2YndHTmd2UU8yVnpNYyJ9.eyJhdWQiOiIxOGUyYzdiYy1lNDdjLTQ5MTgtOTZmYy05N2Q4ZTBjNTJhNzYiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vOTY2YWM1NzItZjViNy00YmJlLWFhODgtYzc2NDE5YzBmODUxL3YyLjAiLCJpYXQiOjE2NTI5MDc2OTgsIm5iZiI6MTY1MjkwNzY5OCwiZXhwIjoxNjUyOTExNTk4LCJhaW8iOiJFMlpnWUJCT1ZzcStFczgwZ2NWaDFydnNkTnMvQUE9PSIsImF6cCI6IjY3NzRkY2RlLTU1YTAtNDRmMy05MDNhLTQ3NWFjODU3ZjdlYiIsImF6cGFjciI6IjEiLCJvaWQiOiI3NDUwNmJlNi01ODk4LTQ4YWMtYjdjZi1iM2Q2YjhhMmJkNzkiLCJyaCI6IjAuQVVjQWNzVnFscmYxdmt1cWlNZGtHY0Q0VWJ6SDRoaDg1QmhKbHZ5WDJPREZLblpIQUFBLiIsInJvbGVzIjpbImFjY2Vzc19hc19hcHBsaWNhdGlvbiJdLCJzdWIiOiI3NDUwNmJlNi01ODk4LTQ4YWMtYjdjZi1iM2Q2YjhhMmJkNzkiLCJ0aWQiOiI5NjZhYzU3Mi1mNWI3LTRiYmUtYWE4OC1jNzY0MTljMGY4NTEiLCJ1dGkiOiIydzU3em1wdE1VV3l0WGhTQ2tvU0FBIiwidmVyIjoiMi4wIiwiYXpwX25hbWUiOiJkZXYtZnNzOnRlYW1kb2t1bWVudGhhbmR0ZXJpbmc6ZG9rZGlzdGthbmFsIn0.Bo3eKh809A6E8DVAIIDlp3U8GEJnnSMZvRUhy0gT3SVrDGutuzFzw179rCt8agnr5-K67SBEJR-X3D67sXk5JhJ6YpT3g3RU46GP6rYMeSATr6_M0e8CiE4pWV4DTcwcwWcBY_AUmZgxGCg_xbdvQ6Kq3Y4kzuz3Dr_GyWuurt5cQetFnRXccyiWu7kXsZx8TstBgijlOGo5co1dajyJMbTsz6iWtl9-z6QGYWBSaYlc4n_OlhqTu24h0_pjXE6ww16F22p_X5AeSTFzBFrwce2_hfHPdq8OXs9uXGXjIWaaow98a2g-4rzyUXCL3frghBIjYar87Yp4eNKw0GWyng");
+		//headers.add(NAV_CONSUMER_ID, APP_NAME);
+		headers.add(NAV_CALL_ID, "HS-TEST");
 		return headers;
 	}
 }

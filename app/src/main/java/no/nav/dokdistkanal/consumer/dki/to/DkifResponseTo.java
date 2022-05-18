@@ -15,7 +15,7 @@ import java.util.Map;
 public class DkifResponseTo {
 
 	private Map<String, Melding> feil;
-	private Map<String, DigitalKontaktinfo> kontaktinfo;
+	private Map<String, DigitalKontaktinfo> personer;
 
 	@Data
 	@ToString
