@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Map;
 
@@ -17,10 +18,12 @@ public class DkifResponseTo {
 	private Map<String, DigitalKontaktinfo> kontaktinfo;
 
 	@Data
+	@ToString
 	public static class Melding {
 		private String melding;
 	}
 
+	@ToString
 	@Data
 	@Builder
 	public static class DigitalKontaktinfo {
@@ -29,6 +32,8 @@ public class DkifResponseTo {
 		private String mobiltelefonnummer;
 		private boolean reservert;
 		private SikkerDigitalPostkasse sikkerDigitalPostkasse;
+
+
 	}
 
 	@Data

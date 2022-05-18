@@ -86,7 +86,12 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		try {
 			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
 					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
-
+			if(response.getKontaktinfo()!=null) {
+				log.info(response.getKontaktinfo().toString());
+			}
+			if(response.getFeil()!=null){
+				log.info(response.getFeil().toString());
+			}
 			if (isValidRespons(response, fnrTrimmed)) {
 				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getKontaktinfo().get(fnrTrimmed));
 			} else {
