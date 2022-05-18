@@ -34,6 +34,7 @@ import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
 import static no.nav.dokdistkanal.constants.DomainConstants.BEARER_PREFIX;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENT;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENTER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
@@ -126,6 +127,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + clientCredentialToken.getAccess_token());
 		headers.add(NAV_CONSUMER_ID, APP_NAME);
 		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
+		headers.add(NAV_PERSONIDENT, MDC.get(NAV_PERSONIDENT));
 		return headers;
 	}
 }
