@@ -90,7 +90,9 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		try {
 			String resp = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
 					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
-			DkifResponseTo response = null;
+			log.info(resp);
+			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
+					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
 			if(response.getKontaktinfo()!=null) {
 				log.info(response.getKontaktinfo().toString());
 			}
