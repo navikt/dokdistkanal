@@ -72,10 +72,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			log.info("Pinget Dkif: " + response);
 		} catch (Exception e) {
 			log.error("Klarte ikke pinger Digdir KRR: " + e.getMessage());
-			for(String authHeaders : headers.get(HttpHeaders.AUTHORIZATION)){
-				log.info(authHeaders);
-			}
-
 		}
 	}
 
@@ -124,10 +120,10 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	private HttpHeaders createHeaders() {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken();
+		//TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + clientCredentialToken.getAccess_token());
+		headers.set(HttpHeaders.AUTHORIZATION, "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6ImpTMVhvMU9XRGpfNTJ2YndHTmd2UU8yVnpNYyJ9.eyJhdWQiOiIxOGUyYzdiYy1lNDdjLTQ5MTgtOTZmYy05N2Q4ZTBjNTJhNzYiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vOTY2YWM1NzItZjViNy00YmJlLWFhODgtYzc2NDE5YzBmODUxL3YyLjAiLCJpYXQiOjE2NTI4NzUwMTIsIm5iZiI6MTY1Mjg3NTAxMiwiZXhwIjoxNjUyODc4OTEyLCJhaW8iOiJFMlpnWU5qcktmS25KZmdhcjNkaSs4bTcvbHZTQUE9PSIsImF6cCI6ImM5MmFlODVhLTI0MzAtNDNlMS05MmQzLWZlM2M1NTIwNTEzOCIsImF6cGFjciI6IjEiLCJvaWQiOiI0ZGI4NGUwNi0wMzc1LTQwMDItYTVmNi1iMDI3ZmY5NjhiZjIiLCJyaCI6IjAuQVVjQWNzVnFscmYxdmt1cWlNZGtHY0Q0VWJ6SDRoaDg1QmhKbHZ5WDJPREZLblpIQUFBLiIsInJvbGVzIjpbImFjY2Vzc19hc19hcHBsaWNhdGlvbiJdLCJzdWIiOiI0ZGI4NGUwNi0wMzc1LTQwMDItYTVmNi1iMDI3ZmY5NjhiZjIiLCJ0aWQiOiI5NjZhYzU3Mi1mNWI3LTRiYmUtYWE4OC1jNzY0MTljMGY4NTEiLCJ1dGkiOiJweFBrTS1FamtrS1lnNm1iYTR0X0FBIiwidmVyIjoiMi4wIiwiYXpwX25hbWUiOiJkZXYtZnNzOnRlYW1kb2t1bWVudGhhbmR0ZXJpbmc6ZG9rZGlzdGthbmFsLXExIn0.lqWTKims17YO7RmfaNzpbwkFou_NRbWtnTBwPEqHVOtHrNwOpAEE-XDYJYwOfidXImJZvFKAcVfPuAg5GKS822NIkTbQUWtrMueOt4hOxC9ZEV4OY6_wTCtAJxCEYLRILKJR5Ix4pGC3DdQ-SKGgEHWvMHa4Z_BAtJY9e7sHvNp1FZDYIzTX8Tai-EspXLls60POEhq0SCKP-aPCpAZdCtL7jYbxTPSorV9-Y6sKHl7O_KFVelgVdVdVL299iqjPdxdHMP8xPC_kfzLDZmmd4t5O3Uy2zmQhGXXXSilBKcYN2F-6HtRrTp_hph9_1nnvnaMiF-gMBL_Lnb1uG5_ntQ");
 		headers.add(NAV_CONSUMER_ID, APP_NAME);
 		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
 		return headers;
