@@ -71,11 +71,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
 			log.info("Pinget Dkif: " + response);
 		} catch (Exception e) {
-			log.error("Klarte ikke koble til Digdir KRR: " + e.getMessage());
-			for(String authHeaders : headers.get(HttpHeaders.AUTHORIZATION)){
-				log.info(authHeaders);
-			}
-
+			log.error("Klarte ikke pinge Digdir KRR: " + e.getMessage());
 		}
 	}
 
