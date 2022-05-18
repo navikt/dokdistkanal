@@ -35,7 +35,6 @@ import static no.nav.dokdistkanal.constants.DomainConstants.BEARER_PREFIX;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENT;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENTER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
@@ -89,7 +88,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		headers.add(NAV_PERSONIDENT, fnrTrimmed);
 
 		try {
-			String resp = restTemplate.exchange("https://digdir-krr-proxy.dev.intern.nav.no/rest/v1/person?inkluderSikkerDigitalPost=false",
+			String resp = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
 					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
 			DkifResponseTo response = null;
 			if(response.getKontaktinfo()!=null) {
