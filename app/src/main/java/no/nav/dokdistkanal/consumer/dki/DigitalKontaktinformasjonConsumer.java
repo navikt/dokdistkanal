@@ -89,8 +89,9 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		headers.add(NAV_PERSONIDENT, fnrTrimmed);
 
 		try {
-			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
-					HttpMethod.GET, new HttpEntity<>(headers), DkifResponseTo.class).getBody();
+			String resp = restTemplate.exchange("https://digdir-krr-proxy.dev.intern.nav.no/rest/v1/person?inkluderSikkerDigitalPost=false",
+					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
+			DkifResponseTo response = null;
 			if(response.getKontaktinfo()!=null) {
 				log.info(response.getKontaktinfo().toString());
 			}
