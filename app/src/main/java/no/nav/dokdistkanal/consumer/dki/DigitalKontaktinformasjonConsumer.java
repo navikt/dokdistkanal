@@ -81,7 +81,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
 		HttpHeaders headers = createHeaders();
 		final String fnrTrimmed = personidentifikator.trim();
-		headers.add(NAV_PERSONIDENTER, fnrTrimmed);
+		headers.add(NAV_PERSONIDENT, fnrTrimmed);
 
 		try {
 			DkifResponseTo response = restTemplate.exchange(dkiUrl + "/rest/v1/person?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost,
@@ -127,7 +127,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + clientCredentialToken.getAccess_token());
 		headers.add(NAV_CONSUMER_ID, APP_NAME);
 		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
-		headers.add(NAV_PERSONIDENT, MDC.get(NAV_PERSONIDENT));
 		return headers;
 	}
 }
