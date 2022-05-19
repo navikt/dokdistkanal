@@ -4,12 +4,17 @@
   "DOKUMENTTYPEINFO_V4_URL": "https://app.adeo.no/dokkat/rest/dokumenttypeinfo/v4",
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://sikkerhetsnivaa.intern.nav.no/",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.adeo.no/rest/v1/sts/token",
-  "DKI_API_URL": "https://dkif.intern.nav.no",
+  "DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.nav.no",
   "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/prod",
   "APPD_NAME": "dokdistkanal",
   "APP_NAME": "dokdistkanal",
+  "AZURE_TENANT": "trygdeetaten.no",
+  "AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/oauth2/v2.0/token",
+  "AZURE_APP_SCOPE": "api://prod-gcp.team-rocket.digdir-krr-proxy/.default",
+  "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
+  "DOKDISTKANAL_PROXY_PORT": "8088",
   "INGRESSES": [
     "https://dokdistkanal.nais.adeo.no",
     "https://dokdistkanal.intern.nav.no"

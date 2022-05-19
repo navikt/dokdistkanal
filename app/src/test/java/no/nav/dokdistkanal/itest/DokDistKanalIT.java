@@ -1,5 +1,7 @@
 package no.nav.dokdistkanal.itest;
 
+import no.nav.dokdistkanal.azure.TokenConsumer;
+import no.nav.dokdistkanal.azure.TokenResponse;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -9,6 +11,8 @@ import org.apache.http.entity.ContentType;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 
@@ -56,7 +60,7 @@ public class DokDistKanalIT extends AbstractIT {
 
         //leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
         //Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
-        stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
+        stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
                 .willReturn(aResponse().withStatus(OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())
                         .withBodyFile("treg001/dki/happy-responsebody.json")));
@@ -177,7 +181,7 @@ public class DokDistKanalIT extends AbstractIT {
     @Test
     public void shouldReturnPrintWhenSertifikatNotValid() {
         //Stub web services:
-        stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+        stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
                 .willReturn(aResponse().withStatus(OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())
                         .withBodyFile("treg001/dki/ugyldig-sertifikat-responsebody.json")));
@@ -236,7 +240,7 @@ public class DokDistKanalIT extends AbstractIT {
     @Test
     public void shouldReturnPrintFromDKIWhenKontaktinformasjonNotFound() {
         //Stub web services:
-        stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+        stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
                 .willReturn(aResponse().withStatus(OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())
                         .withBodyFile("treg001/dki/feilmelding-responsebody.json")));
@@ -252,7 +256,7 @@ public class DokDistKanalIT extends AbstractIT {
     @Test
     public void shouldThrowFunctionalExceptionFromDKIWhenSikkerhetsbegrensning() {
         //Stub web services:
-        stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+        stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
                 .willReturn(aResponse().withStatus(HttpStatus.BAD_REQUEST.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())));
 
@@ -270,7 +274,7 @@ public class DokDistKanalIT extends AbstractIT {
     @Test
     public void shouldThrowFunctionalExceptionFromPaaloggingsnivaaUgyldigIdent() {
         //Stub web services:
-        stubFor(get("/DKIF_V2/api/v1/personer/kontaktinformasjon?inkluderSikkerDigitalPost=true")
+        stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
                 .willReturn(aResponse().withStatus(OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())
                         .withBodyFile("treg001/dki/ditt-nav-responsebody.json")));

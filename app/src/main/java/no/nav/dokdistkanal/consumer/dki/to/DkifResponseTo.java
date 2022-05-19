@@ -13,13 +13,9 @@ import java.util.Map;
 @AllArgsConstructor
 public class DkifResponseTo {
 
-	private Map<String, Melding> feil;
-	private Map<String, DigitalKontaktinfo> kontaktinfo;
+	private Map<String, String> feil;
+	private Map<String, DigitalKontaktinfo> personer;
 
-	@Data
-	public static class Melding {
-		private String melding;
-	}
 
 	@Data
 	@Builder

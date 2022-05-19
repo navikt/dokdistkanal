@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Profile;
 import java.time.Duration;
 import java.util.Arrays;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
 import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
 import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
@@ -23,6 +24,7 @@ import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 public class LocalCacheConfig {
 	public static final Duration DEFAULT_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
 	public static final Duration STS_CACHE_EXPIRATION_TIME = Duration.ofMinutes(50);
+	public static final String AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE = "AZUREAD";
 
 	@Bean
 	@Primary
@@ -38,6 +40,10 @@ public class LocalCacheConfig {
 						.build()),
 				new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
 						.expireAfterWrite(STS_CACHE_EXPIRATION_TIME)
+						.maximumSize(1)
+						.build()),
+				new CaffeineCache(AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE, Caffeine.newBuilder()
+						.expireAfterWrite(50, MINUTES)
 						.maximumSize(1)
 						.build())
 		));
