@@ -73,8 +73,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			log.info("Pinget Dkif: " + response);
 		} catch (Exception e) {
 			log.error("Klarte ikke pinge Digdir KRR: " + e.getMessage());
-
-
 		}
 	}
 
@@ -129,4 +127,5 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		headers.add(NAV_CALL_ID, MDC.get(MDCConstants.CALL_ID));
 		return headers;
 	}
+
 }

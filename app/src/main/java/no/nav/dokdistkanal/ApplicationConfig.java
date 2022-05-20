@@ -25,8 +25,7 @@ import org.springframework.context.annotation.Import;
 		DokumenttypeInfoV4Alias.class,
 		ServiceuserAlias.class,
 		SikkerhetsnivaaV1Alias.class,
-		AzureProperties.class,
-		DokdistkanalProperties.class
+		AzureProperties.class
 })
 
 @Import({
