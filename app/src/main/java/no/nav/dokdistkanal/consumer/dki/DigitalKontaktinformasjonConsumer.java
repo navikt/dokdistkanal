@@ -1,14 +1,5 @@
 package no.nav.dokdistkanal.consumer.dki;
 
-import static java.lang.String.format;
-import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
-import static no.nav.dokdistkanal.constants.DomainConstants.BEARER_PREFIX;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_PERSONIDENTER;
-import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
-import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
-
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.azure.TokenConsumer;
 import no.nav.dokdistkanal.azure.TokenResponse;
@@ -23,6 +14,7 @@ import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2Techn
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -36,9 +28,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 import java.util.Arrays;
+
+import static java.lang.String.format;
+import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
+import static no.nav.dokdistkanal.constants.DomainConstants.BEARER_PREFIX;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
+import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
+import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
+import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 @Slf4j
 @Component
@@ -65,7 +64,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	public void pingDkif() {
-		HttpHeaders headers =  null;
+		HttpHeaders headers = null;
 		try {
 			headers = createHeaders();
 			String response = restTemplate.exchange(dkiUrl + "/rest/ping",
