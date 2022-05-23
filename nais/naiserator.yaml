@@ -11,6 +11,10 @@ spec:
       value: {{AZURE_APP_TOKEN_URL}}
     - name: AZURE_APP_SCOPE
       value: {{AZURE_APP_SCOPE}}
+    - name: DOKDISTKANAL_PROXY_HOST
+      value: {{DOKDISTKANAL_PROXY_HOST}}
+    - name: DOKDISTKANAL_PROXY_PORT
+      value: "{{DOKDISTKANAL_PROXY_PORT}}"
     - name: DOKUMENTTYPEINFO_V4_URL
       value: {{ DOKUMENTTYPEINFO_V4_URL }}
     - name: HENTPAALOGGINGSNIVAA_V1_URL
@@ -60,4 +64,3 @@ spec:
   azure:
     application:
       enabled: true
-  webproxy: true
