@@ -10,6 +10,11 @@
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "APPD_NAME": "dokdistkanal",
   "APP_NAME": "dokdistkanal",
+  "AZURE_TENANT": "trygdeetaten.no",
+  "AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
+  "AZURE_APP_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
+  "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
+  "DOKDISTKANAL_PROXY_PORT": "8088",
   "INGRESSES": [
     "https://dokdistkanal-q2.nais.preprod.local",
     "https://dokdistkanal-q2.dev.intern.nav.no",

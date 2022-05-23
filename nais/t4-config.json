@@ -10,6 +10,11 @@
   "PDL_URL": "https://pdl-api-q1.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/test/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
+  "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
+  "DOKDISTKANAL_PROXY_PORT": "8088",
+  "AZURE_TENANT": "trygdeetaten.no",
+  "AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
+  "AZURE_APP_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
   "INGRESSES": [
     "https://dokdistkanal-t4.dev.intern.nav.no"
   ]
