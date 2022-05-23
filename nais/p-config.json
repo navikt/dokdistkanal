@@ -4,7 +4,7 @@
   "DOKUMENTTYPEINFO_V4_URL": "https://app.adeo.no/dokkat/rest/dokumenttypeinfo/v4",
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://sikkerhetsnivaa.intern.nav.no/",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.adeo.no/rest/v1/sts/token",
-  "DKI_API_URL": "https://dkif.intern.nav.no",
+  "DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.nav.no",
   "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/prod",

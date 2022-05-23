@@ -1,11 +1,11 @@
 package no.nav.dokdistkanal.consumer.dki.to;
 
-import static no.nav.dokdistkanal.common.FunctionalUtils.isNotEmpty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import static no.nav.dokdistkanal.common.FunctionalUtils.isNotEmpty;
 
 @Data
 @Builder
