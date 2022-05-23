@@ -64,9 +64,8 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	public void pingDkif() {
-		HttpHeaders headers = null;
 		try {
-			headers = createHeaders();
+			HttpHeaders headers = createHeaders();
 			String response = restTemplate.exchange(dkiUrl + "/rest/ping",
 					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
 			log.info("Pinget Dkif: " + response);
