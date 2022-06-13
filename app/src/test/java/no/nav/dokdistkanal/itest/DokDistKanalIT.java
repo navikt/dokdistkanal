@@ -153,6 +153,8 @@ public class DokDistKanalIT extends AbstractIT {
      */
     @Test
     public void shouldGetDistribusjonskanalPrintForSamhandlerUtenlandskOrganisasjon() {
+        capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
+
         DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
                 .mottakerId(SAMHANDLERMOTTAKERID)
                 .mottakerType(MottakerTypeCode.SAMHANDLER_UTL_ORG)
