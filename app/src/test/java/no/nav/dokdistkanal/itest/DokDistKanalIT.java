@@ -6,6 +6,10 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.common.MottakerTypeCode;
+import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
+import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.util.LogbackCapturingAppender;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
 import org.hamcrest.CoreMatchers;
@@ -21,16 +25,23 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static java.lang.Boolean.TRUE;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
+import static no.nav.dokdistkanal.service.DokDistKanalService.LOG;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
 
 public class DokDistKanalIT extends AbstractIT {
+
+    private LogbackCapturingAppender capture;
 
     private static final String DOKUMENTTYPEID = "000009";
     private static final String MOTTAKERID = "12345678901";
@@ -138,7 +149,7 @@ public class DokDistKanalIT extends AbstractIT {
     }
 
     /**
-     * Komplertterer fullt brevdatasett der mottaker er samhandler utenlandsk organisasjon
+     * Kompletterer fullt brevdatasett der mottaker er samhandler utenlandsk organisasjon
      */
     @Test
     public void shouldGetDistribusjonskanalPrintForSamhandlerUtenlandskOrganisasjon() {
@@ -148,8 +159,28 @@ public class DokDistKanalIT extends AbstractIT {
                 .brukerId(SAMHANDLERMOTTAKERID)
                 .tema("PEN")
                 .build();
-        DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-        assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+
+        DokDistKanalResponse serviceResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+        assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
+        assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Mottaker er av typen SAMHANDLER_UTL_ORG"));
+        LogbackCapturingAppender.Factory.cleanUp();
+    }
+
+    @Test
+    public void shouldSetKanalPrintNaarSamhandlerUkjent() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+        capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
+
+        DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
+                .mottakerId(SAMHANDLERMOTTAKERID)
+                .mottakerType(MottakerTypeCode.SAMHANDLER_UKJENT)
+                .brukerId(SAMHANDLERMOTTAKERID)
+                .tema("PEN")
+                .build();
+
+        DokDistKanalResponse serviceResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+        assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
+        assertThat(capture.getCapturedLogMessage(), is("BestemKanal: Sender melding til PRINT: Mottaker er av typen SAMHANDLER_UKJENT"));
+        LogbackCapturingAppender.Factory.cleanUp();
     }
 
     @Test
