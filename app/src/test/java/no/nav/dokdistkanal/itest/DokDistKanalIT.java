@@ -203,12 +203,12 @@ public class DokDistKanalIT extends AbstractIT {
         //Stub web services:
         stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
                 .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-                .withBodyFile("pdl/pdl_ok_response.json")));
+                .withBodyFile("pdl/pdl_feil_response.json")));
 
         DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
         DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-        assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+        assertEquals(DistribusjonKanalCode.PRINT, actualResponse.getDistribusjonsKanal());
     }
 
     @Test
