@@ -70,7 +70,7 @@ public class PdlGraphQLConsumer {
 			if (Objects.isNull(response.getErrors()) || response.getErrors().isEmpty()) {
 				return mapPersonInfo(response);
 			} else {
-				throw new PdlFunctionalException("Kunne ikke hente person fra Pdl" + response.getErrors());
+				return null;
 			}
 		} catch (HttpClientErrorException e) {
 			throw new PdlFunctionalException("Kunne ikke hente person fra pdl.", e);
