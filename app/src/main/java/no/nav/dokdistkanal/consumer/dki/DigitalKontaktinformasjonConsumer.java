@@ -45,6 +45,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 
 	private final RestTemplate restTemplate;
 	private final String dkiUrl;
+	private final String dkiScope;
 	private final TokenConsumer tokenConsumer;
 	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
@@ -54,12 +55,14 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	@Autowired
 	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
 											 @Value("${digdir_krr_proxy_url}") String dkiUrl,
+											 @Value("${digdir_krr_proxy_scope") String dkiScope,
 											 TokenConsumer tokenConsumer) {
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
 				.build();
 		this.dkiUrl = dkiUrl;
+		this.dkiScope = dkiScope;
 		this.tokenConsumer = tokenConsumer;
 	}
 
@@ -117,7 +120,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	}
 
 	private HttpHeaders createHeaders() {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken();
+		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dkiScope);
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + clientCredentialToken.getAccess_token());
