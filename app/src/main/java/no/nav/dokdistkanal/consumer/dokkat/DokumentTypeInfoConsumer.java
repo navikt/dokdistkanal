@@ -41,19 +41,19 @@ import static org.springframework.http.HttpMethod.GET;
 public class DokumentTypeInfoConsumer {
 	private final RestTemplate restTemplate;
 	public static final String HENT_DOKKAT_INFO = "hentDokumentTypeInfo";
-	private final String dokumenttypeInfoV4Url;
+	private final String dokumenttypeInfoUrl;
 	private final String dokmetScope;
 	private final TokenConsumer tokenConsumer;
 	private MicrometerMetrics metrics;
 
 	@Autowired
 	public DokumentTypeInfoConsumer(@Value("${dokmet_scope}") String dokmetScope,
-									@Value("${dokumenttypeInfo_url}") String dokumenttypeInfoV4Url,
+									@Value("${dokumenttypeInfo_url}") String dokumenttypeInfoUrl,
 									RestTemplateBuilder restTemplateBuilder,
 									MicrometerMetrics metrics,
 									TokenConsumer tokenConsumer) {
 		this.dokmetScope = dokmetScope;
-		this.dokumenttypeInfoV4Url = dokumenttypeInfoV4Url;
+		this.dokumenttypeInfoUrl = dokumenttypeInfoUrl;
 		this.tokenConsumer = tokenConsumer;
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(5))
@@ -64,7 +64,7 @@ public class DokumentTypeInfoConsumer {
 
 	public DokumentTypeInfoConsumer(RestTemplate restTemplate, MicrometerMetrics metrics, TokenConsumer tokenConsumer) {
 		this.dokmetScope = "";
-		this.dokumenttypeInfoV4Url = "";
+		this.dokumenttypeInfoUrl = "";
 		this.tokenConsumer = tokenConsumer;
 		this.restTemplate = restTemplate;
 		this.metrics = metrics;
@@ -79,7 +79,7 @@ public class DokumentTypeInfoConsumer {
 		metrics.cacheMiss(HENT_DOKKAT_INFO);
 		try {
 			HttpEntity<String> request = new HttpEntity(headers);
-			DokumentTypeInfoToV4 response = restTemplate.exchange(this.dokumenttypeInfoV4Url + "/" + dokumenttypeId, GET, request, DokumentTypeInfoToV4.class).getBody();
+			DokumentTypeInfoToV4 response = restTemplate.exchange(this.dokumenttypeInfoUrl + "/" + dokumenttypeId, GET, request, DokumentTypeInfoToV4.class).getBody();
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
 			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
