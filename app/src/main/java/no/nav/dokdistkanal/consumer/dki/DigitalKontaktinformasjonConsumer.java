@@ -64,6 +64,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		this.dkiUrl = dkiUrl;
 		this.dkiScope = dkiScope;
 		this.tokenConsumer = tokenConsumer;
+		//test
 	}
 
 	public void pingDkif() {
