@@ -36,9 +36,6 @@ import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
 import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 import static org.springframework.http.HttpMethod.GET;
 
-/**
- * @author Ketill Fenne, Visma Consulting AS
- */
 @Service
 @Slf4j
 public class DokumentTypeInfoConsumer {
