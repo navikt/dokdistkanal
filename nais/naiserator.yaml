@@ -23,6 +23,8 @@ spec:
       value: {{ SECURITY_TOKEN_SERVICE_TOKEN_URL }}
     - name: DIGDIR_KRR_PROXY_URL
       value: {{ DIGDIR_KRR_PROXY_URL }}
+    - name: DOKMET_SCOPE
+      value: {{ DOKMET_SCOPE }}
     - name: PDL_URL
       value: {{ PDL_URL }}
     - name: APPD_NAME
