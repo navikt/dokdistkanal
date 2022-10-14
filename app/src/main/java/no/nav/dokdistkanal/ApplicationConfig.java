@@ -3,7 +3,6 @@ package no.nav.dokdistkanal;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import no.nav.dokdistkanal.azure.AzureProperties;
-import no.nav.dokdistkanal.config.fasit.DokumenttypeInfoV4Alias;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
@@ -22,7 +21,6 @@ import org.springframework.context.annotation.Import;
 
 
 @EnableConfigurationProperties({
-		DokumenttypeInfoV4Alias.class,
 		ServiceuserAlias.class,
 		SikkerhetsnivaaV1Alias.class,
 		AzureProperties.class,

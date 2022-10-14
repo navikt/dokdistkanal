@@ -5,6 +5,7 @@ import no.nav.dokdistkanal.azure.TokenConsumer;
 import no.nav.dokdistkanal.azure.TokenResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,8 +16,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
@@ -51,7 +50,7 @@ public abstract class AbstractIT {
         @Bean
         @Primary
         TokenConsumer azureTokenConsumer() {
-            return () -> TokenResponse.builder()
+            return (String) -> TokenResponse.builder()
                     .access_token("dummy")
                     .build();
         }
