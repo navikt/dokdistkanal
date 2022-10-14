@@ -55,7 +55,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	@Autowired
 	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
 											 @Value("${digdir_krr_proxy_url}") String dkiUrl,
-											 @Value("${digdir_krr_proxy_scope") String dkiScope,
+											 @Value("${digdir_krr_proxy_scope}") String dkiScope,
 											 TokenConsumer tokenConsumer) {
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
