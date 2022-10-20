@@ -9,20 +9,22 @@ spec:
   env:
     - name: AZURE_APP_TOKEN_URL
       value: {{AZURE_APP_TOKEN_URL}}
-    - name: AZURE_APP_SCOPE
-      value: {{AZURE_APP_SCOPE}}
     - name: DOKDISTKANAL_PROXY_HOST
       value: {{DOKDISTKANAL_PROXY_HOST}}
     - name: DOKDISTKANAL_PROXY_PORT
       value: "{{DOKDISTKANAL_PROXY_PORT}}"
-    - name: DOKUMENTTYPEINFO_V4_URL
-      value: {{ DOKUMENTTYPEINFO_V4_URL }}
+    - name: DOKUMENTTYPEINFO_URL
+      value: {{ DOKUMENTTYPEINFO_URL }}
     - name: HENTPAALOGGINGSNIVAA_V1_URL
       value: {{ HENTPAALOGGINGSNIVAA_V1_URL }}
     - name: SECURITY_TOKEN_SERVICE_TOKEN_URL
       value: {{ SECURITY_TOKEN_SERVICE_TOKEN_URL }}
     - name: DIGDIR_KRR_PROXY_URL
       value: {{ DIGDIR_KRR_PROXY_URL }}
+    - name: DIGDIR_KRR_PROXY_SCOPE
+      value: {{ DIGDIR_KRR_PROXY_SCOPE }}
+    - name: DOKMET_SCOPE
+      value: {{ DOKMET_SCOPE }}
     - name: PDL_URL
       value: {{ PDL_URL }}
     - name: APPD_NAME

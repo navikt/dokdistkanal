@@ -7,7 +7,6 @@
     <artifactId>dokdistkanal</artifactId>
     <packaging>pom</packaging>
     <version>1-SNAPSHOT</version>
-    <name>dokdistkanal</name>
 
     <modules>
         <module>app</module>
@@ -21,10 +20,14 @@
 
     <properties>
         <java.version>17</java.version>
+
         <resilience4j-circuitbreaker.version>1.7.1</resilience4j-circuitbreaker.version>
         <logstash.version>7.2</logstash.version>
-        <javax.version>1</javax.version>
+
+        <!-- Test -->
         <spring-cloud-contract-wiremock.version>3.1.4</spring-cloud-contract-wiremock.version>
+
+        <!-- Plugins -->
         <maven-toolchains-plugin.version>3.1.0</maven-toolchains-plugin.version>
     </properties>
 
@@ -70,17 +73,7 @@
     </dependencyManagement>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
