@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ResponseStatus(value = BAD_REQUEST)
-public class DokkatFunctionalException extends DokDistKanalFunctionalException {
-	public DokkatFunctionalException(String message, Throwable cause) {
-		super(message, cause);
+public class UgyldigInputFunctionalException extends DokDistKanalFunctionalException {
+	public UgyldigInputFunctionalException(String message) {
+		super(message);
 	}
 }
