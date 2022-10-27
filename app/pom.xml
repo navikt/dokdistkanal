@@ -54,10 +54,6 @@
             <artifactId>resilience4j-spring-boot2</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.reactivex.rxjava2</groupId>
-            <artifactId>rxjava</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
@@ -95,7 +91,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <finalName>app</finalName>
-                    <mainClass>no.nav.dokdistkanal.Application</mainClass>
                 </configuration>
             </plugin>
         </plugins>
