@@ -1,9 +1,5 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
-import static no.nav.dokdistkanal.common.FunctionalUtils.isNotEmpty;
-import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
-import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
-
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
@@ -17,18 +13,20 @@ import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
 import no.nav.dokdistkanal.metrics.Metrics;
 import no.nav.dokdistkanal.metrics.MicrometerMetrics;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.util.Assert;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
+
+import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
+import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
 
 @Slf4j
 public class SikkerhetsnivaaConsumer {
@@ -81,11 +79,6 @@ public class SikkerhetsnivaaConsumer {
 		} catch (Exception e) {
 			throw new SikkerhetsnivaaTechnicalException("Sikkerhetsnivaa.hentPaaloggingsnivaa feilet", e);
 		}
-	}
-
-	public void ping() {
-		String ping = restTemplate.getForObject("isReady", String.class);
-		Assert.isTrue(isNotEmpty(ping), "Sikkerhetsnivaa ping failed " + ping);
 	}
 
 	private SikkerhetsnivaaTo mapTo(SikkerhetsnivaaResponse response) {

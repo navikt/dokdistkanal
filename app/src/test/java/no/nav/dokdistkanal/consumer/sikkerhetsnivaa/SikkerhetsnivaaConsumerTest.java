@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -100,12 +99,5 @@ public class SikkerhetsnivaaConsumerTest {
 		assertThrows(SikkerhetsnivaaTechnicalException.class, () -> sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR),
 				"Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=500 INTERNAL_SERVER_ERROR)");
 
-    }
-
-    @Test
-    public void shouldPing() throws Exception {
-        when(restTemplate.getForObject("isReady", String.class)).thenReturn("\"ok\"");
-        sikkerhetsnivaaConsumer.ping();
-        verify(restTemplate).getForObject("isReady", String.class);
     }
 }
