@@ -51,7 +51,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 	public static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "person_ikke_funnet";
 
-	@Autowired
 	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
 											 @Value("${digdir_krr_proxy_url}") String dkiUrl,
 											 @Value("${digdir_krr_proxy_scope}") String dkiScope,

@@ -38,14 +38,12 @@ public class DokumentTypeInfoConsumerTest {
 
 	private RestTemplate restTemplate;
 	private DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
-	private MicrometerMetrics metrics;
-	private TokenConsumer tokenConsumer;
 
 	@BeforeEach
 	public void setUp() {
 		restTemplate = mock(RestTemplate.class);
-		metrics = mock(MicrometerMetrics.class);
-		tokenConsumer = mock(TokenConsumer.class);
+		MicrometerMetrics metrics = mock(MicrometerMetrics.class);
+		TokenConsumer tokenConsumer = mock(TokenConsumer.class);
 		dokumentTypeInfoConsumer = new DokumentTypeInfoConsumer(restTemplate, metrics, tokenConsumer);
 
 		when(tokenConsumer.getClientCredentialToken(any(String.class)))
@@ -66,7 +64,6 @@ public class DokumentTypeInfoConsumerTest {
 		assertThat(dokumentTypeInfoTo.isVarslingSdp(), equalTo(Boolean.FALSE));
 	}
 
-
 	@Test
 	public void shouldRunOKDistKanalLokalPrint() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
 		when(restTemplate.exchange(any(String.class),any(HttpMethod.class),any(HttpEntity.class), eq(DokumentTypeInfoToV4.class)))
@@ -84,8 +81,6 @@ public class DokumentTypeInfoConsumerTest {
 				.thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
 		assertThrows(DokkatFunctionalException.class, ()-> dokumentTypeInfoConsumer.hentDokumenttypeInfo(DOKTYPE),
 				"DokumentTypeInfoConsumer feilet. (HttpStatus=400 BAD_REQUEST) for dokumenttypeId");
-
-
 	}
 
 	@Test
