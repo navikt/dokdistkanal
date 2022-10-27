@@ -32,12 +32,11 @@ public class SikkerhetsnivaaConsumerTest {
 
     private RestTemplate restTemplate;
     private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
-    private MicrometerMetrics metrics;
 
     @BeforeEach
     public void setUp() {
         restTemplate = mock(RestTemplate.class);
-        metrics = mock(MicrometerMetrics.class);
+        MicrometerMetrics metrics = mock(MicrometerMetrics.class);
         sikkerhetsnivaaConsumer = new SikkerhetsnivaaConsumer(restTemplate, metrics);
     }
 
@@ -67,9 +66,7 @@ public class SikkerhetsnivaaConsumerTest {
         when(restTemplate.postForObject(any(String.class), any(SikkerhetsnivaaRequest.class), eq(SikkerhetsnivaaResponse.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
         assertThrows(SikkerhetsnivaaFunctionalException.class, () -> sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR), "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=400 BAD_REQUEST)");
-
     }
-
 
     @Test
     public void shouldThrowTechnicalExceptionWhenRuntimeException() throws DokDistKanalSecurityException, DokDistKanalFunctionalException {
@@ -77,8 +74,6 @@ public class SikkerhetsnivaaConsumerTest {
                 .thenThrow(new RuntimeException());
         assertThrows(SikkerhetsnivaaTechnicalException.class, () -> sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR),
                 "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet");
-
-
     }
 
     @Test
@@ -87,8 +82,6 @@ public class SikkerhetsnivaaConsumerTest {
 				.thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
 		assertThrows(DokDistKanalSecurityException.class, () -> sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(FNR),
 				"Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=403 FORBIDDEN)");
-
-
     }
 
     @Test

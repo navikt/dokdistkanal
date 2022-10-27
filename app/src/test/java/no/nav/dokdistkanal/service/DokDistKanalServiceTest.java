@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.service;
 
-import ch.qos.logback.core.Appender;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
@@ -18,17 +17,10 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.util.LogbackCapturingAppender;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.event.LoggingEvent;
 
 import java.time.LocalDate;
 
@@ -61,26 +53,16 @@ public class DokDistKanalServiceTest {
 
     private LogbackCapturingAppender capture;
 
-    private DokumentTypeInfoConsumer dokumentTypeInfoConsumer = mock(DokumentTypeInfoConsumer.class);
-    private DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
-    private SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer = mock(SikkerhetsnivaaConsumer.class);
-    private MeterRegistry registry;
+    private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer = mock(DokumentTypeInfoConsumer.class);
+    private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
+    private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer = mock(SikkerhetsnivaaConsumer.class);
     private DokDistKanalService service;
-    private PdlGraphQLConsumer pdlGraphQLConsumer = mock(PdlGraphQLConsumer.class);
-
-
-    @Captor
-    private ArgumentCaptor<LoggingEvent> captorLoggingEvent;
+    private final PdlGraphQLConsumer pdlGraphQLConsumer = mock(PdlGraphQLConsumer.class);
 
     @BeforeEach
     public void setUp() {
-        registry = new SimpleMeterRegistry();
+        MeterRegistry registry = new SimpleMeterRegistry();
         service = new DokDistKanalService(dokumentTypeInfoConsumer, digitalKontaktinformasjonConsumer, sikkerhetsnivaaConsumer, registry, pdlGraphQLConsumer);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        final Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
     }
 
     @Test
