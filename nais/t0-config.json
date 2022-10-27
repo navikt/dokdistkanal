@@ -1,6 +1,9 @@
 {
   "APP_NAME": "dokdistkanal-t0",
   "APPD_NAME": "dokdistkanal-t0",
+  "INGRESSES": [
+    "https://dokdistkanal-t0.dev.intern.nav.no"
+  ],
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
   "DOKUMENTTYPEINFO_URL": "https://dokmet-q1.dev.intern.nav.no/rest/dokumenttypeinfo",
@@ -15,8 +18,5 @@
   "AZURE_TENANT": "trygdeetaten.no",
   "AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/oauth2/v2.0/token",
   "DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
-  "DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet/.default",
-  "INGRESSES": [
-    "https://dokdistkanal-t0.dev.intern.nav.no"
-  ]
+  "DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet/.default"
 }
