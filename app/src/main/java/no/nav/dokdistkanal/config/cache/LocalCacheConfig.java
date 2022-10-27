@@ -16,7 +16,6 @@ import java.util.Arrays;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer.HENT_DOKKAT_INFO;
 import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
-import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 @Configuration
 @EnableCaching
@@ -25,6 +24,7 @@ public class LocalCacheConfig {
 	public static final Duration DEFAULT_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
 	public static final Duration STS_CACHE_EXPIRATION_TIME = Duration.ofMinutes(50);
 	public static final String AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE = "AZUREAD";
+	public static final String STS_CACHE = "STS";
 
 	@Bean
 	@Primary
@@ -38,7 +38,7 @@ public class LocalCacheConfig {
 				new CaffeineCache(HENT_DOKKAT_INFO, Caffeine.newBuilder()
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME)
 						.build()),
-				new CaffeineCache(STS_CACHE_NAME, Caffeine.newBuilder()
+				new CaffeineCache(STS_CACHE, Caffeine.newBuilder()
 						.expireAfterWrite(STS_CACHE_EXPIRATION_TIME)
 						.maximumSize(1)
 						.build()),

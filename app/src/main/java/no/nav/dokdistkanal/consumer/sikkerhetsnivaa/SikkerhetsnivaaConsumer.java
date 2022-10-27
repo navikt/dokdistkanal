@@ -36,7 +36,7 @@ public class SikkerhetsnivaaConsumer {
 	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
 	private static final String FEILMELDING = "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=%s)";
-	private MicrometerMetrics metrics;
+	private final MicrometerMetrics metrics;
 
 	public SikkerhetsnivaaConsumer(RestTemplate restTemplate,
 								   MicrometerMetrics metrics) {

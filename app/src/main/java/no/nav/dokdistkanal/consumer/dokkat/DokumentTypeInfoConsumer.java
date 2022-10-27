@@ -44,7 +44,7 @@ public class DokumentTypeInfoConsumer {
 	private final String dokumenttypeInfoUrl;
 	private final String dokmetScope;
 	private final TokenConsumer tokenConsumer;
-	private MicrometerMetrics metrics;
+	private final MicrometerMetrics metrics;
 
 	@Autowired
 	public DokumentTypeInfoConsumer(@Value("${dokmet_scope}") String dokmetScope,
