@@ -1,8 +1,6 @@
-package no.nav.dokdistkanal.consumer.tps;
+package no.nav.dokdistkanal.consumer.pdl;
 
-import no.nav.dokdistkanal.consumer.pdl.HentPersoninfo;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
-import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -32,7 +30,7 @@ public class PdlConsumerTest {
     }
 
     @Test
-    public void shouldHentFoedselsOGDoedsDato() throws Exception {
+    public void shouldHentFoedselsOGDoedsDato() {
         when(pdlConsumer.hentPerson(anyString(), anyString())).thenReturn(createHentPersonInfoMedDatoe());
 
         HentPersoninfo hentPersoninfo = pdlConsumer.hentPerson(FNR, "PEN");
@@ -42,7 +40,7 @@ public class PdlConsumerTest {
     }
 
     @Test
-    public void shouldThrowTechnicalException() throws Exception {
+    public void shouldThrowTechnicalException() {
         when(pdlConsumer.hentPerson(anyString(), anyString())).thenThrow(new PdlFunctionalException("Kunne ikke hente person fra Pdl"));
         assertThrows(PdlFunctionalException.class, () -> pdlConsumer.hentPerson(FNR, "PEN"));
     }

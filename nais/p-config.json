@@ -1,4 +1,10 @@
 {
+  "APP_NAME": "dokdistkanal",
+  "APPD_NAME": "dokdistkanal",
+  "INGRESSES": [
+    "https://dokdistkanal.nais.adeo.no",
+    "https://dokdistkanal.intern.nav.no"
+  ],
   "MIN_REPLICAS": 2,
   "MAX_REPLICAS": 4,
   "DOKUMENTTYPEINFO_URL": "https://dokmet.intern.nav.no/rest/dokumenttypeinfo",
@@ -8,16 +14,11 @@
   "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/prod",
-  "APPD_NAME": "dokdistkanal",
-  "APP_NAME": "dokdistkanal",
   "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
   "DOKDISTKANAL_PROXY_PORT": "8088",
   "AZURE_TENANT": "trygdeetaten.no",
   "AZURE_APP_TOKEN_URL": "https://login.microsoftonline.com/62366534-1ec3-4962-8869-9b5535279d0b/oauth2/v2.0/token",
   "DIGDIR_KRR_PROXY_SCOPE": "api://prod-gcp.team-rocket.digdir-krr-proxy/.default",
   "DOKMET_SCOPE": "api://prod-fss.teamdokumenthandtering.dokmet/.default",
-  "INGRESSES": [
-    "https://dokdistkanal.nais.adeo.no",
-    "https://dokdistkanal.intern.nav.no"
-  ]
+
 }

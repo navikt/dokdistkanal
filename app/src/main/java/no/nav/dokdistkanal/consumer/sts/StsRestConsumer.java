@@ -1,8 +1,8 @@
 package no.nav.dokdistkanal.consumer.sts;
 
+import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.STS_CACHE;
 import static no.nav.dokdistkanal.constants.RetryConstants.DELAY_SHORT;
 import static no.nav.dokdistkanal.constants.RetryConstants.MULTIPLIER_SHORT;
-import static no.nav.dokdistkanal.nais.NaisContract.STS_CACHE_NAME;
 
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.sts.to.StsResponseTo;
@@ -42,7 +42,7 @@ public class StsRestConsumer {
 	}
 
 	@Retryable(include = DokDistKanalTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT))
-	@Cacheable(STS_CACHE_NAME)
+	@Cacheable(STS_CACHE)
 	public String getOidcToken() {
 		try {
 			return restTemplate.getForObject(stsUrl + "?grant_type=client_credentials&scope=openid", StsResponseTo.class)

@@ -5,9 +5,6 @@ import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import no.nav.dokdistkanal.azure.AzureProperties;
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
-import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
-import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
-import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.metrics.DokTimedAspect;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -17,7 +14,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
 
 
 @EnableConfigurationProperties({
@@ -25,12 +21,6 @@ import org.springframework.context.annotation.Import;
 		SikkerhetsnivaaV1Alias.class,
 		AzureProperties.class,
 		DokdistkanalProperties.class
-})
-
-@Import({
-		DigitalKontaktinformasjonConsumer.class,
-		SikkerhetsnivaaConsumer.class,
-		DokumentTypeInfoConsumer.class,
 })
 @Configuration
 @EnableAspectJAutoProxy

@@ -13,6 +13,7 @@ import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DokDistKanalRestControllerTest {
@@ -22,13 +23,12 @@ public class DokDistKanalRestControllerTest {
 	private final static MottakerTypeCode MOTTAKERTYPE_PERSON = MottakerTypeCode.PERSON;
 	private final static Boolean ER_ARKIVERT_TRUE = Boolean.TRUE;
 
-	private DokDistKanalRequest request;
 	DokDistKanalService dokDistKanalService = mock(DokDistKanalService.class);
 	DokDistKanalRestController dokDistKanalRestController = new DokDistKanalRestController(dokDistKanalService);
 
 	@Test
 	public void stabestemKanalOK() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		request = DokDistKanalRequest.builder()
+		DokDistKanalRequest request = DokDistKanalRequest.builder()
 				.dokumentTypeId(DOKUMENTTYPEID)
 				.mottakerId(FNR)
 				.mottakerType(MOTTAKERTYPE_PERSON)
@@ -41,7 +41,7 @@ public class DokDistKanalRestControllerTest {
 		when(dokDistKanalService.velgKanal(request)).thenReturn(response);
 		DokDistKanalResponse actualResponse = dokDistKanalRestController.bestemKanal(request, "callid", null);
 		assertEquals(DistribusjonKanalCode.DITT_NAV, actualResponse.getDistribusjonsKanal());
-		Mockito.verify(dokDistKanalService, Mockito.times(1))
+		verify(dokDistKanalService, Mockito.times(1))
 				.velgKanal(request);
 	}
 }

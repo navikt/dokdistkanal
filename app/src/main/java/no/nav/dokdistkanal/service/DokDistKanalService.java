@@ -14,7 +14,7 @@ import no.nav.dokdistkanal.consumer.pdl.HentPersoninfo;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.functional.UgyldingInputFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -179,13 +179,13 @@ public class DokDistKanalService {
 
     private static void assertNotNullOrEmpty(String fieldName, String value) {
         if (isEmpty(value)) {
-            throw new UgyldingInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
+            throw new UgyldigInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
         }
     }
 
     private static void assertNotNull(String fieldName, Boolean value) {
         if (value == null) {
-            throw new UgyldingInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
+            throw new UgyldigInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
         }
     }
 

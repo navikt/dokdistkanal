@@ -4,7 +4,6 @@ import no.nav.dokdistkanal.Application;
 import no.nav.dokdistkanal.azure.TokenConsumer;
 import no.nav.dokdistkanal.azure.TokenResponse;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -14,15 +13,18 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
+
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 /**
  * @author Ugur Alpay Cenar, Visma Consulting.
  */
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = {Application.class, AbstractIT.Config.class}, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        classes = {Application.class, AbstractIT.Config.class},
+        webEnvironment = RANDOM_PORT
+)
 @AutoConfigureWireMock(port = 0)
 @ActiveProfiles("itest")
 @ImportAutoConfiguration

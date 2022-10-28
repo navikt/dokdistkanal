@@ -14,5 +14,5 @@ import java.util.List;
 @AllArgsConstructor
 public class DistribusjonInfoTo {
 	private String predefinertDistKanal;
-	private List<DistribusjonVarselTo> distribusjonVarsels = new ArrayList();
+	private List<DistribusjonVarselTo> distribusjonVarsels = new ArrayList<>();
 }

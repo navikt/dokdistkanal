@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -52,7 +51,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 	public static final String HENT_SIKKER_DIGITAL_POSTADRESSE = "hentSikkerDigitalPostadresse";
 	public static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "person_ikke_funnet";
 
-	@Autowired
 	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
 											 @Value("${digdir_krr_proxy_url}") String dkiUrl,
 											 @Value("${digdir_krr_proxy_scope}") String dkiScope,
@@ -65,17 +63,6 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		this.dkiScope = dkiScope;
 		this.tokenConsumer = tokenConsumer;
 		//test
-	}
-
-	public void pingDkif() {
-		try {
-			HttpHeaders headers = createHeaders();
-			String response = restTemplate.exchange(dkiUrl + "/rest/ping",
-					HttpMethod.GET, new HttpEntity<>(headers), String.class).getBody();
-			log.info("Pinget Dkif: " + response);
-		} catch (Exception e) {
-			log.error("Klarte ikke pinge Digdir KRR: " + e.getMessage());
-		}
 	}
 
 	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
