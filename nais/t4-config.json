@@ -3,7 +3,7 @@
   "APPD_NAME": "dokdistkanal-t4",
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
-  "DOKUMENTTYPEINFO_URL": "https://dokmet-q1.dev.intern.nav.no/rest/dokumenttypeinfo",
+  "DOKUMENTTYPEINFO_URL": "https://dokmet.dev.intern.nav.no/rest/dokumenttypeinfo",
   "HENTPAALOGGINGSNIVAA_V1_URL": "https://api-gw-t4.adeo.no/ekstern/difi/idporten-oidc-provider/token",
   "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.preprod.local/rest/v1/sts/token",
   "DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.dev.intern.nav.no",
