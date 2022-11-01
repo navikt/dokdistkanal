@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.itest.config;
 
+import no.nav.dokdistkanal.config.RestWebMvcConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
@@ -8,7 +9,7 @@ import org.springframework.context.annotation.Profile;
  * @author Ugur Alpay Cenar, Visma Consulting.
  */
 @Configuration
-@Import({CacheTestConfig.class, RestTemplateTestConfig.class})
+@Import({CacheTestConfig.class, RestTemplateTestConfig.class, RestWebMvcConfig.class})
 @Profile("itest")
 public class ApplicationTestConfig {
 }

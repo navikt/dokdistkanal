@@ -17,10 +17,10 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 
@@ -33,8 +33,11 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
+import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
-
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.slf4j.MDC.get;
 /**
  * @author Ketill Fenne, Visma Consulting
  */
@@ -163,7 +166,7 @@ public class DokDistKanalService {
                 .tag("event", kanalKode.name())
                 .register(registry).increment();
 
-        LOG.info(String.format("BestemKanal: Sender melding til %s: %s", kanalKode.name(), reason));
+        LOG.info(format("BestemKanal: Sender melding fra %s til %s: %s", consumerId() ,kanalKode.name(), reason));
         return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
     }
 
@@ -189,4 +192,7 @@ public class DokDistKanalService {
         }
     }
 
+    private String consumerId() {
+        return isNotBlank(get(CONSUMER_ID)) ? get(CONSUMER_ID) : get(USER_ID);
+    }
 }
