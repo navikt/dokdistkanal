@@ -15,6 +15,8 @@ import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -37,10 +39,10 @@ import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIB
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.MDC.get;
 
-@Slf4j
 @Service
 @Component
 public class DokDistKanalService {
+	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 	// Fødselsnummer eller D-nummer i folkeregisteret
 	private static final Pattern FOLKEREGISTERIDENT_REGEX = Pattern.compile("[0-7]\\d{10}");
 	private static final String ONLY_ONES = "11111111111";
@@ -131,7 +133,6 @@ public class DokDistKanalService {
 			if (sikkerhetsnivaaTo == null) {
 				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig", tema);
 			}
-			log.info("");
 
 			//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
 			if (!isDokumentTypeIdUsedForAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
@@ -163,7 +164,7 @@ public class DokDistKanalService {
 				.tag("event", kanalKode.name())
 				.register(registry).increment();
 
-		log.info("BestemKanal: Sender melding fra {} (Tema={}) til {}: {}", consumerId(), tema, kanalKode.name(), reason);
+		LOG.info(format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: %s", consumerId(), tema, kanalKode.name(), reason));
 		return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
 	}
 
