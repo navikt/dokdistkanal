@@ -1,0 +1,13 @@
+{
+  "data": {
+    "hentPerson": {
+      "doedsfall": [],
+      "foedsel": [
+        {
+          "foedselsaar": 1978,
+          "foedselsdato": null
+        }
+      ]
+    }
+  }
+}
