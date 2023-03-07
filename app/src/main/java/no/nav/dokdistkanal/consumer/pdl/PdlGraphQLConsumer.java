@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlHentPersonTechnicalException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
@@ -18,16 +19,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-
-/**
- * @author Tsigab Gebremedhin, NAV
- */
 
 @Slf4j
 @Component
@@ -86,8 +82,14 @@ public class PdlGraphQLConsumer {
 		} else {
 			PDLHentPersonResponse.HentPerson hentPerson = response.getData().getHentPerson();
 			return HentPersoninfo.builder()
-					.doedsdato(hentPerson.getDoedsfall() == null ? null : hentPerson.getDoedsfall().stream().map(PDLHentPersonResponse.Doedsfall::getDoedsdato).findAny().orElse(null))
-					.foedselsdato(hentPerson.getFoedsel() == null ? null : hentPerson.getFoedsel().stream().map(PDLHentPersonResponse.Foedsel::getFoedselsdato).findAny().orElse(null))
+					.doedsdato(hentPerson.getDoedsfall() == null ? null : hentPerson.getDoedsfall().stream()
+							.map(PDLHentPersonResponse.Doedsfall::getDoedsdato)
+							.filter(Objects::nonNull)
+							.findAny().orElse(null))
+					.foedselsdato(hentPerson.getFoedsel() == null ? null : hentPerson.getFoedsel().stream()
+							.map(PDLHentPersonResponse.Foedsel::getFoedselsdato)
+							.filter(Objects::nonNull)
+							.findAny().orElse(null))
 					.build();
 		}
 	}
@@ -96,15 +98,16 @@ public class PdlGraphQLConsumer {
 		final HashMap<String, Object> variables = new HashMap<>();
 		variables.put("ident", aktoerId);
 
-		return PDLRequest.builder().query("query hentPerson($ident: ID!){\n" +
-				"  hentPerson(ident: $ident){\n" +
-				"      doedsfall{\n" +
-				"        doedsdato\n" +
-				"      }\n" +
-				"    foedsel{\n" +
-				"    \tfoedselsdato\n" +
-				"    }\n" +
-				"  }\n" +
-				"}\n").variables(variables).build();
+		return PDLRequest.builder().query("""
+				query hentPerson($ident: ID!) {
+				  hentPerson(ident: $ident) {
+				     doedsfall {
+				        doedsdato
+				     }
+				     foedsel {
+				        foedselsdato
+				     }
+				  }
+				}""").variables(variables).build();
 	}
 }

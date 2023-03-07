@@ -16,61 +16,60 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(MockitoExtension.class)
 public class MapDigitalKontaktinformasjonTest {
 
-    private static final String EPOSTADRESSE = "epostadresse";
-    private static final String MOBILTELEFONNUMMER = "mobiltelefonnummer";
-    private static final String LEVERANDORADRESSE = "leverandøradresse";
-    private static final String BRUKERADRESSE = "brukeradresse";
-    private static final String LEVERANDOER_SERTIFIKAT_GYLDIG = "MIIFEzCCA/ugAwIBAgILAjxAYEhC5sBU48QwDQYJKoZIhvcNAQELBQAwUTELMAkGA1UEBhMCTk8xHTAbBgNVBAoMFEJ1eXBhc3MgQVMtOTgzMTYzMzI3MSMwIQYDVQQDDBpCdXlwYXNzIENsYXNzIDMgVGVzdDQgQ0EgMzAeFw0yMDAyMDYxNTE4MThaFw0yMzAyMDYyMjU5MDBaMFoxCzAJBgNVBAYTAk5PMRgwFgYDVQQKDA9QT1NURU4gTk9SR0UgQVMxHTAbBgNVBAMMFFBPU1RFTiBOT1JHRSBBUyBURVNUMRIwEAYDVQQFEwk5ODQ2NjExODUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCU3m0kTYPTNX/ftxf6KcY0iLXQ6pAozxqyTrmbwGZw+LzPpY3phKKE5kbKp6oYKDFW1OehRB1L+bqZJTYEXSHWxUA/NGr7SoCV7UEycBSX6tA4MLwAzn3yEccApRa4Vqwv+XphOEUg0v/x/DkwJaT4o1YOFD8QRNjqmJcz4iW0I3Wp4C7dGJxYF2CK7UX5KXwHdgrSdTt6lF4M3ZshJH4quzhAY5y7tdO2EMVq9Bkkc+oA3xvJQ/O3GjjAUpy4ywglDIW022sJKjjAlNY8mjJMcybnRaWLoLC6YprSbzb6wsmu8GJGjiHQEFvB5EAfmIyr7cvT50usAnMZC9gprS9tAgMBAAGjggHhMIIB3TAJBgNVHRMEAjAAMB8GA1UdIwQYMBaAFD+u9XgLkqNwIDVfWvr3JKBSAfBBMB0GA1UdDgQWBBRaOn2NsEXqQ8eZojgdbhHCAdrU8DAOBgNVHQ8BAf8EBAMCBLAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMBYGA1UdIAQPMA0wCwYJYIRCARoBAAMCMIG7BgNVHR8EgbMwgbAwN6A1oDOGMWh0dHA6Ly9jcmwudGVzdDQuYnV5cGFzcy5uby9jcmwvQlBDbGFzczNUNENBMy5jcmwwdaBzoHGGb2xkYXA6Ly9sZGFwLnRlc3Q0LmJ1eXBhc3Mubm8vZGM9QnV5cGFzcyxkYz1OTyxDTj1CdXlwYXNzJTIwQ2xhc3MlMjAzJTIwVGVzdDQlMjBDQSUyMDM/Y2VydGlmaWNhdGVSZXZvY2F0aW9uTGlzdDCBigYIKwYBBQUHAQEEfjB8MDsGCCsGAQUFBzABhi9odHRwOi8vb2NzcC50ZXN0NC5idXlwYXNzLm5vL29jc3AvQlBDbGFzczNUNENBMzA9BggrBgEFBQcwAoYxaHR0cDovL2NydC50ZXN0NC5idXlwYXNzLm5vL2NydC9CUENsYXNzM1Q0Q0EzLmNlcjANBgkqhkiG9w0BAQsFAAOCAQEAZGpNYvzd7mmh7V2OlQOc0B7+1N3apZMEnMj6iiPH6l7oZ5aNFP73fLlDiB2NpPpkQEDcrt6MCnNiO/U3qIkWz/blWDD9k1xUs9ZSeQZJnapuGnN7zSbIUcFnTDNik4cFlJOG7hcnPvxv3ewMSffuhoqnnaPA7J1gzNMA2hkmM7l+sGfCzhr7h9THgo51uGnscTL6PI2qB9qpHN4lR2Aw4yEV0Ve16ENQxASucGc2N+6ZiJQWZiHQL8Z6076NogeMqzG1KIklh5ZogPJxBbnFg72Y0aMrKHw799jm9n64HnOAt1c3qOjduxnjdRMRy+YcIuIy+bUPX4bexmsuX0ehGw==";
-    private static final String LEVERANDOER_SERTIFIKAT_UGYLDIG = "MIIE+TCCA+GgAwIBAgILAUhKqNpiy3zXb/YwDQYJKoZIhvcNAQELBQAwUTELMAkGA1UEBhMCTk8xHTAbBgNVBAoMFEJ1eXBhc3MgQVMtOTgzMTYzMzI3MSMwIQYDVQQDDBpCdXlwYXNzIENsYXNzIDMgVGVzdDQgQ0EgMzAeFw0xNzA2MDkxMzQyMTFaFw0yMDA2MTIyMTU5MDBaMF8xCzAJBgNVBAYTAk5PMRIwEAYDVQQKDAlFLUJPS1MgQVMxFDASBgNVBAsMC09wZXJhdGlvbiAxMRIwEAYDVQQDDAlFLUJPS1MgQVMxEjAQBgNVBAUTCTk5NjQ2MDMyMDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJhF7jKFz1H5mfm2NO5jcVOsHGe6etEcBZzTlbKbqzarkcsBW5Xf7/DCcxtzzkUQyiO9yxhAdg6uIpmStlruZcntLtIvZpsWrV60D4gJAUzyHcynxedKoGjUob5qQ6FIlAaqxMZ4kGQvHbzYJ1N9OMWGISENUP4JPYkojFEHwRswORrvmWglj3RU4QbO4Ggg1pvrEddoEafsgnLZOKxz1DSAKwLbv2y0FNhs3akSozbuWC+tmnMNi6y8ufZnrHo099Tl3Uj37EzPY6g1qqqdDEKEhGrrrMzNvf1muGcChWKnDffUuWS4i8MH2tP1raO8dl4vjIkM8Uh9E9Z/hY134OUCAwEAAaOCAcIwggG+MAkGA1UdEwQCMAAwHwYDVR0jBBgwFoAUP671eAuSo3AgNV9a+vckoFIB8EEwHQYDVR0OBBYEFGFGK3fHTWkdBSvGz+SuZVl3rESFMA4GA1UdDwEB/wQEAwIEsDAWBgNVHSAEDzANMAsGCWCEQgEaAQADAjCBuwYDVR0fBIGzMIGwMDegNaAzhjFodHRwOi8vY3JsLnRlc3Q0LmJ1eXBhc3Mubm8vY3JsL0JQQ2xhc3MzVDRDQTMuY3JsMHWgc6Bxhm9sZGFwOi8vbGRhcC50ZXN0NC5idXlwYXNzLm5vL2RjPUJ1eXBhc3MsZGM9Tk8sQ049QnV5cGFzcyUyMENsYXNzJTIwMyUyMFRlc3Q0JTIwQ0ElMjAzP2NlcnRpZmljYXRlUmV2b2NhdGlvbkxpc3QwgYoGCCsGAQUFBwEBBH4wfDA7BggrBgEFBQcwAYYvaHR0cDovL29jc3AudGVzdDQuYnV5cGFzcy5uby9vY3NwL0JQQ2xhc3MzVDRDQTMwPQYIKwYBBQUHMAKGMWh0dHA6Ly9jcnQudGVzdDQuYnV5cGFzcy5uby9jcnQvQlBDbGFzczNUNENBMy5jZXIwDQYJKoZIhvcNAQELBQADggEBAElnmjuY+gPxzLVsjqGAbW0fEZXhbYRaQKS/65+6Gh0STfArBma62CdIvgq5JQMmr47URdkxDhB12SYaMHUyOee9+d3hTpmvplxd4xz/gqSisHJq5wNZfgtf5y4vtxM4X1LNrf93i6plNWpesWWznON8MWRvmm+K+3uSC6trD0o5dv6ax/cuCffgGP4qJ9z59qKFDZrNNEfA1In3ij6V3Gebo7oSJxSlR5enOJTxJOjO2De5k1ObQvPAD9yc2a+eWgkMygsBT3ay5BKCtQcSHfJm3CRNN6bfD3D4kxP3ZvAirvKADcUlS71FAnWqPPoXgxiSJGMPkwjuZJsQeeVd5JA=";
-    private static final boolean KAN_VARSLES_TRUE = true;
-    private static final boolean KAN_VARSLES_FALSE = false;
-    private static final boolean RESERVERT = false;
+	private static final String EPOSTADRESSE = "epostadresse";
+	private static final String MOBILTELEFONNUMMER = "mobiltelefonnummer";
+	private static final String LEVERANDORADRESSE = "leverandøradresse";
+	private static final String BRUKERADRESSE = "brukeradresse";
+	// Dette er et selvsignert X.509 sertifikat som er gyldig til 2033-03-04. Det er ment å emulere et sertifikat utstedt av postkasseleverandør for bruker
+    // Generert med følgende kommando: openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout itest.key -out itest.pem
+	private static final String LEVERANDOER_SERTIFIKAT_GYLDIG = "MIIELTCCAxWgAwIBAgIUNRGHPeWMlznfAYPk4OS4Lno0yCEwDQYJKoZIhvcNAQELBQAwgaUxCzAJBgNVBAYTAk5PMQ0wCwYDVQQIDARPc2xvMRMwEQYDVQQHDApCYWRlYmFra2VuMQwwCgYDVQQKDANOQVYxHTAbBgNVBAsMFERva3VtZW50bMODwrhzbmluZ2VyMRswGQYDVQQDDBJpdGVzdC1kb2tkaXN0a2FuYWwxKDAmBgkqhkiG9w0BCQEWGWl0ZXN0LWRva2Rpc3RrYW5hbEBuYXYubm8wHhcNMjMwMzA3MTAxMzU3WhcNMzMwMzA0MTAxMzU3WjCBpTELMAkGA1UEBhMCTk8xDTALBgNVBAgMBE9zbG8xEzARBgNVBAcMCkJhZGViYWtrZW4xDDAKBgNVBAoMA05BVjEdMBsGA1UECwwURG9rdW1lbnRsw4PCuHNuaW5nZXIxGzAZBgNVBAMMEml0ZXN0LWRva2Rpc3RrYW5hbDEoMCYGCSqGSIb3DQEJARYZaXRlc3QtZG9rZGlzdGthbmFsQG5hdi5ubzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK6K02dqev/lxVY34Q9ZnJR7I68BJdgYJ8phLzVglTtK0LrOlo+3A+6RmlZhZGq8dqcDBFnQF7x8KWgHaEtVTNLCJUFtuhraxpTuZBStyEugsbKhD45lcs+FlEQwHl6V61ljopl361yvZxVFRpJceGhJiyYh71di/JO/ke18ZZ3XOp8uPEhPM7Agswc69gx5yULWndzhopabo8TEN1sLIuavxWsAhbFZ1rukYG25R5q2dPsEIDtHvYHeJ8BohdcBv9dSNFD/Rrt8sVafmfwazFX2Q9UL09e/WI9BeefN6ffQ5hPkAIa7hrGnaOTW+qcMXCaUQXjJH9t9I+9eDBfTjcUCAwEAAaNTMFEwHQYDVR0OBBYEFFlQrX4esHWZp4RZGA2dof85V6UfMB8GA1UdIwQYMBaAFFlQrX4esHWZp4RZGA2dof85V6UfMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAC+b+iPtjCqWoRfjBRpuOe4ZKkRIIsO9t0cB+TKKnlfj64T43unl9PKgTCHhZlrFWMrpGN6BV6Mk9xoWvsZUIOGdbESblCqseeW52hYD1S6k6MCmHctHyDO4DrBHimPmRFkLJyS8dKm6kBj2JcNFPb4GCHgnHpZY8eWoYqJBwOFy1YD3Xp+GvpZLJP8yTF0wlYIDwNwgS3wFtD0wPPio4tiS4ad1ywUuwvHIsdaj/lHS9FzIvmoUx4YUJ1mIhGQfMhKzOJy38VIGqBT5U+zCUcUXyRONaV2Iyb2xKC8qHdTX9/Y1fwNOqaAdqD2HZ8T/pg4PYKW4iupoUIfvtrnZoUg=";
+	private static final String LEVERANDOER_SERTIFIKAT_UGYLDIG = "MIIE+TCCA+GgAwIBAgILAUhKqNpiy3zXb/YwDQYJKoZIhvcNAQELBQAwUTELMAkGA1UEBhMCTk8xHTAbBgNVBAoMFEJ1eXBhc3MgQVMtOTgzMTYzMzI3MSMwIQYDVQQDDBpCdXlwYXNzIENsYXNzIDMgVGVzdDQgQ0EgMzAeFw0xNzA2MDkxMzQyMTFaFw0yMDA2MTIyMTU5MDBaMF8xCzAJBgNVBAYTAk5PMRIwEAYDVQQKDAlFLUJPS1MgQVMxFDASBgNVBAsMC09wZXJhdGlvbiAxMRIwEAYDVQQDDAlFLUJPS1MgQVMxEjAQBgNVBAUTCTk5NjQ2MDMyMDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJhF7jKFz1H5mfm2NO5jcVOsHGe6etEcBZzTlbKbqzarkcsBW5Xf7/DCcxtzzkUQyiO9yxhAdg6uIpmStlruZcntLtIvZpsWrV60D4gJAUzyHcynxedKoGjUob5qQ6FIlAaqxMZ4kGQvHbzYJ1N9OMWGISENUP4JPYkojFEHwRswORrvmWglj3RU4QbO4Ggg1pvrEddoEafsgnLZOKxz1DSAKwLbv2y0FNhs3akSozbuWC+tmnMNi6y8ufZnrHo099Tl3Uj37EzPY6g1qqqdDEKEhGrrrMzNvf1muGcChWKnDffUuWS4i8MH2tP1raO8dl4vjIkM8Uh9E9Z/hY134OUCAwEAAaOCAcIwggG+MAkGA1UdEwQCMAAwHwYDVR0jBBgwFoAUP671eAuSo3AgNV9a+vckoFIB8EEwHQYDVR0OBBYEFGFGK3fHTWkdBSvGz+SuZVl3rESFMA4GA1UdDwEB/wQEAwIEsDAWBgNVHSAEDzANMAsGCWCEQgEaAQADAjCBuwYDVR0fBIGzMIGwMDegNaAzhjFodHRwOi8vY3JsLnRlc3Q0LmJ1eXBhc3Mubm8vY3JsL0JQQ2xhc3MzVDRDQTMuY3JsMHWgc6Bxhm9sZGFwOi8vbGRhcC50ZXN0NC5idXlwYXNzLm5vL2RjPUJ1eXBhc3MsZGM9Tk8sQ049QnV5cGFzcyUyMENsYXNzJTIwMyUyMFRlc3Q0JTIwQ0ElMjAzP2NlcnRpZmljYXRlUmV2b2NhdGlvbkxpc3QwgYoGCCsGAQUFBwEBBH4wfDA7BggrBgEFBQcwAYYvaHR0cDovL29jc3AudGVzdDQuYnV5cGFzcy5uby9vY3NwL0JQQ2xhc3MzVDRDQTMwPQYIKwYBBQUHMAKGMWh0dHA6Ly9jcnQudGVzdDQuYnV5cGFzcy5uby9jcnQvQlBDbGFzczNUNENBMy5jZXIwDQYJKoZIhvcNAQELBQADggEBAElnmjuY+gPxzLVsjqGAbW0fEZXhbYRaQKS/65+6Gh0STfArBma62CdIvgq5JQMmr47URdkxDhB12SYaMHUyOee9+d3hTpmvplxd4xz/gqSisHJq5wNZfgtf5y4vtxM4X1LNrf93i6plNWpesWWznON8MWRvmm+K+3uSC6trD0o5dv6ax/cuCffgGP4qJ9z59qKFDZrNNEfA1In3ij6V3Gebo7oSJxSlR5enOJTxJOjO2De5k1ObQvPAD9yc2a+eWgkMygsBT3ay5BKCtQcSHfJm3CRNN6bfD3D4kxP3ZvAirvKADcUlS71FAnWqPPoXgxiSJGMPkwjuZJsQeeVd5JA=";
+	private static final boolean KAN_VARSLES_TRUE = true;
+	private static final boolean KAN_VARSLES_FALSE = false;
+	private static final boolean RESERVERT = false;
 
-    private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
+	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
 
+	@Test
+	public void shouldMapOk() {
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_GYLDIG));
+		assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
+		assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());
+		assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
+		assertEquals(MOBILTELEFONNUMMER, digitalKontaktinformasjonTo.getMobiltelefonnummer());
+		assertTrue(digitalKontaktinformasjonTo.isGyldigSertifikat());
+	}
 
-    //LEVERANDOER_SERTIFIKAT_GYLDIG er utsendt av DigDir og har utløpsdato februar 2023.
-    //Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
-    @Test
-    public void shouldMapOk() {
-        DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_GYLDIG));
-        assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
-        assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());
-        assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
-        assertEquals(MOBILTELEFONNUMMER, digitalKontaktinformasjonTo.getMobiltelefonnummer());
-        assertTrue(digitalKontaktinformasjonTo.isGyldigSertifikat());
-    }
+	@Test
+	public void shouldMapWithoutKanVarsles() {
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_FALSE, LEVERANDOER_SERTIFIKAT_GYLDIG));
+		assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
+		assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
+		assertNull(digitalKontaktinformasjonTo.getEpostadresse());
+		assertNull(digitalKontaktinformasjonTo.getMobiltelefonnummer());
+	}
 
-    @Test
-    public void shouldMapWithoutKanVarsles() {
-        DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_FALSE, LEVERANDOER_SERTIFIKAT_GYLDIG));
-        assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
-        assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
-        assertNull(digitalKontaktinformasjonTo.getEpostadresse());
-        assertNull(digitalKontaktinformasjonTo.getMobiltelefonnummer());
-    }
+	@Test
+	public void shouldMapWithoutGyldigSertifikat() {
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_UGYLDIG));
+		assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
+		assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());
+		assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
+		assertEquals(MOBILTELEFONNUMMER, digitalKontaktinformasjonTo.getMobiltelefonnummer());
+		assertFalse(digitalKontaktinformasjonTo.isGyldigSertifikat());
+	}
 
-    @Test
-    public void shouldMapWithoutGyldigSertifikat() {
-        DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_UGYLDIG));
-        assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
-        assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());
-        assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
-        assertEquals(MOBILTELEFONNUMMER, digitalKontaktinformasjonTo.getMobiltelefonnummer());
-        assertFalse(digitalKontaktinformasjonTo.isGyldigSertifikat());
-    }
-
-    private DkifResponseTo.DigitalKontaktinfo createDigitalKontaktinfo(boolean kanVarsles, String leverandoerSertifikat) {
-        return DkifResponseTo.DigitalKontaktinfo.builder()
-                .epostadresse(EPOSTADRESSE)
-                .mobiltelefonnummer(MOBILTELEFONNUMMER)
-                .kanVarsles(kanVarsles)
-                .reservert(RESERVERT)
-                .sikkerDigitalPostkasse(DkifResponseTo.SikkerDigitalPostkasse.builder()
-                        .adresse(BRUKERADRESSE)
-                        .leverandoerAdresse(LEVERANDORADRESSE)
-                        .leverandoerSertifikat(leverandoerSertifikat)
-                        .build())
-                .build();
-    }
+	private DkifResponseTo.DigitalKontaktinfo createDigitalKontaktinfo(boolean kanVarsles, String leverandoerSertifikat) {
+		return DkifResponseTo.DigitalKontaktinfo.builder()
+				.epostadresse(EPOSTADRESSE)
+				.mobiltelefonnummer(MOBILTELEFONNUMMER)
+				.kanVarsles(kanVarsles)
+				.reservert(RESERVERT)
+				.sikkerDigitalPostkasse(DkifResponseTo.SikkerDigitalPostkasse.builder()
+						.adresse(BRUKERADRESSE)
+						.leverandoerAdresse(LEVERANDORADRESSE)
+						.leverandoerSertifikat(leverandoerSertifikat)
+						.build())
+				.build();
+	}
 }
