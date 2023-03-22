@@ -42,7 +42,6 @@ public class AzureTokenConsumer implements TokenConsumer {
 		final CloseableHttpClient httpClient = createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager);
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3))
-				.setReadTimeout(Duration.ofSeconds(20))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 		this.azureProperties = azureProperties;
