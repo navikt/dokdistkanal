@@ -11,12 +11,9 @@ import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException
 import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
-import no.nav.dokdistkanal.metrics.Metrics;
-import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -26,28 +23,26 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
-import static no.nav.dokdistkanal.metrics.MetricLabels.DOK_CONSUMER;
-import static no.nav.dokdistkanal.metrics.MetricLabels.PROCESS_CODE;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Slf4j
 @Component
 public class SikkerhetsnivaaConsumer {
 
-	private final RestTemplate restTemplate;
 	public static final String HENT_PAALOGGINGSNIVAA = "hentPaaloggingsnivaa";
 	private static final String FEILMELDING = "Sikkerhetsnivaa.hentPaaloggingsnivaa feilet (HttpStatus=%s)";
-	private final MicrometerMetrics metrics;
 
-	public SikkerhetsnivaaConsumer(RestTemplate restTemplate,
-								   MicrometerMetrics metrics) {
+	private final RestTemplate restTemplate;
+
+	public SikkerhetsnivaaConsumer(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
-		this.metrics = metrics;
 	}
 
 	@Autowired
 	public SikkerhetsnivaaConsumer(RestTemplateBuilder restTemplateBuilder,
 								   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
-								   MicrometerMetrics metrics,
 								   ServiceuserAlias serviceuserAlias) {
 		this.restTemplate = restTemplateBuilder
 				.rootUri(sikkerhetsnivaaV1Alias.getUrl())
@@ -55,23 +50,21 @@ public class SikkerhetsnivaaConsumer {
 				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))
 				.setReadTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getReadtimeoutms()))
 				.build();
-		this.metrics = metrics;
 	}
 
-	@Metrics(value = DOK_CONSUMER, extraTags = {PROCESS_CODE, HENT_PAALOGGINGSNIVAA}, percentiles = {0.5, 0.95}, histogram = true)
-	@Retryable(include = DokDistKanalTechnicalException.class, exclude = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	@Cacheable(value = HENT_PAALOGGINGSNIVAA, key = "#fnr+'-sikkerhetsnivaa'")
 	public SikkerhetsnivaaTo hentPaaloggingsnivaa(String fnr) {
-		metrics.cacheMiss(HENT_PAALOGGINGSNIVAA);
 		SikkerhetsnivaaRequest request = SikkerhetsnivaaRequest.builder().personidentifikator(fnr).build();
+
 		try {
 			SikkerhetsnivaaResponse response = restTemplate.postForObject("/", request, SikkerhetsnivaaResponse.class);
 			return mapTo(response);
 		} catch (HttpClientErrorException e) {
-			if (HttpStatus.UNAUTHORIZED.equals(e.getStatusCode()) || HttpStatus.FORBIDDEN.equals(e.getStatusCode())) {
+			if (UNAUTHORIZED.equals(e.getStatusCode()) || FORBIDDEN.equals(e.getStatusCode())) {
 				throw new DokDistKanalSecurityException(String.format(FEILMELDING, e.getStatusCode()), e);
 			}
-			if (HttpStatus.NOT_FOUND.equals(e.getStatusCode())) {
+			if (NOT_FOUND.equals(e.getStatusCode())) {
 				//Personen finnes ikke, returnerer false
 				return SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(false).personIdent(fnr).build();
 			}
