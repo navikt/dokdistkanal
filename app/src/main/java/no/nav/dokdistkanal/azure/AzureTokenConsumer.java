@@ -3,11 +3,11 @@ package no.nav.dokdistkanal.azure;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import no.nav.dokdistkanal.DokdistkanalProperties;
-import org.apache.http.HttpHost;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpHost;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
@@ -42,7 +42,6 @@ public class AzureTokenConsumer implements TokenConsumer {
 		final CloseableHttpClient httpClient = createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager);
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3))
-				.setReadTimeout(Duration.ofSeconds(20))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 		this.azureProperties = azureProperties;
