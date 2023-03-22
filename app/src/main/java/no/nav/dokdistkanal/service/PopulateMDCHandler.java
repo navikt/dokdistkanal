@@ -1,10 +1,10 @@
 package no.nav.dokdistkanal.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import no.nav.dokdistkanal.exceptions.functional.CouldNotDecodeBasicAuthToken;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
 

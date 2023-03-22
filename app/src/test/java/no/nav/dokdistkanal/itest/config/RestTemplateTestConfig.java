@@ -9,9 +9,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
-/**
- * @author Ugur Alpay Cenar, Visma Consulting.
- */
 @Configuration
 @Profile("itest")
 public class RestTemplateTestConfig {
@@ -21,7 +18,7 @@ public class RestTemplateTestConfig {
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
 		return restTemplateBuilder
-				.requestFactory(HttpComponentsClientHttpRequestFactory::new)
+				.requestFactory(HttpComponentsClientHttpRequestFactory.class)
 				.setReadTimeout(Duration.ofMillis(TIMEOUT))
 				.setConnectTimeout(Duration.ofMillis(TIMEOUT)).build();
 	}
@@ -29,7 +26,7 @@ public class RestTemplateTestConfig {
 	@Bean
 	public RestTemplate restTemplateNoHeader(RestTemplateBuilder restTemplateBuilder) {
 		return restTemplateBuilder
-				.requestFactory(HttpComponentsClientHttpRequestFactory::new)
+				.requestFactory(HttpComponentsClientHttpRequestFactory.class)
 				.setReadTimeout(Duration.ofMillis(TIMEOUT))
 				.setConnectTimeout(Duration.ofMillis(TIMEOUT)).build();
 	}
