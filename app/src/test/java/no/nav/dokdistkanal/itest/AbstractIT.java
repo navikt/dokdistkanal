@@ -22,10 +22,6 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-/**
- * @author Ugur Alpay Cenar, Visma Consulting.
- */
-
 @SpringBootTest(
         classes = {Application.class, AbstractIT.Config.class},
         webEnvironment = RANDOM_PORT

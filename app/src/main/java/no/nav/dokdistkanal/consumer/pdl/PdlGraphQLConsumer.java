@@ -8,8 +8,6 @@ import no.nav.dokdistkanal.exceptions.technical.PdlHentPersonTechnicalException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -24,6 +22,10 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @Component
@@ -46,15 +48,15 @@ public class PdlGraphQLConsumer {
 		this.pdlUrl = pdlUrl;
 	}
 
-	@Retryable(include = HttpServerErrorException.class)
+	@Retryable(retryFor = HttpServerErrorException.class)
 	public HentPersoninfo hentPerson(final String aktoerId, final String tema) {
 		try {
 			final UriComponents uri = UriComponentsBuilder.fromHttpUrl(pdlUrl).build();
 			final String serviceUserToken = "Bearer " + stsConsumer.getOidcToken();
 			final RequestEntity<PDLRequest> requestEntity = RequestEntity.post(uri.toUri())
-					.accept(MediaType.APPLICATION_JSON)
-					.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-					.header(HttpHeaders.AUTHORIZATION, serviceUserToken)
+					.accept(APPLICATION_JSON)
+					.header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+					.header(AUTHORIZATION, serviceUserToken)
 					.header(NAV_CONSUMER_TOKEN, serviceUserToken)
 					.header(HEADER_PDL_TEMA, tema)
 					.body(mapRequest(aktoerId));

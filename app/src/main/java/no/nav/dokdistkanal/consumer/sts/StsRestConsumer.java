@@ -1,9 +1,5 @@
 package no.nav.dokdistkanal.consumer.sts;
 
-import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.STS_CACHE;
-import static no.nav.dokdistkanal.constants.RetryConstants.DELAY_SHORT;
-import static no.nav.dokdistkanal.constants.RetryConstants.MULTIPLIER_SHORT;
-
 import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
 import no.nav.dokdistkanal.consumer.sts.to.StsResponseTo;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
@@ -17,19 +13,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import java.time.Duration;
 
-/**
- * @author Sigurd Midttun, Visma Consulting.
- */
+import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.STS_CACHE;
+import static no.nav.dokdistkanal.constants.RetryConstants.DELAY_SHORT;
+import static no.nav.dokdistkanal.constants.RetryConstants.MULTIPLIER_SHORT;
+
 @Component
 public class StsRestConsumer {
 
 	private final RestTemplate restTemplate;
 	private final String stsUrl;
 
-	@Autowired
 	public StsRestConsumer(@Value("${security-token-service-token.url}") String stsUrl,
 						   RestTemplateBuilder restTemplateBuilder,
 						   final ServiceuserAlias serviceuserAlias) {
@@ -41,7 +36,7 @@ public class StsRestConsumer {
 				.build();
 	}
 
-	@Retryable(include = DokDistKanalTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT))
+	@Retryable(retryFor = DokDistKanalTechnicalException.class, backoff = @Backoff(delay = DELAY_SHORT, multiplier = MULTIPLIER_SHORT))
 	@Cacheable(STS_CACHE)
 	public String getOidcToken() {
 		try {

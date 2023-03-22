@@ -7,7 +7,6 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
-import no.nav.dokdistkanal.metrics.MicrometerMetrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,8 +35,7 @@ public class SikkerhetsnivaaConsumerTest {
     @BeforeEach
     public void setUp() {
         restTemplate = mock(RestTemplate.class);
-        MicrometerMetrics metrics = mock(MicrometerMetrics.class);
-        sikkerhetsnivaaConsumer = new SikkerhetsnivaaConsumer(restTemplate, metrics);
+        sikkerhetsnivaaConsumer = new SikkerhetsnivaaConsumer(restTemplate);
     }
 
     @Test
