@@ -50,7 +50,7 @@ public class DokDistKanalService {
 
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID_1 = "000053";
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID_2 = "000077";
-	private static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP");
+	public static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
