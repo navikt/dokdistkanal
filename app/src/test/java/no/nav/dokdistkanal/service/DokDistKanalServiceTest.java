@@ -21,6 +21,8 @@ import no.nav.dokdistkanal.util.LogbackCapturingAppender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 
@@ -76,6 +78,17 @@ public class DokDistKanalServiceTest {
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
 		registry = new SimpleMeterRegistry();
 		service = new DokDistKanalService(dokumentTypeInfoConsumer, digitalKontaktinformasjonConsumer, sikkerhetsnivaaConsumer, registry, pdlGraphQLConsumer);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP"})
+	public void shouldSendTilPrintNaarTemaBegrensetInnsyn(String tema) {
+		capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
+
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().tema(tema).build());
+		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
+		assertThat(capture.getCapturedLogMessage(), is(createLogMelding(CONSUMER_ID, PRINT, tema) + "Tema har begrenset innsyn"));
+		LogbackCapturingAppender.Factory.cleanUp();
 	}
 
 	@Test
@@ -488,7 +501,7 @@ public class DokDistKanalServiceTest {
 				.tema(TEMA);
 	}
 
-	private static final String createLogMelding(String consumerId, DistribusjonKanalCode kanalCode, String tema) {
+	private static String createLogMelding(String consumerId, DistribusjonKanalCode kanalCode, String tema) {
 		return format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: ", consumerId, tema, kanalCode);
 	}
 

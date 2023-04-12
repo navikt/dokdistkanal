@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
@@ -49,6 +50,7 @@ public class DokDistKanalService {
 
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID_1 = "000053";
 	private static final String AARSOPPGAVE_DOKUMENTTYPEID_2 = "000077";
+	private static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP");
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
@@ -71,9 +73,13 @@ public class DokDistKanalService {
 
 	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) {
 		validateInput(dokDistKanalRequest);
+		final String tema = dokDistKanalRequest.getTema();
+
+		if(BEGRENSET_INNSYN_TEMA.contains(tema)) {
+			return logAndReturn(PRINT, "Tema har begrenset innsyn", tema);
+		}
 
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokDistKanalRequest.getDokumentTypeId());
-		final String tema = dokDistKanalRequest.getTema();
 
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
 			return logAndReturn(PRINT, "Skal ikke arkiveres", tema);
