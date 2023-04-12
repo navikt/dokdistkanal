@@ -22,11 +22,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
@@ -35,6 +36,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJO
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.service.DokDistKanalService.BEGRENSET_INNSYN_TEMA;
 import static no.nav.dokdistkanal.service.DokDistKanalService.LOG;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -81,7 +83,7 @@ public class DokDistKanalServiceTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP"})
+	@MethodSource("begrensetInnsynTemaFactory")
 	public void shouldSendTilPrintNaarTemaBegrensetInnsyn(String tema) {
 		capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
 
@@ -89,6 +91,10 @@ public class DokDistKanalServiceTest {
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(capture.getCapturedLogMessage(), is(createLogMelding(CONSUMER_ID, PRINT, tema) + "Tema har begrenset innsyn"));
 		LogbackCapturingAppender.Factory.cleanUp();
+	}
+
+	static Stream<String> begrensetInnsynTemaFactory() {
+		return BEGRENSET_INNSYN_TEMA.stream();
 	}
 
 	@Test
