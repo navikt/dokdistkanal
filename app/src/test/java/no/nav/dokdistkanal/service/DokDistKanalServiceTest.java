@@ -482,13 +482,6 @@ public class DokDistKanalServiceTest {
 				.tema(TEMA);
 	}
 
-	private DokDistKanalRequest.DokDistKanalRequestBuilder dokDistKanalRequestBuilder(String dokumentTypeId) {
-		return DokDistKanalRequest.builder()
-				.dokumentTypeId(dokumentTypeId)
-				.erArkivert(ER_ARKIVERT_TRUE)
-				.tema(TEMA);
-	}
-
 	private static String createLogMelding(String consumerId, DistribusjonKanalCode kanalCode, String tema) {
 		return format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: ", consumerId, tema, kanalCode);
 	}

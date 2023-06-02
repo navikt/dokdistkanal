@@ -20,9 +20,9 @@ public class DokdistkanalValidator {
 	private static final Set<String> INFOTRYGD_DOKUMENTTYPE_ID = Set.of("000044", "000045", "000046", "000249");
 
 	public boolean erGyldigAltinnNotifikasjonMottaker(ValidateRecipientResponse validateRecipientResponse) {
-		return  validateRecipientResponse.isCanReceiveNotificationByEmai()
-				& validateRecipientResponse.isCanReceiveNotificationByEmai()
-				& validateRecipientResponse.isInboxAccessible();
+		return  validateRecipientResponse.canReceiveNotificationByEmail()
+				& validateRecipientResponse.canReceiveNotificationBySms()
+				& validateRecipientResponse.inboxAccessible();
 	}
 
 	public boolean isOrgNummerWithInfotrygdDokumentTypeId(DokDistKanalRequest dokDistKanalRequest) {

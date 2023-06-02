@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpStatusCodeException;
 
@@ -27,13 +26,17 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
+import static no.nav.dokdistkanal.service.DokDistKanalServiceTest.TEMA;
 import static no.nav.dokdistkanal.util.TestUtils.classpathToString;
 import static no.nav.dokdistkanal.util.TestUtils.getLogMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON_VALUE;
+import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -51,9 +54,10 @@ public class DokDistKanalIT extends AbstractIT {
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
 	private final static boolean ER_ARKIVERT_TRUE = true;
 	private final static boolean INKLUDER_SIKKER_DIGITALPOSTKASSE = true;
-	private static final String ALTINN_HAPPY_FILE_PATH = "__files/altinn/serviceowner_happy_response.json";
+	private static final String ALTINN_HAPPY_FILE_PATH = "altinn/serviceowner_happy_response.json";
 	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
-
+	private static final String SKATTEETATEN_ORGNUMMER = "974761076";
+	private static final String INFOTRYGD_DOKUMENTTYPE_ID = "000044";
 
 	private ListAppender<ILoggingEvent> logWatcher;
 
@@ -88,7 +92,6 @@ public class DokDistKanalIT extends AbstractIT {
 
 	@Test
 	public void shouldReturnPrintForBOSTIdenter() {
-		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = dokDistKanalRequestBuilder(BOST_MOTTAKERID).build();
@@ -101,7 +104,6 @@ public class DokDistKanalIT extends AbstractIT {
 	 */
 	@Test
 	public void shouldReturnPrintForOnlyOneIdenter() {
-		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = dokDistKanalRequestBuilder(ONLY_ONE_MOTTAKERID).build();
@@ -109,7 +111,6 @@ public class DokDistKanalIT extends AbstractIT {
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
-
 
 	@Test
 	public void shouldGetDistribusjonskanalPrintForOrganisasjon() {
@@ -156,6 +157,24 @@ public class DokDistKanalIT extends AbstractIT {
 
 		assertThat(getLogMessage(logWatcher)).contains("Mottaker er av typen SAMHANDLER_UTL_ORG");
 	}
+
+	@Test
+	public void shouldGetDPVTWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsNotFromInfotrygd() {
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
+				.mottakerId(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.brukerId(SKATTEETATEN_ORGNUMMER)
+				.tema("PEN")
+				.build();
+
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DPVT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("er en gyldig altinn-serviceowner notifikasjonsmottaker");
+	}
+
 
 	@Test
 	public void shouldSetKanalPrintNaarSamhandlerUkjent() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
@@ -289,7 +308,6 @@ public class DokDistKanalIT extends AbstractIT {
 				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
 		assertEquals(BAD_REQUEST, e.getStatusCode());
 		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt. Fikk tema=null\",\"path\":\"/rest/bestemKanal");
-
 	}
 
 	@Test
@@ -348,11 +366,11 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	private void stubGetAltinn(String path) {
-		stubFor(get(urlMatching("/altinn/url"))
+		stubFor(get("/altinn/serviceowner/notifications/validaterecipient?organizationNumber=974761076&serviceCode=123456&serviceEditionCode=1")
 				.willReturn(aResponse()
-						.withStatus(OK.value())
-						.withHeader(org.springframework.http.HttpHeaders.ACCEPT, MediaTypes.HAL_JSON_VALUE)
-						.withBody(classpathToString(path))));
+						.withHeader(CONTENT_TYPE, HAL_JSON_VALUE)
+						.withHeader(ACCEPT_ENCODING, "gzip")
+						.withBodyFile(path)));
 	}
 
 	private void stubPostPDL(String path) {
@@ -377,7 +395,6 @@ public class DokDistKanalIT extends AbstractIT {
 				.mottakerType(PERSON)
 				.brukerId(mottakerId)
 				.erArkivert(ER_ARKIVERT_TRUE)
-				.tema("PEN");
+				.tema(TEMA);
 	}
-
 }
