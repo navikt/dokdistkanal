@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.azure;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import no.nav.dokdistkanal.DokdistkanalProperties;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
@@ -69,10 +69,10 @@ public class AzureTokenConsumer implements TokenConsumer {
 		try {
 			HttpHeaders headers = createHeaders();
 			String form = "grant_type=client_credentials&scope=" + scope + "&client_id=" +
-					azureProperties.getClientId() + "&client_secret=" + azureProperties.getClientSecret();
+					azureProperties.getAppClientId() + "&client_secret=" + azureProperties.getAppClientSecret();
 			HttpEntity<String> requestEntity = new HttpEntity<>(form, headers);
 
-			return restTemplate.exchange(azureProperties.getTokenUrl(), POST, requestEntity, TokenResponse.class)
+			return restTemplate.exchange(azureProperties.getOpenidConfigTokenEndpoint(), POST, requestEntity, TokenResponse.class)
 					.getBody();
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			throw new AzureTokenException(String.format("Klarte ikke hente token fra Azure. Feilet med httpstatus=%s. Feilmelding=%s", e.getStatusCode(), e.getMessage()), e);

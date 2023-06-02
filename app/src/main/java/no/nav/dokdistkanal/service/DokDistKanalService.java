@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
+import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
+import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjon;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokkat.DokumentTypeInfoConsumer;
@@ -14,12 +16,7 @@ import no.nav.dokdistkanal.consumer.pdl.HentPersoninfo;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
-import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -27,6 +24,7 @@ import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
@@ -37,19 +35,18 @@ import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.validateInput;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.MDC.get;
 
-@Service
+@Slf4j
 @Component
 public class DokDistKanalService {
-	public static final Logger LOG = LoggerFactory.getLogger(DokDistKanalService.class);
 	// Fødselsnummer eller D-nummer i folkeregisteret
 	private static final Pattern FOLKEREGISTERIDENT_REGEX = Pattern.compile("[0-7]\\d{10}");
 	private static final String ONLY_ONES = "11111111111";
 
-	private static final String AARSOPPGAVE_DOKUMENTTYPEID_1 = "000053";
-	private static final String AARSOPPGAVE_DOKUMENTTYPEID_2 = "000077";
+	private static final Set<String> AARSOPPGAVE_DOKUMENTTYPE_ID = Set.of("000053", "000077");
 	public static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
@@ -57,25 +54,30 @@ public class DokDistKanalService {
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 	private final MeterRegistry registry;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
+	private final DokdistkanalValidator dokdistkanalValidator;
+	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
-	@Autowired
 	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 						DigitalKontaktinformasjon digitalKontaktinformasjon,
 						SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
 						MeterRegistry registry,
-						PdlGraphQLConsumer pdlGraphQLConsumer) {
+						PdlGraphQLConsumer pdlGraphQLConsumer,
+						DokdistkanalValidator dokdistkanalValidator,
+						AltinnServiceOwnerConsumer altinnServiceOwnerConsumer) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
 		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
 		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 		this.registry = registry;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
+		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
+		this.dokdistkanalValidator = dokdistkanalValidator;
 	}
 
 	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) {
 		validateInput(dokDistKanalRequest);
 		final String tema = dokDistKanalRequest.getTema();
 
-		if(BEGRENSET_INNSYN_TEMA.contains(tema)) {
+		if (BEGRENSET_INNSYN_TEMA.contains(tema)) {
 			return logAndReturn(PRINT, "Tema har begrenset innsyn", tema);
 		}
 
@@ -93,9 +95,19 @@ public class DokDistKanalService {
 		if (TRYGDERETTEN.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
 			return logAndReturn(TRYGDERETTEN, "Predefinert distribusjonskanal er Trygderetten", tema);
 		}
+		if (dokdistkanalValidator.isValidDPVTOrgNummer(dokDistKanalRequest)) {
+			if (dokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId(dokDistKanalRequest)) {
+				return logAndReturn(PRINT, format("Mottaker er av typen %s with infotrygd dokumentTypeId=%s", dokDistKanalRequest.getMottakerType().name()), tema);
+			}
+			ValidateRecipientResponse serviceOwnerValidReciepient = altinnServiceOwnerConsumer.isServiceOwnerValidReciepient(dokDistKanalRequest.getMottakerId());
 
+			if (dokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidReciepient)) {
+				return logAndReturn(DPVT, format("Mottaker er av typen %s og er en gyldig serviceowner notifikasjonsmottaker", dokDistKanalRequest.getMottakerType().name()), tema);
+			}
+
+		}
 		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
-			return logAndReturn(PRINT, String.format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()), tema);
+			return logAndReturn(PRINT, format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()), tema);
 		} else {
 			boolean isFolkeregisterident = FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
 			HentPersoninfo hentPersoninfo = isFolkeregisterident ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), tema) : null;
@@ -159,7 +171,7 @@ public class DokDistKanalService {
 	}
 
 	private boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
-		return ((AARSOPPGAVE_DOKUMENTTYPEID_1).equals(dokumentTypeId) || (AARSOPPGAVE_DOKUMENTTYPEID_2).equals(dokumentTypeId));
+		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason, String tema) {
@@ -170,30 +182,8 @@ public class DokDistKanalService {
 				.tag("event", kanalKode.name())
 				.register(registry).increment();
 
-		LOG.info(format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: %s", consumerId(), tema, kanalKode.name(), reason));
+		log.info(format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: %s", consumerId(), tema, kanalKode.name(), reason));
 		return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
-	}
-
-	private void validateInput(DokDistKanalRequest dokDistKanalRequest) {
-		assertNotNullOrEmpty("dokumentTypeId", dokDistKanalRequest.getDokumentTypeId());
-		assertNotNullOrEmpty("mottakerId", dokDistKanalRequest.getMottakerId());
-		assertNotNullOrEmpty("mottakerType", dokDistKanalRequest.getMottakerType() == null ?
-				null : dokDistKanalRequest.getMottakerType().name());
-		assertNotNullOrEmpty("brukerId", dokDistKanalRequest.getBrukerId());
-		assertNotNull("erArkivert", dokDistKanalRequest.getErArkivert());
-		assertNotNullOrEmpty("tema", dokDistKanalRequest.getTema());
-	}
-
-	private static void assertNotNullOrEmpty(String fieldName, String value) {
-		if (isEmpty(value)) {
-			throw new UgyldigInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
-		}
-	}
-
-	private static void assertNotNull(String fieldName, Boolean value) {
-		if (value == null) {
-			throw new UgyldigInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
-		}
 	}
 
 	private String consumerId() {

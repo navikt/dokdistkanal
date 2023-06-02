@@ -25,6 +25,8 @@ public class LocalCacheConfig {
 	public static final Duration STS_CACHE_EXPIRATION_TIME = Duration.ofMinutes(50);
 	public static final String AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE = "AZUREAD";
 	public static final String STS_CACHE = "STS";
+	public static final String MASKINPORTEN_CACHE = "maskinportenCache";
+
 
 	@Bean
 	@Primary
@@ -45,6 +47,9 @@ public class LocalCacheConfig {
 				new CaffeineCache(AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE, Caffeine.newBuilder()
 						.expireAfterWrite(50, MINUTES)
 						.maximumSize(1)
+						.build()),
+				new CaffeineCache(MASKINPORTEN_CACHE, Caffeine.newBuilder()
+						.expireAfterWrite(50, MINUTES)
 						.build())
 		));
 		return cacheManager;

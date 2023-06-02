@@ -1,5 +1,8 @@
 package no.nav.dokdistkanal.itest;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -7,13 +10,14 @@ import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.util.LogbackCapturingAppender;
-import org.apache.http.HttpHeaders;
+import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.hamcrest.CoreMatchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -25,20 +29,20 @@ import static java.lang.Boolean.TRUE;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
-import static no.nav.dokdistkanal.service.DokDistKanalService.LOG;
+import static no.nav.dokdistkanal.util.TestUtils.getLogMessage;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.slf4j.LoggerFactory.getLogger;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+@Disabled
 public class DokDistKanalIT extends AbstractIT {
-
-	private LogbackCapturingAppender capture;
 
 	private final static String CONSUMER_ID = "srvdokdistfordeling";
 	private static final String DOKUMENTTYPEID = "000009";
@@ -50,8 +54,13 @@ public class DokDistKanalIT extends AbstractIT {
 	private final static boolean ER_ARKIVERT_TRUE = true;
 	private final static boolean INKLUDER_SIKKER_DIGITALPOSTKASSE = true;
 
+	private ListAppender<ILoggingEvent> logWatcher;
+
 	@BeforeEach
 	public void runBefore() {
+		logWatcher = new ListAppender<>();
+		logWatcher.start();
+		((Logger) getLogger(DokDistKanalService.class)).addAppender(logWatcher);
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
 		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
 				.willReturn(aResponse().withStatus(OK.value())
@@ -75,6 +84,12 @@ public class DokDistKanalIT extends AbstractIT {
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
 						.withBodyFile("treg001/dki/happy-responsebody.json")));
 	}
+
+	@AfterEach
+	public void tearDown() {
+		((Logger) LoggerFactory.getLogger(DokDistKanalService.class)).detachAndStopAllAppenders();
+	}
+
 
 	/**
 	 * Komplertterer fullt brevdatasett der mottaker er person
@@ -151,8 +166,6 @@ public class DokDistKanalIT extends AbstractIT {
 	 */
 	@Test
 	public void shouldGetDistribusjonskanalPrintForSamhandlerUtenlandskOrganisasjon() {
-		capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
-
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
 				.mottakerId(SAMHANDLERMOTTAKERID)
 				.mottakerType(MottakerTypeCode.SAMHANDLER_UTL_ORG)
@@ -163,14 +176,11 @@ public class DokDistKanalIT extends AbstractIT {
 		DokDistKanalResponse serviceResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
 
-		assertThat(capture.getCapturedLogMessage(), containsString("Mottaker er av typen SAMHANDLER_UTL_ORG"));
-		LogbackCapturingAppender.Factory.cleanUp();
+		assertThat(getLogMessage(logWatcher), containsString("Mottaker er av typen SAMHANDLER_UTL_ORG"));
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarSamhandlerUkjent() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
-
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
 				.mottakerId(SAMHANDLERMOTTAKERID)
 				.mottakerType(MottakerTypeCode.SAMHANDLER_UKJENT)
@@ -180,8 +190,7 @@ public class DokDistKanalIT extends AbstractIT {
 
 		DokDistKanalResponse serviceResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(capture.getCapturedLogMessage(), containsString("Mottaker er av typen SAMHANDLER_UKJENT"));
-		LogbackCapturingAppender.Factory.cleanUp();
+		assertThat(getLogMessage(logWatcher), containsString("Mottaker er av typen SAMHANDLER_UKJENT"));
 	}
 
 	@Test

@@ -1,6 +1,6 @@
 package no.nav.dokdistkanal.consumer.sts;
 
-import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.sts.to.StsResponseTo;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.StsTechnicalException;
@@ -16,8 +16,8 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.STS_CACHE;
-import static no.nav.dokdistkanal.constants.RetryConstants.DELAY_SHORT;
-import static no.nav.dokdistkanal.constants.RetryConstants.MULTIPLIER_SHORT;
+import static no.nav.dokdistkanal.constants.DomainConstants.DELAY_SHORT;
+import static no.nav.dokdistkanal.constants.DomainConstants.MULTIPLIER_SHORT;
 
 @Component
 public class StsRestConsumer {
@@ -27,12 +27,12 @@ public class StsRestConsumer {
 
 	public StsRestConsumer(@Value("${security-token-service-token.url}") String stsUrl,
 						   RestTemplateBuilder restTemplateBuilder,
-						   final ServiceuserAlias serviceuserAlias) {
+						   final DokdistkanalProperties dokdistkanalProperties) {
 		this.stsUrl = stsUrl;
 		this.restTemplate = restTemplateBuilder
 				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
-				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
+				.basicAuthentication(dokdistkanalProperties.getServiceuser().getUsername(), dokdistkanalProperties.getServiceuser().getPassword())
 				.build();
 	}
 

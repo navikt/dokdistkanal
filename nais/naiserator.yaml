@@ -7,16 +7,18 @@ metadata:
     team: teamdokumenthandtering
 spec:
   env:
-    - name: AZURE_APP_TOKEN_URL
-      value: {{AZURE_APP_TOKEN_URL}}
     - name: DOKDISTKANAL_PROXY_HOST
       value: {{DOKDISTKANAL_PROXY_HOST}}
     - name: DOKDISTKANAL_PROXY_PORT
       value: "{{DOKDISTKANAL_PROXY_PORT}}"
     - name: DOKUMENTTYPEINFO_URL
       value: {{ DOKUMENTTYPEINFO_URL }}
-    - name: HENTPAALOGGINGSNIVAA_V1_URL
-      value: {{ HENTPAALOGGINGSNIVAA_V1_URL }}
+    - name: DOKDISTKANAL_SIKKERHETSNIVAA_URL
+      value: {{ DOKDISTKANAL_SIKKERHETSNIVAA_URL }}
+    - name: DOKDISTKANAL_ALTINN_URL
+      value: {{ DOKDISTKANAL_ALTINN_URL }}
+    - name: DOKDISTKANAL_ALTINN_API_KEY
+      value: {{ DOKDISTKANAL_ALTINN_API_KEY }}
     - name: SECURITY_TOKEN_SERVICE_TOKEN_URL
       value: {{ SECURITY_TOKEN_SERVICE_TOKEN_URL }}
     - name: DIGDIR_KRR_PROXY_URL
@@ -33,7 +35,7 @@ spec:
   ingresses:
     {{#each INGRESSES}}
        - {{ this }}
-    {{/each}}
+           {{/each}}
   liveness:
     path: /actuator/health/liveness
     port: 8080
@@ -66,3 +68,9 @@ spec:
   azure:
     application:
       enabled: true
+  maskinporten:
+    enabled: true
+    scopes:
+      consumes:
+        - name: altinn:serviceowner/notifications.read
+  webproxy: true

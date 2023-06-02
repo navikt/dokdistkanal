@@ -9,7 +9,6 @@ import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException
 import no.nav.dokdistkanal.exceptions.functional.DokkatFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokkatTechnicalException;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -27,14 +26,10 @@ import java.time.Duration;
 
 import static java.lang.Boolean.FALSE;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
-import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
-import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
+import static no.nav.dokdistkanal.common.FunctionalUtils.createHeaders;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Service
 @Slf4j
@@ -70,7 +65,8 @@ public class DokumentTypeInfoConsumer {
 	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
 	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
-		HttpHeaders headers = createHeaders();
+		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dokmetScope);
+		HttpHeaders headers = createHeaders(clientCredentialToken.getAccess_token());
 
 		try {
 			HttpEntity<String> request = new HttpEntity(headers);
@@ -82,7 +78,7 @@ public class DokumentTypeInfoConsumer {
 			}
 			throw new DokkatFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
 		} catch (HttpServerErrorException e) {
-			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getRawStatusCode(), e);
+			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getStatusCode(), e);
 		} catch (Exception e) {
 			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med message=" + e.getMessage(), e);
 		}
@@ -116,15 +112,5 @@ public class DokumentTypeInfoConsumer {
 									distribusjonVarselTo -> SDP.toString()
 											.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();
 		}
-	}
-
-	private HttpHeaders createHeaders() {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dokmetScope);
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(APPLICATION_JSON);
-		headers.setBearerAuth(clientCredentialToken.getAccess_token());
-		headers.add(NAV_CONSUMER_ID, APP_NAME);
-		headers.add(NAV_CALL_ID, MDC.get(CALL_ID));
-		return headers;
 	}
 }
