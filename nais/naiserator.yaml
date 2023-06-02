@@ -17,12 +17,6 @@ spec:
       value: {{ DOKDISTKANAL_SIKKERHETSNIVAA_URL }}
     - name: DOKDISTKANAL_ALTINN_URL
       value: {{ DOKDISTKANAL_ALTINN_URL }}
-    - name: DOKDISTKANAL_ALTINN_API_KEY
-      value: {{ DOKDISTKANAL_ALTINN_API_KEY }}
-    - name: DOKDISTKANAL_ALTINN_SERVICE_CODE
-      value: {{ DOKDISTKANAL_ALTINN_SERVICE_CODE }}
-    - name: DOKDISTKANAL_ALTINN_SERVICE_EDITION_CODE
-      value: {{ DOKDISTKANAL_SERVICE_EDITION_CODE }}
     - name: SECURITY_TOKEN_SERVICE_TOKEN_URL
       value: {{ SECURITY_TOKEN_SERVICE_TOKEN_URL }}
     - name: DIGDIR_KRR_PROXY_URL
@@ -69,6 +63,8 @@ spec:
         mountPath: /var/run/secrets/nais.io/srvdokdistkanal
       - kvPath: {{APPDYNAMICS}}
         mountPath: /var/run/secrets/nais.io/appdynamics
+      - kvPath: {{ DOKDISTKANAL_VAULT }}
+        mountPath: /var/run/secrets/nais.io/vault
   azure:
     application:
       enabled: true

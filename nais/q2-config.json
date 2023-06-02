@@ -15,6 +15,7 @@
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
   "PDL_URL": "https://pdl-api.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
+  "DOKDISTKANAL_VAULT":"/kv/preprod/fss/dokdistkanal/teamdokumenthandtering",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
   "DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet/.default",
