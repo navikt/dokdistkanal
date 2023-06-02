@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Import;
 		DokdistkanalProperties.class,
 		MaskinportenProperties.class
 })
-@Import(value = {RestWebMvcConfig.class})
+@Import(RestWebMvcConfig.class)
 @Configuration
 public class ApplicationConfig {
 
