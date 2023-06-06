@@ -175,6 +175,39 @@ public class DokDistKanalIT extends AbstractIT {
 		assertThat(getLogMessage(logWatcher)).contains("er en gyldig altinn-serviceowner notifikasjonsmottaker");
 	}
 
+	@Test
+	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndResponseFromAltinnContainsFalse() {
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(INFOTRYGD_DOKUMENTTYPE_ID)
+				.mottakerId(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.brukerId(SKATTEETATEN_ORGNUMMER)
+				.tema("PEN")
+				.build();
+
+		stubGetAltinn("altinn/serviceowner_with_false_response.json");
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("(Tema=PEN) til PRINT: Mottaker er av typen ORGANISASJON");
+	}
+
+	@Test
+	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsFromInfotrygd() {
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
+				.mottakerId(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.brukerId(SKATTEETATEN_ORGNUMMER)
+				.tema("PEN")
+				.build();
+
+		stubGetAltinn("altinn/serviceowner_with_false_response.json");
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("til PRINT: Mottaker er av typen ORGANISASJON");
+	}
 
 	@Test
 	public void shouldSetKanalPrintNaarSamhandlerUkjent() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
