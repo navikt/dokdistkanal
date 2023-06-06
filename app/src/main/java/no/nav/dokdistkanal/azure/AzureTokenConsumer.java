@@ -3,11 +3,7 @@ package no.nav.dokdistkanal.azure;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.core5.http.HttpHost;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
@@ -22,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.util.Collections;
 
+import static no.nav.dokdistkanal.common.FunctionalUtils.createHttpClient;
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.AZURE_CLIENT_CREDENTIAL_TOKEN_CACHE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
@@ -39,27 +36,11 @@ public class AzureTokenConsumer implements TokenConsumer {
 							  RestTemplateBuilder restTemplateBuilder,
 							  HttpClientConnectionManager httpClientConnectionManager,
 							  DokdistkanalProperties dokdistkanalProperties) {
-		final CloseableHttpClient httpClient = createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager);
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3))
-				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager)))
 				.build();
 		this.azureProperties = azureProperties;
-	}
-
-	private CloseableHttpClient createHttpClient(DokdistkanalProperties.Proxy proxy,
-												 HttpClientConnectionManager httpClientConnectionManager) {
-		if (proxy.isSet()) {
-			final HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort());
-			return HttpClients.custom()
-					.setRoutePlanner(new DefaultProxyRoutePlanner(proxyHost))
-					.setConnectionManager(httpClientConnectionManager)
-					.build();
-		} else {
-			return HttpClients.custom()
-					.setConnectionManager(httpClientConnectionManager)
-					.build();
-		}
 	}
 
 	@Retry(name = AZURE_TOKEN_INSTANCE)

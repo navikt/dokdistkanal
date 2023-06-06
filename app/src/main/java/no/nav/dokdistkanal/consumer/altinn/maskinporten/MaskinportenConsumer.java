@@ -4,9 +4,11 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import static java.util.Date.from;
+import static no.nav.dokdistkanal.common.FunctionalUtils.createHttpClient;
 import static no.nav.dokdistkanal.common.FunctionalUtils.getOrCreateCallId;
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.MASKINPORTEN_CACHE;
 import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
@@ -50,11 +54,14 @@ public class MaskinportenConsumer {
 
 	@Autowired
 	public MaskinportenConsumer(RestTemplateBuilder restTemplateBuilder,
+								DokdistkanalProperties dokdistkanalProperties,
+								HttpClientConnectionManager httpClientConnectionManager,
 								MaskinportenProperties maskinportenProperties) {
 		this.maskinportenProperties = maskinportenProperties;
 		this.restTemplate = restTemplateBuilder
-				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(
+						createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager)))
 				.build();
 	}
 
@@ -65,7 +72,7 @@ public class MaskinportenConsumer {
 		attrMap.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
 		attrMap.add("assertion", generateJWT());
 
-		HttpEntity httpEntity = new HttpEntity<>(attrMap, headers());
+		HttpEntity<LinkedMultiValueMap<String, String>> httpEntity = new HttpEntity<>(attrMap, headers());
 
 		try {
 			ResponseEntity<OidcTokenResponse> tokenResponse = restTemplate.exchange(maskinportenProperties.getTokenEndpoint(), HttpMethod.POST, httpEntity, OidcTokenResponse.class);

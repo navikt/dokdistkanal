@@ -5,11 +5,13 @@ import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.slf4j.MDC;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 
+import static no.nav.dokdistkanal.common.FunctionalUtils.createHttpClient;
 import static no.nav.dokdistkanal.common.FunctionalUtils.getOrCreateCallId;
 import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
@@ -38,12 +41,13 @@ public class AltinnServiceOwnerConsumer {
 
 	public AltinnServiceOwnerConsumer(DokdistkanalProperties dokdistkanalProperties,
 									  RestTemplateBuilder restTemplateBuilder,
+									  HttpClientConnectionManager httpClientConnectionManager,
 									  MaskinportenConsumer maskinportenConsumer) {
 		this.maskinportenConsumer = maskinportenConsumer;
 		this.dokdistkanalProperties = dokdistkanalProperties;
 		this.restTemplate = restTemplateBuilder
-				.setReadTimeout(Duration.ofSeconds(20))
 				.setConnectTimeout(Duration.ofSeconds(5))
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager)))
 				.build();
 	}
 
@@ -57,6 +61,7 @@ public class AltinnServiceOwnerConsumer {
 				.build().toString();
 
 		HttpEntity httpEntity = new HttpEntity<>(headers());
+
 		try {
 			ResponseEntity<ValidateRecipientResponse> response = restTemplate.exchange(altinnUrl, GET, httpEntity, ValidateRecipientResponse.class);
 			return response.getBody();
