@@ -3,9 +3,6 @@ package no.nav.dokdistkanal.rest;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
-import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
-import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,23 +34,9 @@ public class DokDistKanalRestController {
 	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request,
 											@RequestHeader(value = NAV_CALLID, required = false) String navCallid,
 											@RequestHeader(value = CALL_ID, required = false) String dokCallId) {
-		try {
-			MDC.put(CALL_ID, getOrCreateCallId(navCallid, dokCallId));
-			return dokDistKanalService.velgKanal(request);
-		} catch (DokDistKanalFunctionalException e) {
-			// ingen stacktrace på funksjonelle feil
-			log.warn("Funksjonell feil med melding: {}", e.getMessage(), e);
-			throw e;
-		} catch (DokDistKanalTechnicalException e) {
-			log.error("Teknisk feil med melding: {}", e.getMessage(), e);
-			throw e;
-		} catch (DokDistKanalSecurityException e) {
-			log.warn("Teknisk sikkerhetsfeil med melding: {}", e.getMessage(), e);
-			throw e;
-		} catch (Exception e) {
-			log.error("Ukjent teknisk feil.", e);
-			throw e;
-		}
+
+		MDC.put(CALL_ID, getOrCreateCallId(navCallid, dokCallId));
+		return dokDistKanalService.velgKanal(request);
 	}
 
 	private String getOrCreateCallId(final String navCallid, final String dokCallId) {

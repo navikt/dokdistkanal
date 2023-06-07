@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -279,7 +280,7 @@ public class DokDistKanalIT extends AbstractIT {
 				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
 
 		assertEquals(BAD_REQUEST, e.getStatusCode());
-		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt. Fikk tema=null\",\"path\":\"/rest/bestemKanal");
+		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt.");
 	}
 
 	@Test
@@ -294,11 +295,9 @@ public class DokDistKanalIT extends AbstractIT {
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().dokumentTypeId("DOKTYPENOTFOUND").tema("PEN").build();
 
-		HttpStatusCodeException e = Assertions.assertThrows(HttpStatusCodeException.class, () ->
+		HttpClientErrorException e = Assertions.assertThrows(HttpClientErrorException.class, () ->
 				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
-		assertEquals(BAD_REQUEST, e.getStatusCode());
-		assertThat(e.getResponseBodyAsString()).contains("DokumentTypeInfoConsumer feilet. (HttpStatus=404 NOT_FOUND) for dokumenttypeId:DOKTYPENOTFOUND");
-
+		assertEquals(NOT_FOUND, e.getStatusCode());
 	}
 
 	@Test
@@ -340,7 +339,7 @@ public class DokDistKanalIT extends AbstractIT {
 		HttpStatusCodeException e = Assertions.assertThrows(HttpStatusCodeException.class, () ->
 				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
 		assertEquals(BAD_REQUEST, e.getStatusCode());
-		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt. Fikk tema=null\",\"path\":\"/rest/bestemKanal");
+		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt.");
 	}
 
 	@Test

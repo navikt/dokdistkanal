@@ -97,9 +97,9 @@ public class DokDistKanalService {
 		}
 		if (dokdistkanalValidator.isValidDPVTOrgNummer(dokDistKanalRequest)) {
 			if (dokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId(dokDistKanalRequest)) {
-				return logAndReturn(PRINT, format("Mottaker er av typen %s with infotrygd dokumentTypeId=%s", dokDistKanalRequest.getMottakerType().name(), dokDistKanalRequest.getDokumentTypeId()), tema);
+				return logAndReturn(PRINT, format("Mottaker er av typen %s med infotrygd dokumentTypeId=%s", dokDistKanalRequest.getMottakerType().name(), dokDistKanalRequest.getDokumentTypeId()), tema);
 			}
-			ValidateRecipientResponse serviceOwnerValidReciepient = altinnServiceOwnerConsumer.isServiceOwnerValidReciepient(dokDistKanalRequest.getMottakerId());
+			ValidateRecipientResponse serviceOwnerValidReciepient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(dokDistKanalRequest.getMottakerId());
 
 			if (dokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidReciepient)) {
 				return logAndReturn(DPVT, format("Mottaker er av typen %s og er en gyldig altinn-serviceowner notifikasjonsmottaker", dokDistKanalRequest.getMottakerType().name()), tema);

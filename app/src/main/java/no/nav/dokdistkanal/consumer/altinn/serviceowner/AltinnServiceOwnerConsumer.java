@@ -29,11 +29,13 @@ import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON_VALUE;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Component
 public class AltinnServiceOwnerConsumer {
 
 	private static final String SERVICEOWNER_PATH = "/serviceowner/notifications/validaterecipient";
+	private static final String ALTINN_API_KEY = "ApiKey";
 
 	private final MaskinportenConsumer maskinportenConsumer;
 	private final DokdistkanalProperties dokdistkanalProperties;
@@ -52,7 +54,7 @@ public class AltinnServiceOwnerConsumer {
 	}
 
 	@Retryable(retryFor = DokDistKanalTechnicalException.class, backoff = @Backoff(delay = 200))
-	public ValidateRecipientResponse isServiceOwnerValidReciepient(String orgNummer) {
+	public ValidateRecipientResponse isServiceOwnerValidRecipient(String orgNummer) {
 		String altinnUrl = UriComponentsBuilder.fromUriString(dokdistkanalProperties.getAltinn().getUrl())
 				.path(SERVICEOWNER_PATH)
 				.queryParam("organizationNumber", orgNummer)
@@ -68,6 +70,9 @@ public class AltinnServiceOwnerConsumer {
 		} catch (HttpClientErrorException err) {
 			throw new AltinnServiceOwnerFunctionalException(err.getMessage(), err);
 		} catch (HttpServerErrorException err) {
+			if (FORBIDDEN == err.getStatusCode()) {
+				throw new AltinnServiceOwnerFunctionalException(err.getMessage(), err);
+			}
 			throw new AltinnServiceOwnerTechnicalException(err.getMessage(), err);
 		}
 	}
@@ -76,7 +81,7 @@ public class AltinnServiceOwnerConsumer {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(ACCEPT, HAL_JSON_VALUE);
 		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken());
-		headers.set("ApiKey", dokdistkanalProperties.getAltinn().getApiKey());
+		headers.set(ALTINN_API_KEY, dokdistkanalProperties.getAltinn().getApiKey());
 		headers.set(NAV_CALL_ID, getOrCreateCallId(MDC.get(CALL_ID)));
 		return headers;
 	}
