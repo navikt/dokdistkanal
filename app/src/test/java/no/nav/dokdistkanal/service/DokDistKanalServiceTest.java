@@ -22,7 +22,6 @@ import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.util.TestUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +43,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.service.DokDistKanalService.BEGRENSET_INNSYN_TEMA;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -77,7 +77,6 @@ public class DokDistKanalServiceTest {
 	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer = mock(SikkerhetsnivaaConsumer.class);
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer = mock(AltinnServiceOwnerConsumer.class);
-	private final DokdistkanalValidator validator = new DokdistkanalValidator();
 	private DokDistKanalService service;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer = mock(PdlGraphQLConsumer.class);
 	private final MeterRegistry registry = new SimpleMeterRegistry();
@@ -89,7 +88,7 @@ public class DokDistKanalServiceTest {
 		((Logger) getLogger(DokDistKanalService.class)).addAppender(logWatcher);
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
 		service = new DokDistKanalService(dokumentTypeInfoConsumer, digitalKontaktinformasjonConsumer, sikkerhetsnivaaConsumer,
-				registry, pdlGraphQLConsumer, validator, altinnServiceOwnerConsumer);
+				registry, pdlGraphQLConsumer, altinnServiceOwnerConsumer);
 	}
 
 	@AfterEach
@@ -102,7 +101,7 @@ public class DokDistKanalServiceTest {
 	public void shouldSendTilPrintNaarTemaBegrensetInnsyn(String tema) {
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().tema(tema).build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(getLogMessage()).contains("til PRINT: Tema har begrenset innsyn");
+		assertThat(getLogMessage()).contains("til PRINT: Tema har begrenset innsyn");
 
 	}
 
@@ -137,7 +136,7 @@ public class DokDistKanalServiceTest {
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(INGEN_DISTRIBUSJON, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, INGEN_DISTRIBUSJON, TEMA) + "Predefinert distribusjonskanal er Ingen Distribusjon");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, INGEN_DISTRIBUSJON, TEMA) + "Predefinert distribusjonskanal er Ingen Distribusjon");
 	}
 
 	@Test
@@ -156,7 +155,7 @@ public class DokDistKanalServiceTest {
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().brukerId(BRUKERID)
 				.mottakerType(MottakerTypeCode.ORGANISASJON).mottakerId(BRUKERID).build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Mottaker er av typen ORGANISASJON");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Mottaker er av typen ORGANISASJON");
 
 	}
 
@@ -168,7 +167,7 @@ public class DokDistKanalServiceTest {
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().mottakerType(MottakerTypeCode.SAMHANDLER_HPR)
 				.build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Mottaker er av typen SAMHANDLER_HPR");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Mottaker er av typen SAMHANDLER_HPR");
 
 	}
 
@@ -181,7 +180,7 @@ public class DokDistKanalServiceTest {
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Finner ikke personen i PDL");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Finner ikke personen i PDL");
 
 	}
 
@@ -193,7 +192,7 @@ public class DokDistKanalServiceTest {
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personen er død");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personen er død");
 
 	}
 
@@ -208,7 +207,7 @@ public class DokDistKanalServiceTest {
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personens alder er ukjent");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personens alder er ukjent");
 
 	}
 
@@ -223,7 +222,7 @@ public class DokDistKanalServiceTest {
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personen må være minst 18 år gammel");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personen må være minst 18 år gammel");
 
 	}
 
@@ -239,7 +238,7 @@ public class DokDistKanalServiceTest {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Finner ikke Digital kontaktinformasjon");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Finner ikke Digital kontaktinformasjon");
 
 	}
 
@@ -261,7 +260,7 @@ public class DokDistKanalServiceTest {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker har reservert seg");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker har reservert seg");
 
 	}
 
@@ -285,7 +284,7 @@ public class DokDistKanalServiceTest {
 				.build());
 
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker og mottaker er forskjellige");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker og mottaker er forskjellige");
 
 	}
 
@@ -310,7 +309,7 @@ public class DokDistKanalServiceTest {
 				.build());
 
 		assertEquals(DistribusjonKanalCode.DITT_NAV, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, DITT_NAV, TEMA) + BRUKER_LOGGET);
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, DITT_NAV, TEMA) + BRUKER_LOGGET);
 
 	}
 
@@ -332,7 +331,7 @@ public class DokDistKanalServiceTest {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(DistribusjonKanalCode.SDP, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, SDP, TEMA) + "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, SDP, TEMA) + "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.");
 
 	}
 
@@ -351,7 +350,7 @@ public class DokDistKanalServiceTest {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Epostadresse og mobiltelefon - feltene er tomme");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Epostadresse og mobiltelefon - feltene er tomme");
 	}
 
 	@Test
@@ -372,7 +371,7 @@ public class DokDistKanalServiceTest {
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi");
 	}
 
 	@Test
@@ -395,7 +394,7 @@ public class DokDistKanalServiceTest {
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(DistribusjonKanalCode.DITT_NAV, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, DITT_NAV, TEMA) + BRUKER_LOGGET);
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, DITT_NAV, TEMA) + BRUKER_LOGGET);
 
 	}
 
@@ -419,7 +418,7 @@ public class DokDistKanalServiceTest {
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + BRUKER_IKKE_LOGGET);
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + BRUKER_IKKE_LOGGET);
 
 	}
 
@@ -443,7 +442,7 @@ public class DokDistKanalServiceTest {
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Paaloggingsnivaa ikke tilgjengelig");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Paaloggingsnivaa ikke tilgjengelig");
 
 	}
 
@@ -468,7 +467,7 @@ public class DokDistKanalServiceTest {
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().erArkivert(ER_ARKIVERT_FALSE)
 				.build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		Assertions.assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Dokumentet er ikke arkivert");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Dokumentet er ikke arkivert");
 
 	}
 

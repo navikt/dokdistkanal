@@ -30,7 +30,7 @@ public class DokDistKanalRestController {
 		this.dokDistKanalService = dokDistKanalService;
 	}
 
-	@PostMapping(value = "/bestemKanal", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+	@PostMapping(value = BESTEM_KANAL_URI_PATH, consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
 	public DokDistKanalResponse bestemKanal(@RequestBody DokDistKanalRequest request,
 											@RequestHeader(value = NAV_CALLID, required = false) String navCallid,
 											@RequestHeader(value = CALL_ID, required = false) String dokCallId) {

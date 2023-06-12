@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,14 +26,10 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import static java.util.Date.from;
-import static no.nav.dokdistkanal.common.FunctionalUtils.getOrCreateCallId;
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.MASKINPORTEN_CACHE;
 import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
 import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
-import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
-import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.asIso6523;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWT;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
@@ -89,7 +84,7 @@ public class MaskinportenConsumer {
 				.claim("scope", getCurrentScopes())
 				.claim("consumer", Consumer.builder()
 						.authority(ISO_6523_ACTORID_UPIS.getValue())
-						.id(asIso6523(NAV_ORGNUMMER))
+						.id(NAV_ORGNUMMER)
 						.build())
 				.jwtID(UUID.randomUUID().toString())
 				.issueTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant()))
@@ -110,7 +105,6 @@ public class MaskinportenConsumer {
 	private HttpHeaders headers() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(APPLICATION_FORM_URLENCODED);
-		headers.set(NAV_CALL_ID, getOrCreateCallId(MDC.get(CALL_ID)));
 		return headers;
 	}
 }

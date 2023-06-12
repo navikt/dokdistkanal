@@ -5,7 +5,6 @@ import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
-import org.slf4j.MDC;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,9 +19,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 
-import static no.nav.dokdistkanal.common.FunctionalUtils.getOrCreateCallId;
-import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON_VALUE;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpMethod.GET;
@@ -78,7 +74,6 @@ public class AltinnServiceOwnerConsumer {
 		headers.set(ACCEPT, HAL_JSON_VALUE);
 		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken());
 		headers.set(ALTINN_API_KEY, dokdistkanalProperties.getAltinn().getApiKey());
-		headers.set(NAV_CALL_ID, getOrCreateCallId(MDC.get(CALL_ID)));
 		return headers;
 	}
 }

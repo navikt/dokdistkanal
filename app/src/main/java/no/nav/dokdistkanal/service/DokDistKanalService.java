@@ -20,7 +20,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
@@ -32,21 +31,20 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
-import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrgNummer;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.validateInput;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.slf4j.MDC.get;
 
 @Slf4j
 @Component
 public class DokDistKanalService {
-	// Fødselsnummer eller D-nummer i folkeregisteret
-	private static final Pattern FOLKEREGISTERIDENT_REGEX = Pattern.compile("[0-7]\\d{10}");
-	private static final String ONLY_ONES = "11111111111";
 
-	private static final Set<String> AARSOPPGAVE_DOKUMENTTYPE_ID = Set.of("000053", "000077");
+	private static final String LOGGET_PAA = "logget på med nivaa4 de siste 18 mnd";
 	public static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
@@ -54,7 +52,6 @@ public class DokDistKanalService {
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 	private final MeterRegistry registry;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
-	private final DokdistkanalValidator dokdistkanalValidator;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
 	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
@@ -62,7 +59,6 @@ public class DokDistKanalService {
 						SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
 						MeterRegistry registry,
 						PdlGraphQLConsumer pdlGraphQLConsumer,
-						DokdistkanalValidator dokdistkanalValidator,
 						AltinnServiceOwnerConsumer altinnServiceOwnerConsumer) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
 		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
@@ -70,7 +66,6 @@ public class DokDistKanalService {
 		this.registry = registry;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
-		this.dokdistkanalValidator = dokdistkanalValidator;
 	}
 
 	public DokDistKanalResponse velgKanal(DokDistKanalRequest dokDistKanalRequest) {
@@ -95,83 +90,87 @@ public class DokDistKanalService {
 		if (TRYGDERETTEN.toString().equals(dokumentTypeInfoTo.getPredefinertDistKanal())) {
 			return logAndReturn(TRYGDERETTEN, "Predefinert distribusjonskanal er Trygderetten", tema);
 		}
-		if (dokdistkanalValidator.isValidDPVTOrgNummer(dokDistKanalRequest)) {
-			if (dokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId(dokDistKanalRequest)) {
+
+		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
+			return validerOrganisasjonAndVelgKanal(dokDistKanalRequest, tema);
+		}
+
+		return validerPersonAndVelgKanal(dokDistKanalRequest, tema, dokumentTypeInfoTo);
+	}
+
+
+	private DokDistKanalResponse validerOrganisasjonAndVelgKanal(DokDistKanalRequest dokDistKanalRequest, String tema) {
+		if (isValidDPVTOrgNummer(dokDistKanalRequest)) {
+			if (isOrgNummerWithInfotrygdDokumentTypeId(dokDistKanalRequest)) {
 				return logAndReturn(PRINT, format("Mottaker er av typen %s med infotrygd dokumentTypeId=%s", dokDistKanalRequest.getMottakerType().name(), dokDistKanalRequest.getDokumentTypeId()), tema);
 			}
 			ValidateRecipientResponse serviceOwnerValidReciepient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(dokDistKanalRequest.getMottakerId());
 
-			if (dokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidReciepient)) {
+			if (erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidReciepient)) {
 				return logAndReturn(DPVT, format("Mottaker er av typen %s og er en gyldig altinn-serviceowner notifikasjonsmottaker", dokDistKanalRequest.getMottakerType().name()), tema);
 			}
-
 		}
-		if (!PERSON.equals(dokDistKanalRequest.getMottakerType())) {
-			return logAndReturn(PRINT, format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()), tema);
-		} else {
-			boolean isFolkeregisterident = FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
-			HentPersoninfo hentPersoninfo = isFolkeregisterident ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), tema) : null;
-
-			if (hentPersoninfo == null) {
-				return logAndReturn(PRINT, "Finner ikke personen i PDL", tema);
-			}
-
-			if (hentPersoninfo.getDoedsdato() != null) {
-				return logAndReturn(PRINT, "Personen er død", tema);
-			}
-
-			if (hentPersoninfo.getFoedselsdato() == null) {
-				return logAndReturn(PRINT, "Personens alder er ukjent", tema);
-			}
-
-			if (LocalDate.now().minusYears(18).isBefore(hentPersoninfo.getFoedselsdato())) {
-				return logAndReturn(PRINT, "Personen må være minst 18 år gammel", tema);
-			}
-
-			DigitalKontaktinformasjonTo dki = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(dokDistKanalRequest
-					.getMottakerId(), true);
-			if (dki == null) {
-				return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon", tema);
-			}
-
-			if (dki.isReservasjon()) {
-				return logAndReturn(PRINT, "Bruker har reservert seg", tema);
-			}
-			if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
-				return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi", tema);
-			}
-			if (dki.verifyAddress()) {
-				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
-			}
-			if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
-				return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme", tema);
-			}
-
-			SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(dokDistKanalRequest.getMottakerId());
-			if (sikkerhetsnivaaTo == null) {
-				return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig", tema);
-			}
-
-			//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
-			if (!isDokumentTypeIdUsedForAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
-					.equals(dokDistKanalRequest.getBrukerId())) {
-				return logAndReturn(PRINT, "Bruker og mottaker er forskjellige", tema);
-			}
-
-			if (!dokDistKanalRequest.getErArkivert()) {
-				return logAndReturn(PRINT, "Dokumentet er ikke arkivert", tema);
-			}
-
-			if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {
-				return logAndReturn(DITT_NAV, "Bruker har logget på med nivaa4 de siste 18 mnd", tema);
-			}
-
-			return logAndReturn(PRINT, "Bruker har ikke logget på med nivaa4 de siste 18 mnd", tema);
-		}
+		return logAndReturn(PRINT, format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()), tema);
 	}
 
-	private boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
-		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
+	public DokDistKanalResponse validerPersonAndVelgKanal(DokDistKanalRequest dokDistKanalRequest, String tema, DokumentTypeInfoTo dokumentTypeInfoTo) {
+		HentPersoninfo hentPersoninfo = isFolkeregisterident(dokDistKanalRequest) ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), tema) : null;
+
+		if (hentPersoninfo == null) {
+			return logAndReturn(PRINT, "Finner ikke personen i PDL", tema);
+		}
+
+		if (hentPersoninfo.getDoedsdato() != null) {
+			return logAndReturn(PRINT, "Personen er død", tema);
+		}
+
+		if (hentPersoninfo.getFoedselsdato() == null) {
+			return logAndReturn(PRINT, "Personens alder er ukjent", tema);
+		}
+
+		if (LocalDate.now().minusYears(18).isBefore(hentPersoninfo.getFoedselsdato())) {
+			return logAndReturn(PRINT, "Personen må være minst 18 år gammel", tema);
+		}
+
+		DigitalKontaktinformasjonTo dki = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(dokDistKanalRequest
+				.getMottakerId(), true);
+		if (dki == null) {
+			return logAndReturn(PRINT, "Finner ikke Digital kontaktinformasjon", tema);
+		}
+
+		if (dki.isReservasjon()) {
+			return logAndReturn(PRINT, "Bruker har reservert seg", tema);
+		}
+		if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
+			return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi", tema);
+		}
+		if (dki.verifyAddress()) {
+			return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
+		}
+		if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
+			return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme", tema);
+		}
+
+		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
+		if (!isDokumentTypeIdUsedForAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
+				.equals(dokDistKanalRequest.getBrukerId())) {
+			return logAndReturn(PRINT, "Bruker og mottaker er forskjellige", tema);
+		}
+
+		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(dokDistKanalRequest.getMottakerId());
+		if (sikkerhetsnivaaTo == null) {
+			return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig", tema);
+		}
+
+		if (!dokDistKanalRequest.getErArkivert()) {
+			return logAndReturn(PRINT, "Dokumentet er ikke arkivert", tema);
+		}
+
+		if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {
+			return logAndReturn(DITT_NAV, "Bruker har " + LOGGET_PAA, tema);
+		}
+
+		return logAndReturn(PRINT, "Bruker har ikke " + LOGGET_PAA, tema);
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason, String tema) {
@@ -184,9 +183,5 @@ public class DokDistKanalService {
 
 		log.info(format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: %s", consumerId(), tema, kanalKode.name(), reason));
 		return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
-	}
-
-	private String consumerId() {
-		return isNotBlank(get(CONSUMER_ID)) ? get(CONSUMER_ID) : get(USER_ID);
 	}
 }

@@ -6,7 +6,7 @@ import java.util.TimeZone;
 public final class DomainConstants {
 
 	public static final String APP_NAME = "dokdistkanal";
-	public static final String NAV_ORGNUMMER = "889640782";
+	public static final String NAV_ORGNUMMER = "0192:889640782";
 	public static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_TIME_ZONE.toZoneId();
 

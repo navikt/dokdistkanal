@@ -3,6 +3,7 @@ package no.nav.dokdistkanal.itest;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -74,6 +75,8 @@ public class DokDistKanalIT extends AbstractIT {
 	@AfterEach
 	public void tearDown() {
 		((Logger) LoggerFactory.getLogger(DokDistKanalService.class)).detachAndStopAllAppenders();
+		logWatcher.stop();
+		WireMock.removeAllMappings();
 	}
 
 

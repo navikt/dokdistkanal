@@ -10,8 +10,8 @@ import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
+import static no.nav.dokdistkanal.rest.NavHeaders.NAV_CONSUMER_ID;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.MDC.put;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
