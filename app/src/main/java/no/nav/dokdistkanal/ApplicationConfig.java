@@ -5,9 +5,10 @@ import no.nav.dokdistkanal.config.RestWebMvcConfig;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpHost;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -24,9 +25,16 @@ import org.springframework.context.annotation.Import;
 @Configuration
 public class ApplicationConfig {
 
+	private final DokdistkanalProperties dokdistkanalProperties;
+
+	public ApplicationConfig(DokdistkanalProperties dokdistkanalProperties) {
+		this.dokdistkanalProperties = dokdistkanalProperties;
+	}
+
 	@Bean
 	HttpClient httpClient(HttpClientConnectionManager connectionManager) {
-		return HttpClients.custom()
+		return HttpClientBuilder.create()
+				.setProxy(new HttpHost(dokdistkanalProperties.getProxy().getHost(), dokdistkanalProperties.getProxy().getPort()))
 				.setConnectionManager(connectionManager)
 				.build();
 	}

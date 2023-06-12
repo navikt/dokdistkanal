@@ -63,8 +63,6 @@ spec:
         mountPath: /var/run/secrets/nais.io/srvdokdistkanal
       - kvPath: {{APPDYNAMICS}}
         mountPath: /var/run/secrets/nais.io/appdynamics
-      - kvPath: {{ DOKDISTKANAL_VAULT }}
-        mountPath: /var/run/secrets/nais.io/vault
   azure:
     application:
       enabled: true
