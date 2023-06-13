@@ -49,7 +49,6 @@ public class MaskinportenConsumer {
 		this.maskinportenProperties = maskinportenProperties;
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3L))
-				.setReadTimeout(Duration.ofSeconds(5L))
 				.build();
 	}
 
