@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -32,7 +33,7 @@ public class AzureTokenConsumer implements TokenConsumer {
 							  RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3))
-				.setReadTimeout(Duration.ofSeconds(5L))
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory())
 				.build();
 		this.azureProperties = azureProperties;
 	}

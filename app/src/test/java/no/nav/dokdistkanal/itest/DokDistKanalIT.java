@@ -31,13 +31,13 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
 import static no.nav.dokdistkanal.service.DokDistKanalServiceTest.TEMA;
 import static no.nav.dokdistkanal.util.TestUtils.classpathToString;
 import static no.nav.dokdistkanal.util.TestUtils.getLogMessage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.hateoas.MediaTypes.HAL_JSON_VALUE;
 import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -78,7 +78,6 @@ public class DokDistKanalIT extends AbstractIT {
 		logWatcher.stop();
 		WireMock.removeAllMappings();
 	}
-
 
 	/**
 	 * Komplertterer fullt brevdatasett der mottaker er person
@@ -231,7 +230,6 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldReturnPrintWhenPersonErDoed() {
 		//Stub web services:
 		stubPostPDL("pdl/pdl_doedperson_response.json");
-		;
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
@@ -300,7 +298,7 @@ public class DokDistKanalIT extends AbstractIT {
 
 		HttpClientErrorException e = Assertions.assertThrows(HttpClientErrorException.class, () ->
 				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
-		assertEquals(NOT_FOUND, e.getStatusCode());
+		assertEquals(BAD_REQUEST, e.getStatusCode());
 	}
 
 	@Test

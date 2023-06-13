@@ -19,7 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
 
-import static org.springframework.hateoas.MediaTypes.HAL_JSON_VALUE;
+import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -41,7 +41,6 @@ public class AltinnServiceOwnerConsumer {
 		this.dokdistkanalProperties = dokdistkanalProperties;
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3L))
-				.setReadTimeout(Duration.ofSeconds(5L))
 				.build();
 	}
 
