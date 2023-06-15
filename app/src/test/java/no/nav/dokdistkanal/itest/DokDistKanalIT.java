@@ -1,5 +1,9 @@
 package no.nav.dokdistkanal.itest;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
@@ -7,38 +11,41 @@ import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.util.LogbackCapturingAppender;
-import org.apache.http.HttpHeaders;
-import org.hamcrest.CoreMatchers;
+import no.nav.dokdistkanal.service.DokDistKanalService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static java.lang.Boolean.TRUE;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
-import static no.nav.dokdistkanal.service.DokDistKanalService.LOG;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-import static org.apache.http.entity.ContentType.APPLICATION_JSON;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
+import static no.nav.dokdistkanal.service.DokDistKanalServiceTest.TEMA;
+import static no.nav.dokdistkanal.util.TestUtils.classpathToString;
+import static no.nav.dokdistkanal.util.TestUtils.getLogMessage;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class DokDistKanalIT extends AbstractIT {
-
-	private LogbackCapturingAppender capture;
 
 	private final static String CONSUMER_ID = "srvdokdistfordeling";
 	private static final String DOKUMENTTYPEID = "000009";
@@ -49,31 +56,27 @@ public class DokDistKanalIT extends AbstractIT {
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
 	private final static boolean ER_ARKIVERT_TRUE = true;
 	private final static boolean INKLUDER_SIKKER_DIGITALPOSTKASSE = true;
+	private static final String ALTINN_HAPPY_FILE_PATH = "altinn/serviceowner_happy_response.json";
+	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
+	private static final String SKATTEETATEN_ORGNUMMER = "974761076";
+	private static final String INFOTRYGD_DOKUMENTTYPE_ID = "000044";
+
+	private ListAppender<ILoggingEvent> logWatcher;
 
 	@BeforeEach
 	public void runBefore() {
+		logWatcher = new ListAppender<>();
+		logWatcher.start();
+		((Logger) LoggerFactory.getLogger(DokDistKanalService.class)).addAppender(logWatcher);
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
-		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader("Content-Type", "application/json")
-						.withBodyFile("treg001/dokkat/happy-response.json")));
+		stubAllApi();
+	}
 
-		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader("Content-Type", "application/json")
-						.withBodyFile("treg001/paalogging/happy-response.json")));
-
-		stubFor(get(urlPathMatching("/STS"))
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-						.withBodyFile("felles/sts/stsResponse_happy.json")));
-
-		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
-		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
-		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-						.withBodyFile("treg001/dki/happy-responsebody.json")));
+	@AfterEach
+	public void tearDown() {
+		((Logger) LoggerFactory.getLogger(DokDistKanalService.class)).detachAndStopAllAppenders();
+		logWatcher.stop();
+		WireMock.removeAllMappings();
 	}
 
 	/**
@@ -81,22 +84,20 @@ public class DokDistKanalIT extends AbstractIT {
 	 */
 	@Test
 	public void shouldGetDistribusjonskanal() {
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
 	public void shouldReturnPrintForBOSTIdenter() {
-		DokDistKanalRequest request = dokDistKanalRequestBuilder(BOST_MOTTAKERID).build();
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(BOST_MOTTAKERID).build();
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
@@ -106,24 +107,22 @@ public class DokDistKanalIT extends AbstractIT {
 	 */
 	@Test
 	public void shouldReturnPrintForOnlyOneIdenter() {
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
 		DokDistKanalRequest request = dokDistKanalRequestBuilder(ONLY_ONE_MOTTAKERID).build();
 
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
-
 
 	@Test
 	public void shouldGetDistribusjonskanalPrintForOrganisasjon() {
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().mottakerId(ORGMOTTAKERID).tema("PEN")
 				.mottakerType(MottakerTypeCode.ORGANISASJON).brukerId(ORGMOTTAKERID).build();
 
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
@@ -139,9 +138,7 @@ public class DokDistKanalIT extends AbstractIT {
 				.brukerId(SAMHANDLERMOTTAKERID)
 				.tema("PEN")
 				.build();
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
@@ -151,8 +148,6 @@ public class DokDistKanalIT extends AbstractIT {
 	 */
 	@Test
 	public void shouldGetDistribusjonskanalPrintForSamhandlerUtenlandskOrganisasjon() {
-		capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
-
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
 				.mottakerId(SAMHANDLERMOTTAKERID)
 				.mottakerType(MottakerTypeCode.SAMHANDLER_UTL_ORG)
@@ -163,14 +158,62 @@ public class DokDistKanalIT extends AbstractIT {
 		DokDistKanalResponse serviceResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
 
-		assertThat(capture.getCapturedLogMessage(), containsString("Mottaker er av typen SAMHANDLER_UTL_ORG"));
-		LogbackCapturingAppender.Factory.cleanUp();
+		assertThat(getLogMessage(logWatcher)).contains("Mottaker er av typen SAMHANDLER_UTL_ORG");
+	}
+
+	@Test
+	public void shouldGetDPVTWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsNotFromInfotrygd() {
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
+				.mottakerId(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.brukerId(SKATTEETATEN_ORGNUMMER)
+				.tema("PEN")
+				.build();
+
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DPVT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("er en gyldig altinn-serviceowner notifikasjonsmottaker");
+	}
+
+	@Test
+	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndResponseFromAltinnContainsFalse() {
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(INFOTRYGD_DOKUMENTTYPE_ID)
+				.mottakerId(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.brukerId(SKATTEETATEN_ORGNUMMER)
+				.tema("PEN")
+				.build();
+
+		stubGetAltinn("altinn/serviceowner_with_false_response.json");
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("(Tema=PEN) til PRINT: Mottaker er av typen ORGANISASJON");
+	}
+
+	@Test
+	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsFromInfotrygd() {
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
+				.mottakerId(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.brukerId(SKATTEETATEN_ORGNUMMER)
+				.tema("PEN")
+				.build();
+
+		stubGetAltinn("altinn/serviceowner_with_false_response.json");
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("til PRINT: Mottaker er av typen ORGANISASJON");
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarSamhandlerUkjent() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		capture = LogbackCapturingAppender.Factory.weaveInto(LOG);
-
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
 				.mottakerId(SAMHANDLERMOTTAKERID)
 				.mottakerType(MottakerTypeCode.SAMHANDLER_UKJENT)
@@ -180,16 +223,13 @@ public class DokDistKanalIT extends AbstractIT {
 
 		DokDistKanalResponse serviceResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(capture.getCapturedLogMessage(), containsString("Mottaker er av typen SAMHANDLER_UKJENT"));
-		LogbackCapturingAppender.Factory.cleanUp();
+		assertThat(getLogMessage(logWatcher)).contains("Mottaker er av typen SAMHANDLER_UKJENT");
 	}
 
 	@Test
 	public void shouldReturnPrintWhenPersonErDoed() {
 		//Stub web services:
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_doedperson_response.json")));
+		stubPostPDL("pdl/pdl_doedperson_response.json");
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
@@ -200,9 +240,8 @@ public class DokDistKanalIT extends AbstractIT {
 	@Test
 	public void shouldReturnPrintWhenPersonNotFound() {
 		//Stub web services:
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_feil_response.json")));
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL("pdl/pdl_feil_response.json");
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
@@ -215,11 +254,10 @@ public class DokDistKanalIT extends AbstractIT {
 		//Stub web services:
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/dki/ugyldig-sertifikat-responsebody.json")));
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
@@ -234,18 +272,16 @@ public class DokDistKanalIT extends AbstractIT {
 				.willReturn(aResponse().withStatus(NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Could not find dokumenttypeId: DOKTYPENOTFOUND in repository")));
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
-		try {
-			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().dokumentTypeId("DOKTYPENOTFOUND").build();
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(BAD_REQUEST, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Ugyldig input: Feltet tema kan ikke være null eller tomt. Fikk tema=null\",\"path\":\"/rest/bestemKanal"));
-		}
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().dokumentTypeId("DOKTYPENOTFOUND").build();
+
+		HttpStatusCodeException e = Assertions.assertThrows(HttpStatusCodeException.class, () ->
+				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
+
+		assertEquals(BAD_REQUEST, e.getStatusCode());
+		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt.");
 	}
 
 	@Test
@@ -255,18 +291,14 @@ public class DokDistKanalIT extends AbstractIT {
 				.willReturn(aResponse().withStatus(NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Could not find dokumenttypeId: DOKTYPENOTFOUND in repository")));
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
-		try {
-			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().dokumentTypeId("DOKTYPENOTFOUND").tema("PEN").build();
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(BAD_REQUEST, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("DokumentTypeInfoConsumer feilet. (HttpStatus=404 NOT_FOUND) for dokumenttypeId:DOKTYPENOTFOUND"));
-		}
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().dokumentTypeId("DOKTYPENOTFOUND").tema("PEN").build();
+
+		HttpClientErrorException e = Assertions.assertThrows(HttpClientErrorException.class, () ->
+				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
+		assertEquals(BAD_REQUEST, e.getStatusCode());
 	}
 
 	@Test
@@ -274,11 +306,11 @@ public class DokDistKanalIT extends AbstractIT {
 		//Stub web services:
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/dki/feilmelding-responsebody.json")));
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
@@ -289,9 +321,9 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldReturnPrintWhenBrukerPdlFoedelsdatoNull() {
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_ingen_foedselsdato.json")));
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL("pdl/pdl_ok_ingen_foedselsdato.json");
+
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
@@ -301,17 +333,14 @@ public class DokDistKanalIT extends AbstractIT {
 		//Stub web services:
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(BAD_REQUEST.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())));
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)));
 
-		try {
-			DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().build();
 
-			restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-			assertFalse(TRUE);
-		} catch (HttpStatusCodeException e) {
-			assertEquals(BAD_REQUEST, e.getStatusCode());
-			assertThat(e.getResponseBodyAsString(), CoreMatchers.containsString("Ugyldig input: Feltet tema kan ikke være null eller tomt. Fikk tema=null\",\"path\":\"/rest/bestemKanal"));
-		}
+		HttpStatusCodeException e = Assertions.assertThrows(HttpStatusCodeException.class, () ->
+				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
+		assertEquals(BAD_REQUEST, e.getStatusCode());
+		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt.");
 	}
 
 	@Test
@@ -319,11 +348,10 @@ public class DokDistKanalIT extends AbstractIT {
 		//Stub web services:
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/dki/ditt-nav-responsebody.json")));
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
-				.withHeader(CONTENT_TYPE, APPLICATION_JSON.getMimeType())
-				.withBodyFile("pdl/pdl_ok_response.json")));
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
 				.willReturn(aResponse().withStatus(NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
@@ -332,6 +360,56 @@ public class DokDistKanalIT extends AbstractIT {
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+	}
+
+	private void stubAllApi() {
+		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
+				.willReturn(aResponse().withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("treg001/dokkat/happy-response.json")));
+
+		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
+				.willReturn(aResponse().withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("treg001/paalogging/happy-response.json")));
+
+		stubFor(get(urlPathMatching("/STS"))
+				.willReturn(aResponse().withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("felles/sts/stsResponse_happy.json")));
+
+		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
+		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
+		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
+				.willReturn(aResponse().withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("treg001/dki/happy-responsebody.json")));
+
+		stubFor(post(urlMatching("/maskinporten"))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBody(classpathToString("__files/altinn/maskinporten_happy_response.json"))));
+
+		stubFor(post("/azure_token")
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+						.withBodyFile("azure/token_response_dummy.json")));
+	}
+
+	private void stubGetAltinn(String path) {
+		stubFor(get("/altinn/serviceowner/notifications/validaterecipient?organizationNumber=974761076&serviceCode=123456&serviceEditionCode=1")
+				.willReturn(aResponse()
+						.withHeader(CONTENT_TYPE, HAL_JSON_VALUE)
+						.withHeader(ACCEPT_ENCODING, "gzip")
+						.withBodyFile(path)));
+	}
+
+	private void stubPostPDL(String path) {
+		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
+				.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.withBodyFile(path)));
 	}
 
 	public static DokDistKanalRequest.DokDistKanalRequestBuilder baseDokDistKanalRequestBuilder() {
@@ -350,7 +428,6 @@ public class DokDistKanalIT extends AbstractIT {
 				.mottakerType(PERSON)
 				.brukerId(mottakerId)
 				.erArkivert(ER_ARKIVERT_TRUE)
-				.tema("PEN");
+				.tema(TEMA);
 	}
-
 }

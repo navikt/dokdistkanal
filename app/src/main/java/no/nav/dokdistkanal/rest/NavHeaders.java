@@ -1,11 +1,9 @@
 package no.nav.dokdistkanal.rest;
 
-/**
- * @author Joakim Bjørnstad, Jbit AS
- */
-final class NavHeaders {
-	static final String NAV_CALLID = "Nav-Callid";
-	static final String CALL_ID = "callId";
+public final class NavHeaders {
+	public static final String NAV_CALLID = "Nav-Callid";
+	public static final String NAV_CONSUMER_ID = "Nav-Consumer-Id";
+	public static final String NAV_CALL_ID = "Nav-Call-Id";
 
 	private NavHeaders() {
 		//noop

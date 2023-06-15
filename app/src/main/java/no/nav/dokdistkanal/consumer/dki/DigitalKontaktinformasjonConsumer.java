@@ -11,7 +11,6 @@ import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2Func
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -27,11 +26,7 @@ import java.time.Duration;
 import java.util.List;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
-import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CALL_ID;
-import static no.nav.dokdistkanal.constants.MDCConstants.NAV_CONSUMER_ID;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static no.nav.dokdistkanal.common.FunctionalUtils.createHeaders;
 
 @Slf4j
 @Component
@@ -61,7 +56,8 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 
 	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
-		HttpHeaders headers = createHeaders();
+		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dkiScope);
+		HttpHeaders headers = createHeaders(clientCredentialToken.getAccess_token());
 
 		final String fnrTrimmed = personidentifikator.trim();
 		PostPersonerRequest postPersonRequest = PostPersonerRequest.builder().personidenter(List.of(fnrTrimmed)).build();
@@ -101,15 +97,4 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 			return response.getFeil().get(fnr);
 		}
 	}
-
-	private HttpHeaders createHeaders() {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dkiScope);
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(APPLICATION_JSON);
-		headers.setBearerAuth(clientCredentialToken.getAccess_token());
-		headers.add(NAV_CONSUMER_ID, APP_NAME);
-		headers.add(NAV_CALL_ID, MDC.get(CALL_ID));
-		return headers;
-	}
-
 }

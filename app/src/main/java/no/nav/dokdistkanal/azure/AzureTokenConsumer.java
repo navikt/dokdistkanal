@@ -2,12 +2,6 @@ package no.nav.dokdistkanal.azure;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import no.nav.dokdistkanal.DokdistkanalProperties;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.core5.http.HttpHost;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
@@ -36,30 +30,12 @@ public class AzureTokenConsumer implements TokenConsumer {
 	private final AzureProperties azureProperties;
 
 	public AzureTokenConsumer(AzureProperties azureProperties,
-							  RestTemplateBuilder restTemplateBuilder,
-							  HttpClientConnectionManager httpClientConnectionManager,
-							  DokdistkanalProperties dokdistkanalProperties) {
-		final CloseableHttpClient httpClient = createHttpClient(dokdistkanalProperties.getProxy(), httpClientConnectionManager);
+							  RestTemplateBuilder restTemplateBuilder) {
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3))
-				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory())
 				.build();
 		this.azureProperties = azureProperties;
-	}
-
-	private CloseableHttpClient createHttpClient(DokdistkanalProperties.Proxy proxy,
-												 HttpClientConnectionManager httpClientConnectionManager) {
-		if (proxy.isSet()) {
-			final HttpHost proxyHost = new HttpHost(proxy.getHost(), proxy.getPort());
-			return HttpClients.custom()
-					.setRoutePlanner(new DefaultProxyRoutePlanner(proxyHost))
-					.setConnectionManager(httpClientConnectionManager)
-					.build();
-		} else {
-			return HttpClients.custom()
-					.setConnectionManager(httpClientConnectionManager)
-					.build();
-		}
 	}
 
 	@Retry(name = AZURE_TOKEN_INSTANCE)
@@ -69,10 +45,10 @@ public class AzureTokenConsumer implements TokenConsumer {
 		try {
 			HttpHeaders headers = createHeaders();
 			String form = "grant_type=client_credentials&scope=" + scope + "&client_id=" +
-					azureProperties.getClientId() + "&client_secret=" + azureProperties.getClientSecret();
+					azureProperties.getAppClientId() + "&client_secret=" + azureProperties.getAppClientSecret();
 			HttpEntity<String> requestEntity = new HttpEntity<>(form, headers);
 
-			return restTemplate.exchange(azureProperties.getTokenUrl(), POST, requestEntity, TokenResponse.class)
+			return restTemplate.exchange(azureProperties.getOpenidConfigTokenEndpoint(), POST, requestEntity, TokenResponse.class)
 					.getBody();
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			throw new AzureTokenException(String.format("Klarte ikke hente token fra Azure. Feilet med httpstatus=%s. Feilmelding=%s", e.getStatusCode(), e.getMessage()), e);

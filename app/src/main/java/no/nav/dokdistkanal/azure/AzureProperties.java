@@ -9,17 +9,14 @@ import org.springframework.validation.annotation.Validated;
  * Konfigurert av naiserator. https://doc.nais.io/security/auth/azure-ad/#runtime-variables-credentials
  */
 @Data
-@ConfigurationProperties("azure.app")
+@ConfigurationProperties("azure")
 @Validated
 public class AzureProperties {
 	@NotEmpty
-	private String tokenUrl;
+	private String openidConfigTokenEndpoint;
 	@NotEmpty
-	private String clientId;
+	private String appClientId;
 	@NotEmpty
-	private String clientSecret;
-	@NotEmpty
-	private String tenantId;
-	@NotEmpty
-	private String wellKnownUrl;
+	private String appClientSecret;
 }
+

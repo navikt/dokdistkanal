@@ -1,0 +1,10 @@
+{
+  "inboxAccessible": false,
+  "canReceiveNotificationBySms": true,
+  "canReceiveNotificationByEmail": true,
+  "_links": {
+    "self": {
+      "href": "sample string 91"
+    }
+  }
+}

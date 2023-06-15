@@ -1,8 +1,7 @@
 package no.nav.dokdistkanal.consumer.sikkerhetsnivaa;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.config.fasit.ServiceuserAlias;
-import no.nav.dokdistkanal.config.fasit.SikkerhetsnivaaV1Alias;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaRequest;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.schema.SikkerhetsnivaaResponse;
 import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
@@ -42,13 +41,12 @@ public class SikkerhetsnivaaConsumer {
 
 	@Autowired
 	public SikkerhetsnivaaConsumer(RestTemplateBuilder restTemplateBuilder,
-								   SikkerhetsnivaaV1Alias sikkerhetsnivaaV1Alias,
-								   ServiceuserAlias serviceuserAlias) {
+								   DokdistkanalProperties dokdistkanalProperties) {
 		this.restTemplate = restTemplateBuilder
-				.rootUri(sikkerhetsnivaaV1Alias.getUrl())
-				.basicAuthentication(serviceuserAlias.getUsername(), serviceuserAlias.getPassword())
-				.setConnectTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getConnecttimeoutms()))
-				.setReadTimeout(Duration.ofMillis(sikkerhetsnivaaV1Alias.getReadtimeoutms()))
+				.rootUri(dokdistkanalProperties.getSikkerhetsnivaa().getUrl())
+				.basicAuthentication(dokdistkanalProperties.getServiceuser().getUsername(), dokdistkanalProperties.getServiceuser().getPassword())
+				.setConnectTimeout(Duration.ofMillis(dokdistkanalProperties.getSikkerhetsnivaa().getConnecttimeoutms()))
+				.setReadTimeout(Duration.ofMillis(dokdistkanalProperties.getSikkerhetsnivaa().getReadtimeoutms()))
 				.build();
 	}
 

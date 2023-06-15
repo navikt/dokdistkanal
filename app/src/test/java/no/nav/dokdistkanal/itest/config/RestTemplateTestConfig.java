@@ -12,9 +12,9 @@ import java.time.Duration;
 @Configuration
 @Profile("itest")
 public class RestTemplateTestConfig {
-	
+
 	public static final int TIMEOUT = 30_000;
-	
+
 	@Bean
 	public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
 		return restTemplateBuilder
@@ -22,12 +22,5 @@ public class RestTemplateTestConfig {
 				.setReadTimeout(Duration.ofMillis(TIMEOUT))
 				.setConnectTimeout(Duration.ofMillis(TIMEOUT)).build();
 	}
-	
-	@Bean
-	public RestTemplate restTemplateNoHeader(RestTemplateBuilder restTemplateBuilder) {
-		return restTemplateBuilder
-				.requestFactory(HttpComponentsClientHttpRequestFactory.class)
-				.setReadTimeout(Duration.ofMillis(TIMEOUT))
-				.setConnectTimeout(Duration.ofMillis(TIMEOUT)).build();
-	}
+
 }
