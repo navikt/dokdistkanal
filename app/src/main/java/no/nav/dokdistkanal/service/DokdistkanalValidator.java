@@ -26,7 +26,8 @@ public class DokdistkanalValidator {
 	private static final String ONLY_ONES = "11111111111";
 
 	private static final Set<String> AARSOPPGAVE_DOKUMENTTYPE_ID = Set.of("000053", "000077");
-	private static final Set<String> VALID_DPVT_ORGANISASJONSNUMMER = Set.of("974761076", "987926279", "912998827", "983887457");
+	private static final Set<String> VALID_DPVT_ORGANISASJONSNUMMER = Set.of("974761076", "987926279", "912998827", "983887457",
+			"914760011", "875432702", "971574909", "985569258");
 	private static final Set<String> INFOTRYGD_DOKUMENTTYPE_ID = Set.of("000044", "000045", "000046", "000249");
 
 	public static boolean erGyldigAltinnNotifikasjonMottaker(ValidateRecipientResponse validateRecipientResponse) {
