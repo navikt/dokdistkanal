@@ -9,16 +9,20 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.SneakyThrows;
 
 public class MaskinportenUtils {
 
-	public static SignedJWT createSignedJWT(RSAKey rsaJwk, JWTClaimsSet claimsSet) {
+	@SneakyThrows
+	public static SignedJWT createSignedJWT(String rsaJwk, JWTClaimsSet claimsSet) {
 		try {
-			JWSHeader.Builder header = new JWSHeader.Builder(JWSAlgorithm.RS256)
-					.keyID(rsaJwk.getKeyID())
-					.type(JOSEObjectType.JWT);
-			SignedJWT signedJWT = new SignedJWT(header.build(), claimsSet);
-			JWSSigner signer = new RSASSASigner(rsaJwk.toPrivateKey());
+			var rsaKey = RSAKey.parse(rsaJwk);
+			JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS256)
+					.keyID(rsaKey.getKeyID())
+					.type(JOSEObjectType.JWT)
+					.build();
+			SignedJWT signedJWT = new SignedJWT(header, claimsSet);
+			JWSSigner signer = new RSASSASigner(rsaKey);
 			signedJWT.sign(signer);
 			return signedJWT;
 		} catch (JOSEException e) {
