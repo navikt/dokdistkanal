@@ -1,8 +1,6 @@
 package no.nav.dokdistkanal.consumer.altinn.maskinporten;
 
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
@@ -75,7 +73,6 @@ public class MaskinportenConsumer {
 		}
 	}
 
-	@SneakyThrows
 	private String generateJWT() {
 		JWTClaimsSet claims = new JWTClaimsSet.Builder()
 				.audience(maskinportenProperties.getIssuer())
@@ -89,9 +86,8 @@ public class MaskinportenConsumer {
 				.issueTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant()))
 				.expirationTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant().plusSeconds(30)))
 				.build();
-		var rsaKey = RSAKey.parse(maskinportenProperties.getClientJwk());
 
-		return createSignedJWT(rsaKey, claims)
+		return createSignedJWT(maskinportenProperties.getClientJwk(), claims)
 				.serialize();
 	}
 
