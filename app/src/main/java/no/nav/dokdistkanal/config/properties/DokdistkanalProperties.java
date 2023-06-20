@@ -44,10 +44,6 @@ public class DokdistkanalProperties {
 		private String url;
 		@NotEmpty
 		private String apiKey;
-		@NotEmpty
-		private String serviceCode;
-		@NotEmpty
-		private String serviceEditionCode;
 	}
 
 	@Data
