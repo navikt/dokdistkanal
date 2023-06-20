@@ -399,7 +399,7 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	private void stubGetAltinn(String path) {
-		stubFor(get("/altinn/serviceowner/notifications/validaterecipient?organizationNumber=974761076&serviceCode=123456&serviceEditionCode=1")
+		stubFor(get("/altinn/serviceowner/notifications/validaterecipient?organizationNumber=974761076")
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, HAL_JSON_VALUE)
 						.withHeader(ACCEPT_ENCODING, "gzip")

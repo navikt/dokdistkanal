@@ -49,8 +49,6 @@ public class AltinnServiceOwnerConsumer {
 		String altinnUrl = UriComponentsBuilder.fromUriString(dokdistkanalProperties.getAltinn().getUrl())
 				.path(SERVICEOWNER_PATH)
 				.queryParam("organizationNumber", orgNummer)
-				.queryParam("serviceCode", dokdistkanalProperties.getAltinn().getServiceCode())
-				.queryParam("serviceEditionCode", dokdistkanalProperties.getAltinn().getServiceEditionCode())
 				.build().toString();
 
 		HttpEntity httpEntity = new HttpEntity<>(headers());
