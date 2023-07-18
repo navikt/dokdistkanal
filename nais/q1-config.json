@@ -2,7 +2,6 @@
   "APP_NAME": "dokdistkanal-q1",
   "APPD_NAME": "dokdistkanal-q1",
   "INGRESSES": [
-    "https://dokdistkanal-q1.nais.preprod.local",
     "https://dokdistkanal-q1.dev.intern.nav.no"
   ],
   "MIN_REPLICAS": 1,
@@ -15,8 +14,8 @@
   "PDL_URL": "https://pdl-api-q1.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
-  "DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
-  "DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet-q1/.default",
   "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
-  "DOKDISTKANAL_PROXY_PORT": "8088"
+  "DOKDISTKANAL_PROXY_PORT": "8088",
+  "DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
+  "DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet-q1/.default"
 }

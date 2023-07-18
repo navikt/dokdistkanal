@@ -2,7 +2,6 @@
   "APP_NAME": "dokdistkanal",
   "APPD_NAME": "dokdistkanal",
   "INGRESSES": [
-    "https://dokdistkanal.nais.adeo.no",
     "https://dokdistkanal.intern.nav.no"
   ],
   "MIN_REPLICAS": 2,
