@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.azure;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import org.apache.hc.client5.http.classic.HttpClient;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Profile;
@@ -30,10 +31,11 @@ public class AzureTokenConsumer implements TokenConsumer {
 	private final AzureProperties azureProperties;
 
 	public AzureTokenConsumer(AzureProperties azureProperties,
-							  RestTemplateBuilder restTemplateBuilder) {
+							  RestTemplateBuilder restTemplateBuilder,
+							  HttpClient httpClient) {
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3))
-				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory())
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 		this.azureProperties = azureProperties;
 	}
