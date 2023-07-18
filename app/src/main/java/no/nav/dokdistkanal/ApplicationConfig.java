@@ -35,7 +35,6 @@ public class ApplicationConfig {
 	@Bean
 	HttpClientConnectionManager httpClientConnectionManager() {
 		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
-
 		var readTimeout = SocketConfig.custom().setSoTimeout(Timeout.ofSeconds(20)).build();
 		connectionManager.setMaxTotal(400);
 		connectionManager.setDefaultMaxPerRoute(100);

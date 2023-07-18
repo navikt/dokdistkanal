@@ -35,7 +35,6 @@ public class DokdistkanalRestExceptionHandler extends ResponseEntityExceptionHan
 		Map<String, Object> responseBody = new HashMap<>();
 		logger.warn("Feilet funksjonell med feilmelding=" + err.getMessage(), err);
 		responseBody.put("message", err.getMessage());
-		responseBody.put("error", err);
 
 		if (err instanceof HttpClientErrorException) {
 			HttpClientErrorException restErr = (HttpClientErrorException) err;
@@ -51,7 +50,6 @@ public class DokdistkanalRestExceptionHandler extends ResponseEntityExceptionHan
 		Map<String, Object> responseBody = new HashMap<>();
 		logger.error("Feilet teknisk med feilmelding=" + e.getMessage(), e);
 		responseBody.put("message", e.getMessage());
-		responseBody.put("error", e);
 		responseBody.put("status", UNAUTHORIZED);
 		return new ResponseEntity<>(responseBody, UNAUTHORIZED);
 	}
@@ -61,7 +59,6 @@ public class DokdistkanalRestExceptionHandler extends ResponseEntityExceptionHan
 		Map<String, Object> responseBody = new HashMap<>();
 		logger.error("Feilet teknisk med feilmelding=" + e.getMessage(), e);
 		responseBody.put("message", e.getMessage());
-		responseBody.put("error", e);
 		return new ResponseEntity<>(responseBody, INTERNAL_SERVER_ERROR);
 	}
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
+import org.apache.hc.client5.http.classic.HttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -43,10 +45,12 @@ public class MaskinportenConsumer {
 
 	@Autowired
 	public MaskinportenConsumer(RestTemplateBuilder restTemplateBuilder,
-								MaskinportenProperties maskinportenProperties) {
+								MaskinportenProperties maskinportenProperties,
+								HttpClient httpClient) {
 		this.maskinportenProperties = maskinportenProperties;
 		this.restTemplate = restTemplateBuilder
 				.setConnectTimeout(Duration.ofSeconds(3L))
+				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 	}
 
