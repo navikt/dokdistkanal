@@ -2,7 +2,6 @@
   "APPD_NAME": "dokdistkanal-q5",
   "APP_NAME": "dokdistkanal-q5",
   "INGRESSES": [
-    "https://dokdistkanal-q5.nais.preprod.local",
     "https://dokdistkanal-q5.dev.intern.nav.no"
   ],
   "MIN_REPLICAS": 1,
