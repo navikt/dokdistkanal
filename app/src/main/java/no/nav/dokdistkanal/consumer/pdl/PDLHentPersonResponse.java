@@ -1,14 +1,14 @@
 package no.nav.dokdistkanal.consumer.pdl;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class PDLHentPersonResponse {
 
 	private PDLHentPerson data;

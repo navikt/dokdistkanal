@@ -29,7 +29,6 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
-import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
@@ -39,6 +38,7 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisteri
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrgNummer;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.validateInput;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Slf4j
 @Component
@@ -141,7 +141,7 @@ public class DokDistKanalService {
 		if (dki.isReservasjon()) {
 			return logAndReturn(PRINT, "Bruker har reservert seg", tema);
 		}
-		if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
+		if ( dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi", tema);
 		}
 		if (dki.verifyAddress()) {

@@ -1,9 +1,9 @@
-package no.nav.dokdistkanal.rest;
+package no.nav.dokdistkanal.constants;
 
 public final class NavHeaders {
 	public static final String NAV_CALLID = "Nav-Callid";
 	public static final String NAV_CONSUMER_ID = "Nav-Consumer-Id";
-	public static final String NAV_CALL_ID = "Nav-Call-Id";
+	public static final String PDL_NAV_CALL_ID = "Nav-Call-Id";
 
 	private NavHeaders() {
 		//noop

@@ -1,16 +1,14 @@
 package no.nav.dokdistkanal.consumer.dki.to;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.Map;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Jacksonized
 public class DkifResponseTo {
 
 	private Map<String, String> feil;
@@ -19,6 +17,7 @@ public class DkifResponseTo {
 
 	@Data
 	@Builder
+	@Jacksonized
 	public static class DigitalKontaktinfo {
 		private String epostadresse;
 		private boolean kanVarsles;
@@ -29,6 +28,7 @@ public class DkifResponseTo {
 
 	@Data
 	@Builder
+	@Jacksonized
 	public static class SikkerDigitalPostkasse {
 		private String adresse;
 		private String leverandoerAdresse;

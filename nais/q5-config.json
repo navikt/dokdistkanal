@@ -6,16 +6,16 @@
   ],
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
-  "DOKUMENTTYPEINFO_URL": "https://dokmet.dev.intern.nav.no/rest/dokumenttypeinfo",
+  "DOKDISTKANAL_ENDPOINTS_DOKMET_URL": "https://dokmet.dev.intern.nav.no",
+  "DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet/.default",
+  "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.dev.nav.no",
+  "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
+  "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
+  "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q0/.default",
   "DOKDISTKANAL_SIKKERHETSNIVAA_URL": "https://sikkerhetsnivaa.dev.intern.nav.no/",
-  "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.dev.adeo.no/rest/v1/sts/token",
-  "DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.dev.nav.no",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
-  "PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
-  "DOKDISTKANAL_PROXY_PORT": "8088",
-  "DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
-  "DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet/.default"
+  "DOKDISTKANAL_PROXY_PORT": "8088"
 }

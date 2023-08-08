@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.config;
 
-import no.nav.dokdistkanal.azure.AzureTokenException;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.CouldNotDecodeBasicAuthToken;
@@ -30,7 +29,7 @@ public class DokdistkanalRestExceptionHandler extends ResponseEntityExceptionHan
 	@ExceptionHandler({AltinnServiceOwnerFunctionalException.class,
 			DokkatFunctionalException.class, DigitalKontaktinformasjonV2FunctionalException.class,
 			MaskinportenFunctionalException.class, PdlFunctionalException.class,
-			SikkerhetsnivaaFunctionalException.class, UgyldigInputFunctionalException.class, AzureTokenException.class})
+			SikkerhetsnivaaFunctionalException.class, UgyldigInputFunctionalException.class})
 	public ResponseEntity<Object> handleBadRequestException(Exception err) {
 		Map<String, Object> responseBody = new HashMap<>();
 		logger.warn("Feilet funksjonell med feilmelding=" + err.getMessage(), err);

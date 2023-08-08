@@ -1,86 +1,75 @@
 package no.nav.dokdistkanal.consumer.pdl;
 
-
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.consumer.sts.StsRestConsumer;
+import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.PdlHentPersonTechnicalException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.RequestEntity;
+import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
-import static java.util.Objects.requireNonNull;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static java.lang.String.format;
+import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
+import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
+import static no.nav.dokdistkanal.constants.NavHeaders.PDL_NAV_CALL_ID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
 
 @Slf4j
 @Component
 public class PdlGraphQLConsumer {
 
-	private static final String NAV_CONSUMER_TOKEN = "Nav-Consumer-Token";
 	private static final String HEADER_PDL_TEMA = "Tema";
 
-	private final RestTemplate restTemplate;
-	private final StsRestConsumer stsConsumer;
-	private final String pdlUrl;
+	private final WebClient webClient;
+	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
-	@Autowired
-	public PdlGraphQLConsumer(RestTemplateBuilder restTemplateBuilder, StsRestConsumer stsConsumer, @Value("${pdl.url}") String pdlUrl) {
-		this.restTemplate = restTemplateBuilder
-				.setConnectTimeout(Duration.ofSeconds(2L))
-				.setReadTimeout(Duration.ofSeconds(5L))
+	public PdlGraphQLConsumer(DokdistkanalProperties dokdistkanalProperties,
+							  WebClient webClient,
+							  ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+		this.webClient = webClient
+				.mutate()
+				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
+				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.filter(new NavHeadersExchangeFilterFunction(PDL_NAV_CALL_ID))
 				.build();
-		this.stsConsumer = stsConsumer;
-		this.pdlUrl = pdlUrl;
 	}
 
-	@Retryable(retryFor = HttpServerErrorException.class)
+	@Retryable(retryFor = PdlTechnicalException.class)
 	public HentPersoninfo hentPerson(final String aktoerId, final String tema) {
-		try {
-			final UriComponents uri = UriComponentsBuilder.fromHttpUrl(pdlUrl).build();
-			final String serviceUserToken = "Bearer " + stsConsumer.getOidcToken();
-			final RequestEntity<PDLRequest> requestEntity = RequestEntity.post(uri.toUri())
-					.accept(APPLICATION_JSON)
-					.header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-					.header(AUTHORIZATION, serviceUserToken)
-					.header(NAV_CONSUMER_TOKEN, serviceUserToken)
-					.header(HEADER_PDL_TEMA, tema)
-					.body(mapRequest(aktoerId));
 
-			log.debug("Henter personinfo for aktørId={}", aktoerId);
+		log.debug("Henter personinfo for aktørId={}", aktoerId);
 
-			final PDLHentPersonResponse response = requireNonNull(restTemplate.exchange(requestEntity, PDLHentPersonResponse.class).getBody());
-
-			if (Objects.isNull(response.getErrors()) || response.getErrors().isEmpty()) {
-				return mapPersonInfo(response);
-			} else {
-				return null;
-			}
-		} catch (HttpClientErrorException e) {
-			throw new PdlFunctionalException("Kunne ikke hente person fra pdl.", e);
-		} catch (HttpServerErrorException e) {
-			throw new PdlHentPersonTechnicalException("Teknisk feil ved kall mot PDL.", e);
-		}
-
+		return webClient.post()
+				.attributes(getOAuth2AuthorizedClient())
+				.header(HEADER_PDL_TEMA, tema)
+				.bodyValue(mapRequest(aktoerId))
+				.retrieve()
+				.bodyToMono(PDLHentPersonResponse.class)
+				.mapNotNull(this::mapPersonInfo)
+				.doOnError(this::handleError)
+				.block();
 	}
 
 	private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
-		if (Objects.isNull(response.getData().getHentPerson())) {
-			throw new PdlFunctionalException("Kunne ikke hente person fra Pdl" + response.getErrors());
+		if (response.getErrors() != null ){
+			return null;
+		}
+
+		if (response.getData() == null || response.getData().getHentPerson() == null) {
+			throw new PdlFunctionalException("Kunne ikke hente person fra Pdl. Response inneholdt ingen feilmeldinger, men heller ingen data om etterspurt person.");
 		} else {
 			PDLHentPersonResponse.HentPerson hentPerson = response.getData().getHentPerson();
 			return HentPersoninfo.builder()
@@ -112,4 +101,35 @@ public class PdlGraphQLConsumer {
 				  }
 				}""").variables(variables).build();
 	}
+
+
+	private void handleError(Throwable error) {
+		if (!(error instanceof WebClientResponseException response)) {
+			String feilmelding = format("Kall mot pdl feilet teknisk med feilmelding=%s", error.getMessage());
+
+			log.warn(feilmelding);
+
+			throw new PdlTechnicalException(feilmelding, error);
+		}
+
+		String feilmelding = format("Kall mot pdl feilet %s med status=%s, feilmelding=%s, response=%s",
+				response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+				response.getStatusCode(),
+				response.getMessage(),
+				response.getResponseBodyAsString());
+
+		log.warn(feilmelding);
+
+		if (response.getStatusCode().is4xxClientError()) {
+			throw new PdlFunctionalException(feilmelding, error);
+		} else {
+			throw new PdlTechnicalException(feilmelding, error);
+		}
+	}
+
+	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(getOAuth2AuthorizeRequestForAzure(CLIENT_REGISTRATION_PDL));
+		return oauth2AuthorizedClient(clientMono.block());
+	}
+
 }

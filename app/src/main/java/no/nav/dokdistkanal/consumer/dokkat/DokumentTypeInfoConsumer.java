@@ -1,87 +1,71 @@
 package no.nav.dokdistkanal.consumer.dokkat;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.azure.TokenConsumer;
-import no.nav.dokdistkanal.azure.TokenResponse;
+import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoToV4;
-import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokkatFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokkatTechnicalException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
-import java.time.Duration;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static java.lang.Boolean.FALSE;
+import static java.lang.String.format;
+import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DOKMET;
+import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
-import static no.nav.dokdistkanal.common.FunctionalUtils.createHeaders;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.HENT_DOKUMENTTYPE_INFO_CACHE;
+import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
 
 @Service
 @Slf4j
 public class DokumentTypeInfoConsumer {
-	public static final String HENT_DOKKAT_INFO = "hentDokumentTypeInfo";
 
-	private final RestTemplate restTemplate;
-	private final String dokumenttypeInfoUrl;
-	private final String dokmetScope;
-	private final TokenConsumer tokenConsumer;
+	private static final String DOKUMENTTYPE_INFO_URI = "/rest/dokumenttypeinfo/{dokumenttypeId}";
 
-	@Autowired
-	public DokumentTypeInfoConsumer(@Value("${dokmet_scope}") String dokmetScope,
-									@Value("${dokumenttypeInfo_url}") String dokumenttypeInfoUrl,
-									RestTemplateBuilder restTemplateBuilder,
-									TokenConsumer tokenConsumer) {
-		this.dokmetScope = dokmetScope;
-		this.dokumenttypeInfoUrl = dokumenttypeInfoUrl;
-		this.tokenConsumer = tokenConsumer;
-		this.restTemplate = restTemplateBuilder
-				.setConnectTimeout(Duration.ofSeconds(5))
-				.setReadTimeout(Duration.ofSeconds(20))
+	private final WebClient webClient;
+	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
+
+	public DokumentTypeInfoConsumer(DokdistkanalProperties dokdistkanalProperties,
+									WebClient webClient,
+									ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+		this.webClient = webClient
+				.mutate()
+				.baseUrl(dokdistkanalProperties.getEndpoints().getDokmet().getUrl())
+				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.filter(new NavHeadersExchangeFilterFunction(NAV_CALLID))
 				.build();
+
 	}
 
-	public DokumentTypeInfoConsumer(RestTemplate restTemplate, TokenConsumer tokenConsumer) {
-		this.dokmetScope = "";
-		this.dokumenttypeInfoUrl = "";
-		this.tokenConsumer = tokenConsumer;
-		this.restTemplate = restTemplate;
-	}
-
-	@Cacheable(value = HENT_DOKKAT_INFO, key = "#dokumenttypeId+'-dokkat'")
-	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Cacheable(value = HENT_DOKUMENTTYPE_INFO_CACHE)
+	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = DokDistKanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dokmetScope);
-		HttpHeaders headers = createHeaders(clientCredentialToken.getAccess_token());
 
-		try {
-			HttpEntity<String> request = new HttpEntity(headers);
-			DokumentTypeInfoToV4 response = restTemplate.exchange(this.dokumenttypeInfoUrl + "/" + dokumenttypeId, GET, request, DokumentTypeInfoToV4.class).getBody();
-			return mapTo(response);
-		} catch (HttpClientErrorException e) {
-			if (UNAUTHORIZED.equals(e.getStatusCode()) || FORBIDDEN.equals(e.getStatusCode())) {
-				throw new DokDistKanalSecurityException("DokumentTypeInfoConsumer feilet (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
-			}
-			throw new DokkatFunctionalException("DokumentTypeInfoConsumer feilet. (HttpStatus=" + e.getStatusCode() + ") for dokumenttypeId:" + dokumenttypeId, e);
-		} catch (HttpServerErrorException e) {
-			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med statusCode=" + e.getStatusCode(), e);
-		} catch (Exception e) {
-			throw new DokkatTechnicalException("DokumentTypeInfoConsumer feilet med message=" + e.getMessage(), e);
-		}
+		return webClient.get()
+				.uri(DOKUMENTTYPE_INFO_URI, dokumenttypeId)
+				.attributes(getOAuth2AuthorizedClient())
+				.retrieve()
+				.bodyToMono(DokumentTypeInfoToV4.class)
+				.mapNotNull(this::mapTo)
+				.doOnError(this::handleError)
+				.block();
 	}
 
 	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
@@ -113,4 +97,34 @@ public class DokumentTypeInfoConsumer {
 											.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();
 		}
 	}
+
+	private void handleError(Throwable error) {
+		if (!(error instanceof WebClientResponseException response)) {
+			String feilmelding = format("Kall mot dokmet feilet teknisk med feilmelding=%s", error.getMessage());
+
+			log.warn(feilmelding);
+
+			throw new DokkatTechnicalException(feilmelding, error);
+		}
+
+		String feilmelding = format("Kall mot dokmet feilet %s med status=%s, feilmelding=%s, response=%s",
+				response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+				response.getStatusCode(),
+				response.getMessage(),
+				response.getResponseBodyAsString());
+
+		log.warn(feilmelding);
+
+		if (response.getStatusCode().is4xxClientError()) {
+			throw new DokkatFunctionalException(feilmelding, error);
+		} else {
+			throw new DokkatTechnicalException(feilmelding, error);
+		}
+	}
+
+	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(getOAuth2AuthorizeRequestForAzure(CLIENT_REGISTRATION_DOKMET));
+		return oauth2AuthorizedClient(clientMono.block());
+	}
+
 }

@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.http.MediaType;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
@@ -373,11 +372,6 @@ public class DokDistKanalIT extends AbstractIT {
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/paalogging/happy-response.json")));
 
-		stubFor(get(urlPathMatching("/STS"))
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("felles/sts/stsResponse_happy.json")));
-
 		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
 		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
@@ -394,7 +388,7 @@ public class DokDistKanalIT extends AbstractIT {
 		stubFor(post("/azure_token")
 				.willReturn(aResponse()
 						.withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("azure/token_response_dummy.json")));
 	}
 
@@ -407,7 +401,7 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	private void stubPostPDL(String path) {
-		stubFor(post("/graphql").willReturn(aResponse().withStatus(OK.value())
+		stubFor(post(urlMatching("/graphql")).willReturn(aResponse().withStatus(OK.value())
 				.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 				.withBodyFile(path)));
 	}
