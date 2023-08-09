@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 @Builder
 @Jacksonized
-public class DkifResponseTo {
+public class PostPersonerResponse {
 
 	private Map<String, String> feil;
 	private Map<String, DigitalKontaktinfo> personer;

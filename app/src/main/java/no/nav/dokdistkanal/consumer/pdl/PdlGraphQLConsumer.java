@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
 import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
-import static no.nav.dokdistkanal.constants.NavHeaders.PDL_NAV_CALL_ID;
+import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALL_ID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
@@ -43,7 +43,7 @@ public class PdlGraphQLConsumer {
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.filter(new NavHeadersExchangeFilterFunction(PDL_NAV_CALL_ID))
+				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
 	}
 

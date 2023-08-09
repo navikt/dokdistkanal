@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
 import no.nav.dokdistkanal.consumer.dki.to.PostPersonerRequest;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DIGDIR_KRR_PROXY;
 import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
-import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
+import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALL_ID;
 import static no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper.mapDigitalKontaktinformasjon;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -50,7 +50,7 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getDigdirKrrProxy().getUrl())
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-				.filter(new NavHeadersExchangeFilterFunction(NAV_CALLID))
+				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
 	}
 
@@ -59,12 +59,12 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 
 		final String fnrTrimmed = personidentifikator.trim();
 
-		DkifResponseTo response = webClient.post()
+		PostPersonerResponse response = webClient.post()
 				.uri(SIKKER_DIGITAL_POSTADRESSE_URI, inkluderSikkerDigitalPost)
 				.attributes(getOAuth2AuthorizedClient())
 				.bodyValue(new PostPersonerRequest(List.of(fnrTrimmed)))
 				.retrieve()
-				.bodyToMono(DkifResponseTo.class)
+				.bodyToMono(PostPersonerResponse.class)
 				.doOnError(this::handleError)
 				.block();
 
@@ -82,11 +82,11 @@ public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformas
 		}
 	}
 
-	private boolean isValidRespons(DkifResponseTo response, String fnr) {
+	private boolean isValidRespons(PostPersonerResponse response, String fnr) {
 		return response != null && response.getPersoner() != null && response.getPersoner().get(fnr) != null;
 	}
 
-	private String getErrorMsg(DkifResponseTo response, String fnr) {
+	private String getErrorMsg(PostPersonerResponse response, String fnr) {
 		if (response == null || response.getFeil() == null) {
 			return null;
 		} else {

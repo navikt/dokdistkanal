@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.consumer.dki;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,13 +59,13 @@ public class MapDigitalKontaktinformasjonTest {
 		assertFalse(digitalKontaktinformasjonTo.isGyldigSertifikat());
 	}
 
-	private DkifResponseTo.DigitalKontaktinfo createDigitalKontaktinfo(boolean kanVarsles, String leverandoerSertifikat) {
-		return DkifResponseTo.DigitalKontaktinfo.builder()
+	private PostPersonerResponse.DigitalKontaktinfo createDigitalKontaktinfo(boolean kanVarsles, String leverandoerSertifikat) {
+		return PostPersonerResponse.DigitalKontaktinfo.builder()
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBILTELEFONNUMMER)
 				.kanVarsles(kanVarsles)
 				.reservert(RESERVERT)
-				.sikkerDigitalPostkasse(DkifResponseTo.SikkerDigitalPostkasse.builder()
+				.sikkerDigitalPostkasse(PostPersonerResponse.SikkerDigitalPostkasse.builder()
 						.adresse(BRUKERADRESSE)
 						.leverandoerAdresse(LEVERANDORADRESSE)
 						.leverandoerSertifikat(leverandoerSertifikat)

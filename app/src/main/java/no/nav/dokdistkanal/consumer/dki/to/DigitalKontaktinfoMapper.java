@@ -12,7 +12,7 @@ import java.util.Base64;
 @Slf4j
 public class DigitalKontaktinfoMapper {
 
-	public static DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(DkifResponseTo.DigitalKontaktinfo digitalKontaktinfo) {
+	public static DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(PostPersonerResponse.DigitalKontaktinfo digitalKontaktinfo) {
 
 		if (digitalKontaktinfo == null) {
 			return null;
