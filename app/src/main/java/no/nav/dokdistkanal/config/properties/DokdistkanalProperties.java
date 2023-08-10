@@ -12,7 +12,6 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DokdistkanalProperties {
 
-	private final Proxy proxy = new Proxy();
 	private final Serviceuser serviceuser = new Serviceuser();
 	private final Sikkerhetsnivaa sikkerhetsnivaa = new Sikkerhetsnivaa();
 	private final Altinn altinn = new Altinn();
@@ -64,14 +63,4 @@ public class DokdistkanalProperties {
 		private String apiKey;
 	}
 
-	@Data
-	@Validated
-	public static class Proxy {
-		private String host;
-		private int port;
-
-		public boolean isSet() {
-			return (host != null && !host.equals(""));
-		}
-	}
 }

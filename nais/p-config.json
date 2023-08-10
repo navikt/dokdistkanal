@@ -15,7 +15,5 @@
   "DOKDISTKANAL_SIKKERHETSNIVAA_URL": "https://sikkerhetsnivaa.intern.nav.no/",
   "DOKDISTKANAL_ALTINN_URL": "https://altinn.no/api",
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
-  "APPDYNAMICS": "/apikey/appdynamics/prod",
-  "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
-  "DOKDISTKANAL_PROXY_PORT": "8088"
+  "APPDYNAMICS": "/apikey/appdynamics/prod"
 }

@@ -141,7 +141,7 @@ public class DokDistKanalService {
 		if (dki.isReservasjon()) {
 			return logAndReturn(PRINT, "Bruker har reservert seg", tema);
 		}
-		if ( dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
+		if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi", tema);
 		}
 		if (dki.verifyAddress()) {

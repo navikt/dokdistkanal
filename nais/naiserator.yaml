@@ -7,10 +7,6 @@ metadata:
     team: teamdokumenthandtering
 spec:
   env:
-    - name: DOKDISTKANAL_PROXY_HOST
-      value: {{DOKDISTKANAL_PROXY_HOST}}
-    - name: DOKDISTKANAL_PROXY_PORT
-      value: "{{DOKDISTKANAL_PROXY_PORT}}"
     - name: DOKUMENTTYPEINFO_URL
       value: {{ DOKUMENTTYPEINFO_URL }}
     - name: DOKDISTKANAL_SIKKERHETSNIVAA_URL

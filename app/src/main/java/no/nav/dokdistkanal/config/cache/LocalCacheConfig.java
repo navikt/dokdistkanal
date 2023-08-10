@@ -22,7 +22,7 @@ import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsum
 public class LocalCacheConfig {
 	public static final Duration DEFAULT_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
 	public static final String MASKINPORTEN_CACHE = "maskinportenCache";
-	public static final String HENT_DOKUMENTTYPE_INFO_CACHE = "hentDokumentyypeInfoCache";
+	public static final String HENT_DOKUMENTTYPE_INFO_CACHE = "hentDokumenttypeInfoCache";
 
 	@Bean
 	@Primary
