@@ -15,5 +15,12 @@
   "DOKDISTKANAL_SIKKERHETSNIVAA_URL": "https://sikkerhetsnivaa.intern.nav.no/",
   "DOKDISTKANAL_ALTINN_URL": "https://altinn.no/api",
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
-  "APPDYNAMICS": "/apikey/appdynamics/prod"
+  "APPDYNAMICS": "/apikey/appdynamics/prod",
+  "AZURE_IAC_RULES": [
+    {
+      "app": "bidrag-dokument-arkiv",
+      "namespace": "bidrag",
+      "cluster": "prod-fss"
+    }
+  ]
 }

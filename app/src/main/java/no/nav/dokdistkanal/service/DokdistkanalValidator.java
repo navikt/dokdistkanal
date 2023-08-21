@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
+import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
 import org.springframework.stereotype.Component;
@@ -38,8 +39,20 @@ public class DokdistkanalValidator {
 		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokDistKanalRequest.getDokumentTypeId());
 	}
 
+	public static boolean isOrgNummerWithInfotrygdDokumentTypeId(String dokumentTypeId) {
+		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokumentTypeId);
+	}
+
 	public static boolean isValidDPVTOrgNummer(DokDistKanalRequest dokDistKanalRequest) {
 		return ORGANISASJON.equals(dokDistKanalRequest.getMottakerType()) && VALID_DPVT_ORGANISASJONSNUMMER.contains(dokDistKanalRequest.getMottakerId());
+	}
+
+	public static boolean isValidDPVTOrgNummer(MottakerTypeCode mottakerType, String mottakerId) {
+		return ORGANISASJON.equals(mottakerType) && VALID_DPVT_ORGANISASJONSNUMMER.contains(mottakerId);
+	}
+
+	public static boolean isValidDPVTOrganisasjon(String mottakerId) {
+		return VALID_DPVT_ORGANISASJONSNUMMER.contains(mottakerId);
 	}
 
 	public static void validateInput(DokDistKanalRequest dokDistKanalRequest) {
@@ -56,6 +69,9 @@ public class DokdistkanalValidator {
 		return FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
 	}
 
+	public static boolean isFolkeregisterident(String mottakerId) {
+		return FOLKEREGISTERIDENT_REGEX.matcher(mottakerId).matches() && !ONLY_ONES.equals(mottakerId);
+	}
 	public static boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
 		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
 	}

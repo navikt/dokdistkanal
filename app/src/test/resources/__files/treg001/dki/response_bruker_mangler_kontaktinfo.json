@@ -1,0 +1,13 @@
+{
+  "feil": {
+    "12345678901": null
+  },
+  "personer": {
+    "12345678901": {
+      "epostadresse": null,
+      "kanVarsles": true,
+      "mobiltelefonnummer": null,
+      "reservert": false
+    }
+  }
+}

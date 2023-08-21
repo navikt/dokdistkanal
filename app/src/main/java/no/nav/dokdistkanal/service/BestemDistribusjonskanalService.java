@@ -1,0 +1,225 @@
+package no.nav.dokdistkanal.service;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
+import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjon;
+import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
+import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
+import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
+import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.Set;
+
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_IKKE_LOGGET_PAA_NIVAA4;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_LOGGET_PAA_NIVAA4;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_IKKE_DPVT_ORG;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_DOED;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_IKKE_I_PDL;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_UNDER_18;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_HAR_UKJENT_ALDER;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_INGEN_DISTRIBUSJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_LOKAL_PRINT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_TRYGDERETTEN;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.SKAL_IKKE_ARKIVERES;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.TEMA_HAR_BEGRENSET_INNSYN;
+import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrganisasjon;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+@Slf4j
+@Service
+public class BestemDistribusjonskanalService {
+
+	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
+
+	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
+	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
+	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
+	private final MeterRegistry registry;
+	private final PdlGraphQLConsumer pdlGraphQLConsumer;
+	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
+
+	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
+										   DigitalKontaktinformasjon digitalKontaktinformasjon,
+										   SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
+										   MeterRegistry registry,
+										   PdlGraphQLConsumer pdlGraphQLConsumer,
+										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer) {
+		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
+		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
+		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
+		this.registry = registry;
+		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
+		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
+	}
+
+
+	public BestemDistribusjonskanalResponse bestemDistribusjonskanal(BestemDistribusjonskanalRequest request) {
+
+		var dokumenttypeInfo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
+
+		var predefinertDistribusjonskanal = predefinertDistribusjonskanal(request, dokumenttypeInfo);
+
+		if (predefinertDistribusjonskanal != null) {
+			return predefinertDistribusjonskanal;
+		}
+
+		return switch (request.getMottakerId().length()) {
+			case 9 -> organisasjon(request);
+			case 11 -> person(request, dokumenttypeInfo);
+			default -> createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		};
+	}
+
+	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
+		if ("INGEN".equals(dokumenttypeInfo.getArkivsystem())) {
+			return createResponse(request, SKAL_IKKE_ARKIVERES);
+		}
+		if (LOKAL_PRINT.toString().equals(dokumenttypeInfo.getPredefinertDistKanal())) {
+			return createResponse(request, PREDEFINERT_LOKAL_PRINT);
+		}
+		if (INGEN_DISTRIBUSJON.toString().equals(dokumenttypeInfo.getPredefinertDistKanal())) {
+			return createResponse(request, PREDEFINERT_INGEN_DISTRIBUSJON);
+		}
+		if (TRYGDERETTEN.toString().equals(dokumenttypeInfo.getPredefinertDistKanal())) {
+			return createResponse(request, PREDEFINERT_TRYGDERETTEN);
+		}
+		return null;
+	}
+
+	private BestemDistribusjonskanalResponse organisasjon(BestemDistribusjonskanalRequest request) {
+		if (isValidDPVTOrganisasjon(request.getMottakerId())) {
+			if (isOrgNummerWithInfotrygdDokumentTypeId(request.getDokumenttypeId())) {
+				return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
+			}
+			var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
+
+			if (erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
+				return createResponse(request, ORGANISASJON_MED_ALTINN_INFO);
+			}
+		}
+		return createResponse(request, ORGANISASJON_ER_IKKE_DPVT_ORG);
+	}
+
+	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
+
+		var resultat = evaluerPersoninfo(request, request.getTema());
+
+		if (resultat != null) {
+			return resultat;
+		}
+
+		resultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo);
+
+		if (resultat != null) {
+			return resultat;
+		}
+
+		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
+		if (!isDokumentTypeIdUsedForAarsoppgave(request.getDokumenttypeId()) && !request.getMottakerId().equals(request.getBrukerId())) {
+			return createResponse(request, BRUKER_OG_MOTTAKER_ER_FORSKJELLIG);
+		}
+
+		if (!request.isErArkivert()) {
+			return createResponse(request, DOKUMENT_ER_IKKE_ARKIVERT);
+		}
+
+		if (TEMA_MED_BEGRENSET_INNSYN.contains(request.getTema())) {
+			return createResponse(request, TEMA_HAR_BEGRENSET_INNSYN);
+		}
+
+		return evaluerSikkerhetsnivaa(request);
+	}
+
+	private BestemDistribusjonskanalResponse evaluerDigitalKontaktinfo(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
+		var digitalKontaktinfo = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
+
+		if (digitalKontaktinfo == null) {
+			return createResponse(request, FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON);
+		}
+		if (digitalKontaktinfo.isReservasjon()) {
+			return createResponse(request, BRUKER_ER_RESERVERT);
+		}
+		if (dokumentTypeInfo.isVarslingSdp() &&
+			isEmpty(digitalKontaktinfo.getEpostadresse()) &&
+			isEmpty(digitalKontaktinfo.getMobiltelefonnummer())) {
+
+			return createResponse(request, BRUKER_SDP_MANGLER_VARSELINFO);
+		}
+		if (digitalKontaktinfo.verifyAddress()) {
+			return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
+		}
+		if (isEmpty(digitalKontaktinfo.getEpostadresse()) && isEmpty(digitalKontaktinfo.getMobiltelefonnummer())) {
+			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
+		}
+		return null;
+	}
+
+	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request, String tema) {
+		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId(), tema) : null;
+
+		if (personinfo == null) {
+			return createResponse(request, PERSON_ER_IKKE_I_PDL);
+		}
+		if (personinfo.getDoedsdato() != null) {
+			return createResponse(request, PERSON_ER_DOED);
+		}
+		if (personinfo.getFoedselsdato() == null) {
+			return createResponse(request, PERSON_HAR_UKJENT_ALDER);
+		}
+		if (LocalDate.now().minusYears(18).isBefore(personinfo.getFoedselsdato())) {
+			return createResponse(request, PERSON_ER_UNDER_18);
+		}
+		return null;
+	}
+
+	private BestemDistribusjonskanalResponse evaluerSikkerhetsnivaa(BestemDistribusjonskanalRequest request) {
+		var sikkerhetsnivaa = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(request.getMottakerId());
+
+		if (sikkerhetsnivaa.isHarLoggetPaaNivaa4()) {
+			return createResponse(request, BRUKER_HAR_LOGGET_PAA_NIVAA4);
+		}
+		return createResponse(request, BRUKER_HAR_IKKE_LOGGET_PAA_NIVAA4);
+	}
+
+
+	private BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
+		var kanalKode = regel.distribusjonKanal.name();
+
+		Counter.builder("dok_request_counter")
+				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
+				.tag("type", "velgKanal")
+				.tag("consumer_name", "ukjent")
+				.tag("event", kanalKode)
+				.register(registry).increment();
+
+		log.info("bestemDistribusjonskanal: Sender melding fra {} (Tema={}) til {}: {}", consumerId(), request.getTema(), kanalKode, regel.begrunnelse);
+
+		return new BestemDistribusjonskanalResponse(regel);
+	}
+}

@@ -2,7 +2,12 @@ package no.nav.dokdistkanal.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import no.nav.dokdistkanal.common.TokenUtils;
 import no.nav.dokdistkanal.exceptions.functional.CouldNotDecodeBasicAuthToken;
+import no.nav.security.token.support.core.jwt.JwtToken;
+import no.nav.security.token.support.core.jwt.JwtTokenClaims;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.UnsupportedEncodingException;
@@ -19,6 +24,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 public class PopulateMDCHandler implements HandlerInterceptor {
 
 	private static final String CHARSET = UTF_8.name();
+	private static final String NAV_CUSTOM_CLAIM_AZP_NAME = "azp_name";
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -27,15 +33,27 @@ public class PopulateMDCHandler implements HandlerInterceptor {
 		return true;
 	}
 
-	private void populateConsumerId(HttpServletRequest request) {
-		String navConsumerId = isNotBlank(request.getHeader(NAV_CONSUMER_ID)) ? request.getHeader(NAV_CONSUMER_ID) : request.getHeader(CONSUMER_ID);
-		String username = getUsernameFromBasicAuth(request);
-		if (isNotBlank(navConsumerId)) {
-			put(CONSUMER_ID, navConsumerId);
-		}
+	@Override
+	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+		MDC.clear();
+	}
 
-		if (isNotBlank(username)) {
-			put(CONSUMER_ID, username);
+
+	private void populateConsumerId(HttpServletRequest request) {
+		String consumerIdFromToken = getConsumerIdFromToken(request);
+
+		if (StringUtils.isNotBlank(consumerIdFromToken)) {
+			put(CONSUMER_ID, consumerIdFromToken);
+		} else {
+			String navConsumerId = isNotBlank(request.getHeader(NAV_CONSUMER_ID)) ? request.getHeader(NAV_CONSUMER_ID) : request.getHeader(CONSUMER_ID);
+			String username = getUsernameFromBasicAuth(request);
+			if (isNotBlank(navConsumerId)) {
+				put(CONSUMER_ID, navConsumerId);
+			}
+
+			if (isNotBlank(username)) {
+				put(CONSUMER_ID, username);
+			}
 		}
 	}
 
@@ -44,6 +62,29 @@ public class PopulateMDCHandler implements HandlerInterceptor {
 		if (isNotBlank(navUserId)) {
 			put(USER_ID, navUserId);
 		}
+	}
+
+	private String getConsumerIdFromToken(HttpServletRequest request) {
+		final String authToken = TokenUtils.getAccessTokenFromRequest(request);
+
+		if (authToken != null) {
+			final JwtToken token = new JwtToken(authToken);
+			final JwtTokenClaims claims = token.getJwtTokenClaims();
+
+			if (claims.getAllClaims().containsKey(NAV_CUSTOM_CLAIM_AZP_NAME)) {
+				return extractConsumerId(claims.getStringClaim(NAV_CUSTOM_CLAIM_AZP_NAME));
+			}
+			return null;
+		}
+		return null;
+	}
+
+	private String extractConsumerId(String claim) {
+		var split = claim.split(":");
+		if (split.length == 3) {
+			return split[1] + ":" + split[2];
+		}
+		return claim;
 	}
 
 	private String getUsernameFromBasicAuth(HttpServletRequest request) {
