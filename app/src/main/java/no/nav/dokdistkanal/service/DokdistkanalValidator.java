@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.common.FunctionalUtils.isEmpty;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.ORGANISASJON;
 import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.MDC.get;
 

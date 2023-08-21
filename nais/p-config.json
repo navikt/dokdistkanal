@@ -6,16 +6,14 @@
   ],
   "MIN_REPLICAS": 2,
   "MAX_REPLICAS": 4,
-  "DOKUMENTTYPEINFO_URL": "https://dokmet.intern.nav.no/rest/dokumenttypeinfo",
+  "DOKDISTKANAL_ENDPOINTS_DOKMET_URL": "https://dokmet.intern.nav.no",
+  "DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE": "api://prod-fss.teamdokumenthandtering.dokmet/.default",
+  "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.nav.no",
+  "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE": "api://prod-gcp.team-rocket.digdir-krr-proxy/.default",
+  "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api.intern.nav.no/graphql",
+  "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://prod-fss.pdl.pdl-api/.default",
   "DOKDISTKANAL_SIKKERHETSNIVAA_URL": "https://sikkerhetsnivaa.intern.nav.no/",
-  "SECURITY_TOKEN_SERVICE_TOKEN_URL": "https://security-token-service.nais.adeo.no/rest/v1/sts/token",
-  "DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.nav.no",
   "DOKDISTKANAL_ALTINN_URL": "https://altinn.no/api",
-  "PDL_URL": "https://pdl-api.intern.nav.no/graphql",
   "SRVDOKDISTKANAL": "/serviceuser/data/prod/srvdokdistkanal",
-  "APPDYNAMICS": "/apikey/appdynamics/prod",
-  "DOKDISTKANAL_PROXY_HOST": "webproxy.nais",
-  "DOKDISTKANAL_PROXY_PORT": "8088",
-  "DIGDIR_KRR_PROXY_SCOPE": "api://prod-gcp.team-rocket.digdir-krr-proxy/.default",
-  "DOKMET_SCOPE": "api://prod-fss.teamdokumenthandtering.dokmet/.default"
+  "APPDYNAMICS": "/apikey/appdynamics/prod"
 }

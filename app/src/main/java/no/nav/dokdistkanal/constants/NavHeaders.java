@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.rest;
+package no.nav.dokdistkanal.constants;
 
 public final class NavHeaders {
 	public static final String NAV_CALLID = "Nav-Callid";

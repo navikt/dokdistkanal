@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.service.DokDistKanalService;
+import no.nav.security.token.support.core.api.Unprotected;
 import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,10 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
-import static no.nav.dokdistkanal.rest.NavHeaders.NAV_CALLID;
+import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
+@Unprotected
 @RestController
 @RequestMapping("/rest")
 public class DokDistKanalRestController {

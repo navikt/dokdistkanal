@@ -2,7 +2,8 @@ package no.nav.dokdistkanal.consumer.dki;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse.DigitalKontaktinfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,11 +29,9 @@ public class MapDigitalKontaktinformasjonTest {
 	private static final boolean KAN_VARSLES_FALSE = false;
 	private static final boolean RESERVERT = false;
 
-	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
-
 	@Test
 	public void shouldMapOk() {
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_GYLDIG));
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = DigitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_GYLDIG));
 		assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
 		assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());
 		assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
@@ -42,7 +41,7 @@ public class MapDigitalKontaktinformasjonTest {
 
 	@Test
 	public void shouldMapWithoutKanVarsles() {
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_FALSE, LEVERANDOER_SERTIFIKAT_GYLDIG));
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = DigitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_FALSE, LEVERANDOER_SERTIFIKAT_GYLDIG));
 		assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
 		assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
 		assertNull(digitalKontaktinformasjonTo.getEpostadresse());
@@ -51,7 +50,7 @@ public class MapDigitalKontaktinformasjonTest {
 
 	@Test
 	public void shouldMapWithoutGyldigSertifikat() {
-		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_UGYLDIG));
+		DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = DigitalKontaktinfoMapper.mapDigitalKontaktinformasjon(createDigitalKontaktinfo(KAN_VARSLES_TRUE, LEVERANDOER_SERTIFIKAT_UGYLDIG));
 		assertEquals(BRUKERADRESSE, digitalKontaktinformasjonTo.getBrukerAdresse());
 		assertEquals(EPOSTADRESSE, digitalKontaktinformasjonTo.getEpostadresse());
 		assertEquals(LEVERANDORADRESSE, digitalKontaktinformasjonTo.getLeverandoerAdresse());
@@ -59,13 +58,13 @@ public class MapDigitalKontaktinformasjonTest {
 		assertFalse(digitalKontaktinformasjonTo.isGyldigSertifikat());
 	}
 
-	private DkifResponseTo.DigitalKontaktinfo createDigitalKontaktinfo(boolean kanVarsles, String leverandoerSertifikat) {
-		return DkifResponseTo.DigitalKontaktinfo.builder()
+	private DigitalKontaktinfo createDigitalKontaktinfo(boolean kanVarsles, String leverandoerSertifikat) {
+		return DigitalKontaktinfo.builder()
 				.epostadresse(EPOSTADRESSE)
 				.mobiltelefonnummer(MOBILTELEFONNUMMER)
 				.kanVarsles(kanVarsles)
 				.reservert(RESERVERT)
-				.sikkerDigitalPostkasse(DkifResponseTo.SikkerDigitalPostkasse.builder()
+				.sikkerDigitalPostkasse(PostPersonerResponse.SikkerDigitalPostkasse.builder()
 						.adresse(BRUKERADRESSE)
 						.leverandoerAdresse(LEVERANDORADRESSE)
 						.leverandoerSertifikat(leverandoerSertifikat)

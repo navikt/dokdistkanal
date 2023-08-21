@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.config.properties;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -11,10 +12,26 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DokdistkanalProperties {
 
-	private final Proxy proxy = new Proxy();
 	private final Serviceuser serviceuser = new Serviceuser();
 	private final Sikkerhetsnivaa sikkerhetsnivaa = new Sikkerhetsnivaa();
 	private final Altinn altinn = new Altinn();
+	private final Endpoints endpoints = new Endpoints();
+
+	@Data
+	public static class Endpoints {
+		@NotNull private AzureEndpoint digdirKrrProxy;
+		@NotNull private AzureEndpoint pdl;
+		@NotNull private AzureEndpoint dokmet;
+	}
+
+	@Data
+	public static class AzureEndpoint {
+		@NotEmpty
+		private String url;
+
+		@NotEmpty
+		private String scope;
+	}
 
 	@Data
 	@Validated
@@ -46,14 +63,4 @@ public class DokdistkanalProperties {
 		private String apiKey;
 	}
 
-	@Data
-	@Validated
-	public static class Proxy {
-		private String host;
-		private int port;
-
-		public boolean isSet() {
-			return (host != null && !host.equals(""));
-		}
-	}
 }

@@ -12,7 +12,7 @@ import java.util.Base64;
 @Slf4j
 public class DigitalKontaktinfoMapper {
 
-	public DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(DkifResponseTo.DigitalKontaktinfo digitalKontaktinfo) {
+	public static DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(PostPersonerResponse.DigitalKontaktinfo digitalKontaktinfo) {
 
 		if (digitalKontaktinfo == null) {
 			return null;
@@ -31,11 +31,11 @@ public class DigitalKontaktinfoMapper {
 		}
 	}
 
-	private boolean isSertifikatPresentAndValid(String leverandoerSertifikat) {
+	private static boolean isSertifikatPresentAndValid(String leverandoerSertifikat) {
 		return leverandoerSertifikat != null && !leverandoerSertifikat.isEmpty() && isSertifikatValid(leverandoerSertifikat);
 	}
 
-	private boolean isSertifikatValid(String leverandoerSertifikat) {
+	private static boolean isSertifikatValid(String leverandoerSertifikat) {
 		try {
 			byte[] encodedCert = Base64.getDecoder().decode(leverandoerSertifikat);
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(encodedCert);

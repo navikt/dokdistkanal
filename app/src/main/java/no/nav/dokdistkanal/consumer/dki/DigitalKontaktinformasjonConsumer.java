@@ -1,100 +1,126 @@
 package no.nav.dokdistkanal.consumer.dki;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.azure.TokenConsumer;
-import no.nav.dokdistkanal.azure.TokenResponse;
-import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper;
+import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.consumer.dki.to.DkifResponseTo;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
 import no.nav.dokdistkanal.consumer.dki.to.PostPersonerRequest;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.common.FunctionalUtils.createHeaders;
+import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DIGDIR_KRR_PROXY;
+import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
+import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALL_ID;
+import static no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper.mapDigitalKontaktinformasjon;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
 
 @Slf4j
 @Component
 public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformasjon {
 
-	public static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "person_ikke_funnet";
+	private static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "person_ikke_funnet";
+	private static final String SIKKER_DIGITAL_POSTADRESSE_URI = "/rest/v1/personer?inkluderSikkerDigitalPost={inkluderSikkerDigitalPost}";
 
-	private final RestTemplate restTemplate;
-	private final String dkiUrl;
-	private final String dkiScope;
-	private final TokenConsumer tokenConsumer;
-	private final DigitalKontaktinfoMapper digitalKontaktinfoMapper = new DigitalKontaktinfoMapper();
+	private final WebClient webClient;
+	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
-
-	public DigitalKontaktinformasjonConsumer(RestTemplateBuilder restTemplateBuilder,
-											 @Value("${digdir_krr_proxy_url}") String dkiUrl,
-											 @Value("${digdir_krr_proxy_scope}") String dkiScope,
-											 TokenConsumer tokenConsumer) {
-		this.restTemplate = restTemplateBuilder
-				.setReadTimeout(Duration.ofSeconds(20))
-				.setConnectTimeout(Duration.ofSeconds(5))
+	public DigitalKontaktinformasjonConsumer(DokdistkanalProperties dokdistkanalProperties,
+											 ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
+											 WebClient webClient) {
+		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+		this.webClient = webClient
+				.mutate()
+				.baseUrl(dokdistkanalProperties.getEndpoints().getDigdirKrrProxy().getUrl())
+				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
-		this.dkiUrl = dkiUrl;
-		this.dkiScope = dkiScope;
-		this.tokenConsumer = tokenConsumer;
 	}
 
-	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = {DokDistKanalFunctionalException.class}, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = DokDistKanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
-		TokenResponse clientCredentialToken = tokenConsumer.getClientCredentialToken(dkiScope);
-		HttpHeaders headers = createHeaders(clientCredentialToken.getAccess_token());
 
 		final String fnrTrimmed = personidentifikator.trim();
-		PostPersonerRequest postPersonRequest = PostPersonerRequest.builder().personidenter(List.of(fnrTrimmed)).build();
-		HttpEntity<String> request = new HttpEntity(postPersonRequest, headers);
 
-		try {
-			DkifResponseTo response = restTemplate.postForEntity(dkiUrl + "/rest/v1/personer?inkluderSikkerDigitalPost=" + inkluderSikkerDigitalPost, request, DkifResponseTo.class).getBody();
-			if (isValidRespons(response, fnrTrimmed)) {
-				return digitalKontaktinfoMapper.mapDigitalKontaktinformasjon(response.getPersoner().get(fnrTrimmed));
+		PostPersonerResponse response = webClient.post()
+				.uri(SIKKER_DIGITAL_POSTADRESSE_URI, inkluderSikkerDigitalPost)
+				.attributes(getOAuth2AuthorizedClient())
+				.bodyValue(new PostPersonerRequest(List.of(fnrTrimmed)))
+				.retrieve()
+				.bodyToMono(PostPersonerResponse.class)
+				.doOnError(this::handleError)
+				.block();
+
+		if (isValidRespons(response, fnrTrimmed)) {
+			return mapDigitalKontaktinformasjon(response.getPersoner().get(fnrTrimmed));
+		} else {
+			String errorMsg = getErrorMsg(response, fnrTrimmed);
+
+			if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
+				return null;
 			} else {
-				String errorMsg = getErrorMsg(response, fnrTrimmed);
-
-				if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
-					return null;
-				} else {
-					throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s",
-							errorMsg));
-				}
+				throw new DigitalKontaktinformasjonV2FunctionalException(format("Kall mot digdir-krr-proxy feilet funksjonelt med feilmelding=%s",
+						errorMsg == null ? "Ingen feilmelding" : errorMsg));
 			}
-		} catch (HttpClientErrorException e) {
-			throw new DigitalKontaktinformasjonV2FunctionalException(format("Funksjonell feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
-					.getMessage()), e);
-		} catch (HttpServerErrorException e) {
-			throw new DigitalKontaktinformasjonV2TechnicalException(format("Teknisk feil ved kall mot DigitalKontaktinformasjonV1.kontaktinformasjon. Feilmelding=%s", e
-					.getMessage()), e);
 		}
 	}
 
-	private boolean isValidRespons(DkifResponseTo response, String fnr) {
+	private boolean isValidRespons(PostPersonerResponse response, String fnr) {
 		return response != null && response.getPersoner() != null && response.getPersoner().get(fnr) != null;
 	}
 
-	private String getErrorMsg(DkifResponseTo response, String fnr) {
+	private String getErrorMsg(PostPersonerResponse response, String fnr) {
 		if (response == null || response.getFeil() == null) {
 			return null;
 		} else {
 			return response.getFeil().get(fnr);
 		}
 	}
+
+	private void handleError(Throwable error) {
+		if (!(error instanceof WebClientResponseException response)) {
+			String feilmelding = format("Kall mot digdir-krr-proxy feilet teknisk med feilmelding=%s", error.getMessage());
+
+			log.warn(feilmelding);
+
+			throw new DigitalKontaktinformasjonV2TechnicalException(feilmelding, error);
+		}
+
+		String feilmelding = format("Kall mot digdir-krr-proxy feilet %s med status=%s, feilmelding=%s, response=%s",
+				response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+				response.getStatusCode(),
+				response.getMessage(),
+				response.getResponseBodyAsString());
+
+		log.warn(feilmelding);
+
+		if (response.getStatusCode().is4xxClientError()) {
+			throw new DigitalKontaktinformasjonV2FunctionalException(feilmelding, error);
+		} else {
+			throw new DigitalKontaktinformasjonV2TechnicalException(feilmelding, error);
+		}
+	}
+
+	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
+		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(getOAuth2AuthorizeRequestForAzure(CLIENT_REGISTRATION_DIGDIR_KRR_PROXY));
+		return oauth2AuthorizedClient(clientMono.block());
+	}
+
 }
