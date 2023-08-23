@@ -14,8 +14,6 @@ import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.consumer.pdl.HentPersoninfo;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
-import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer;
-import no.nav.dokdistkanal.consumer.sikkerhetsnivaa.to.SikkerhetsnivaaTo;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -44,25 +42,21 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @Component
 public class DokDistKanalService {
 
-	private static final String LOGGET_PAA = "logget på med nivaa4 de siste 18 mnd";
 	public static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
-	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 	private final MeterRegistry registry;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
 	DokDistKanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 						DigitalKontaktinformasjon digitalKontaktinformasjon,
-						SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
 						MeterRegistry registry,
 						PdlGraphQLConsumer pdlGraphQLConsumer,
 						AltinnServiceOwnerConsumer altinnServiceOwnerConsumer) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
 		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
-		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 		this.registry = registry;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
@@ -153,11 +147,6 @@ public class DokDistKanalService {
 			return logAndReturn(PRINT, "Bruker og mottaker er forskjellige", tema);
 		}
 
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(dokDistKanalRequest.getMottakerId());
-		if (sikkerhetsnivaaTo == null) {
-			return logAndReturn(PRINT, "Paaloggingsnivaa ikke tilgjengelig", tema);
-		}
-
 		if (!dokDistKanalRequest.getErArkivert()) {
 			return logAndReturn(PRINT, "Dokumentet er ikke arkivert", tema);
 		}
@@ -166,11 +155,7 @@ public class DokDistKanalService {
 			return logAndReturn(PRINT, "Tema har begrenset innsyn", tema);
 		}
 
-		if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {
-			return logAndReturn(DITT_NAV, "Bruker har " + LOGGET_PAA, tema);
-		}
-
-		return logAndReturn(PRINT, "Bruker har ikke " + LOGGET_PAA, tema);
+		return logAndReturn(DITT_NAV, "Bruker har gyldig digital kontaktinformasjon", tema);
 	}
 
 	private DokDistKanalResponse logAndReturn(DistribusjonKanalCode kanalKode, String reason, String tema) {
