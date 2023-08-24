@@ -99,7 +99,24 @@ public class DokDistKanalServiceTest {
 	@ParameterizedTest
 	@MethodSource("begrensetInnsynTemaFactory")
 	public void shouldSendTilPrintNaarTemaBegrensetInnsyn(String tema) {
-		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().tema(tema).build());
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
+		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
+		HentPersoninfo personinfoTo = HentPersoninfo.builder()
+				.foedselsdato(LocalDate.now().minusYears(18))
+				.build();
+		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(personinfoTo);
+		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
+				.reservasjon(Boolean.FALSE)
+				.mobiltelefonnummer(MOBIL).build();
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
+		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
+
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().tema(tema).brukerId(BRUKERID)
+				.dokumentTypeId(DOKUMENTTYPEID_AARSOPPGAVE)
+				.mottakerId(ANNEN_BRUKERID)
+				.build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(getLogMessage()).contains("til PRINT: Tema har begrenset innsyn");
 
@@ -273,6 +290,7 @@ public class DokDistKanalServiceTest {
 				.build();
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
+				.gyldigSertifikat(TRUE)
 				.reservasjon(Boolean.FALSE)
 				.mobiltelefonnummer(MOBIL).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
@@ -407,7 +425,7 @@ public class DokDistKanalServiceTest {
 				.build();
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.brukerAdresse(BRUKERADRESSE)
+				.gyldigSertifikat(TRUE)
 				.reservasjon(Boolean.FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)

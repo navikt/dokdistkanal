@@ -20,7 +20,7 @@ public class DigitalKontaktinformasjonTo {
 	private String brukerAdresse;
 	private boolean gyldigSertifikat;
 
-	public boolean verifyAddress() {
+	public boolean verifyAddressAndSertificate() {
 		boolean hasLeverandorAdresse = isNotEmpty(getLeverandoerAdresse());
 		boolean hasBrukerAdresse = isNotEmpty(getBrukerAdresse());
 		return (gyldigSertifikat && hasLeverandorAdresse && hasBrukerAdresse);
