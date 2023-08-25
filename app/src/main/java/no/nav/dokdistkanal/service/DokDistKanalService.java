@@ -72,10 +72,6 @@ public class DokDistKanalService {
 		validateInput(dokDistKanalRequest);
 		final String tema = dokDistKanalRequest.getTema();
 
-		if (BEGRENSET_INNSYN_TEMA.contains(tema)) {
-			return logAndReturn(PRINT, "Tema har begrenset innsyn", tema);
-		}
-
 		DokumentTypeInfoTo dokumentTypeInfoTo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(dokDistKanalRequest.getDokumentTypeId());
 
 		if ("INGEN".equals(dokumentTypeInfoTo.getArkivsystem())) {
@@ -129,7 +125,7 @@ public class DokDistKanalService {
 		}
 
 		if (LocalDate.now().minusYears(18).isBefore(hentPersoninfo.getFoedselsdato())) {
-			return logAndReturn(PRINT, "Personen må være minst 18 år gammel", tema);
+			return logAndReturn(PRINT, "Personen må være minst 18 år gammel for digital kommunikasjon", tema);
 		}
 
 		DigitalKontaktinformasjonTo dki = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(dokDistKanalRequest
@@ -144,7 +140,7 @@ public class DokDistKanalService {
 		if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi", tema);
 		}
-		if (dki.verifyAddress()) {
+		if (dki.verifyAddressAndCertificate()) {
 			return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
 		}
 		if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
@@ -164,6 +160,10 @@ public class DokDistKanalService {
 
 		if (!dokDistKanalRequest.getErArkivert()) {
 			return logAndReturn(PRINT, "Dokumentet er ikke arkivert", tema);
+		}
+
+		if (BEGRENSET_INNSYN_TEMA.contains(tema)) {
+			return logAndReturn(PRINT, "Tema har begrenset innsyn", tema);
 		}
 
 		if (sikkerhetsnivaaTo.isHarLoggetPaaNivaa4()) {

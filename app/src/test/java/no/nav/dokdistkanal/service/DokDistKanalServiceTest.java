@@ -8,7 +8,6 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
-import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
@@ -35,13 +34,18 @@ import org.slf4j.MDC;
 import java.time.LocalDate;
 import java.util.stream.Stream;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.ORGANISASJON;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.SAMHANDLER_HPR;
 import static no.nav.dokdistkanal.service.DokDistKanalService.BEGRENSET_INNSYN_TEMA;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -64,7 +68,7 @@ public class DokDistKanalServiceTest {
 	private final static String BRUKERADRESSE = "Brukeradresse";
 	private final static String BRUKERID = "55443322110";
 	private final static String ANNEN_BRUKERID = "01122334455";
-	private final static Boolean ER_ARKIVERT_FALSE = Boolean.FALSE;
+	private final static Boolean ER_ARKIVERT_FALSE = FALSE;
 	private final static Boolean ER_ARKIVERT_TRUE = TRUE;
 	private final static String CONSUMER_ID = "srvdokdistfordeling";
 	public static final String BRUKER_LOGGET = "Bruker har logget på med nivaa4 de siste 18 mnd";
@@ -89,6 +93,20 @@ public class DokDistKanalServiceTest {
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
 		service = new DokDistKanalService(dokumentTypeInfoConsumer, digitalKontaktinformasjonConsumer, sikkerhetsnivaaConsumer,
 				registry, pdlGraphQLConsumer, altinnServiceOwnerConsumer);
+
+		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString()))
+				.thenReturn(new DokumentTypeInfoTo("JOARK", null, TRUE));
+
+		HentPersoninfo personInfoAttenAar = HentPersoninfo.builder()
+				.foedselsdato(LocalDate.now().minusYears(18))
+				.build();
+		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(personInfoAttenAar);
+
+		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder()
+				.harLoggetPaaNivaa4(true)
+				.personIdent(FNR)
+				.build();
+		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 	}
 
 	@AfterEach
@@ -99,7 +117,16 @@ public class DokDistKanalServiceTest {
 	@ParameterizedTest
 	@MethodSource("begrensetInnsynTemaFactory")
 	public void shouldSendTilPrintNaarTemaBegrensetInnsyn(String tema) {
-		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().tema(tema).build());
+		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
+				.reservasjon(FALSE)
+				.mobiltelefonnummer(MOBIL).build();
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().tema(tema).brukerId(BRUKERID)
+				.dokumentTypeId(DOKUMENTTYPEID_AARSOPPGAVE)
+				.mottakerId(ANNEN_BRUKERID)
+				.build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
 		assertThat(getLogMessage()).contains("til PRINT: Tema har begrenset innsyn");
 
@@ -124,10 +151,10 @@ public class DokDistKanalServiceTest {
 
 	@Test
 	public void shouldSetKanalDittNavNaarIngenArkiveringLP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", DistribusjonKanalCode.LOKAL_PRINT.toString(), TRUE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", LOKAL_PRINT.toString(), TRUE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(DistribusjonKanalCode.LOKAL_PRINT, serviceResponse.getDistribusjonsKanal());
+		assertEquals(LOKAL_PRINT, serviceResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -136,7 +163,7 @@ public class DokDistKanalServiceTest {
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(INGEN_DISTRIBUSJON, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, INGEN_DISTRIBUSJON, TEMA) + "Predefinert distribusjonskanal er Ingen Distribusjon");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(INGEN_DISTRIBUSJON) + "Predefinert distribusjonskanal er Ingen Distribusjon");
 	}
 
 	@Test
@@ -149,340 +176,293 @@ public class DokDistKanalServiceTest {
 
 	@Test
 	public void shouldSetKanalPrintNaarOrganisasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder()
+				.brukerId(BRUKERID)
+				.mottakerType(ORGANISASJON)
+				.mottakerId(BRUKERID)
+				.build());
 
-		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().brukerId(BRUKERID)
-				.mottakerType(MottakerTypeCode.ORGANISASJON).mottakerId(BRUKERID).build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Mottaker er av typen ORGANISASJON");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Mottaker er av typen ORGANISASJON");
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarSamhandler() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-
-		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().mottakerType(MottakerTypeCode.SAMHANDLER_HPR)
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder()
+				.mottakerType(SAMHANDLER_HPR)
 				.build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Mottaker er av typen SAMHANDLER_HPR");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Mottaker er av typen SAMHANDLER_HPR");
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarIngenPerson() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersonResponse = null;
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersonResponse);
+		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(null);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Finner ikke personen i PDL");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Finner ikke personen i PDL");
 
 	}
 
 	@Test
 	public void shouldSetKanalDittNavNaarPersonDoed() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder().doedsdato(LocalDate.now()).build();
+		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
+				.doedsdato(LocalDate.now())
+				.build();
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personen er død");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Personen er død");
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarPersonManglerFoedselsdato() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
 				.doedsdato(null)
 				.foedselsdato(null)
 				.build();
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personens alder er ukjent");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Personens alder er ukjent");
 
 	}
 
 
 	@Test
 	public void shouldSetKanalPrintNaarPersonUnder18() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
 		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
 				.foedselsdato(LocalDate.now().minusYears(17).minusMonths(11))
 				.build();
 		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Personen må være minst 18 år gammel");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Personen må være minst 18 år gammel");
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarDKIMangler() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
-		DigitalKontaktinformasjonTo dkiResponse = null;
-		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(null);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Finner ikke Digital kontaktinformasjon");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Finner ikke Digital kontaktinformasjon");
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarReservasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.gyldigSertifikat(SERTIFIKAT)
 				.reservasjon(TRUE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
-				.mobiltelefonnummer(MOBIL).build();
+				.mobiltelefonnummer(MOBIL)
+				.build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker har reservert seg");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Bruker har reservert seg");
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarMottakerIdIkkeErBrukerId() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.reservasjon(Boolean.FALSE)
+				.gyldigSertifikat(TRUE)
+				.reservasjon(FALSE)
 				.mobiltelefonnummer(MOBIL).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
-		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().brukerId(BRUKERID)
 				.mottakerId(ANNEN_BRUKERID)
 				.build());
 
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker og mottaker er forskjellige");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Bruker og mottaker er forskjellige");
 
 	}
 
 	@Test
 	public void shouldSetKanalDittNavNaarMottakerIdIkkeErBrukerIdAndDokumentTypeIdIsAarsoppgave() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo personinfoTo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(personinfoTo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.reservasjon(Boolean.FALSE)
+				.reservasjon(FALSE)
 				.mobiltelefonnummer(MOBIL).build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
-		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().brukerId(BRUKERID)
 				.dokumentTypeId(DOKUMENTTYPEID_AARSOPPGAVE)
 				.mottakerId(ANNEN_BRUKERID)
 				.build());
 
-		assertEquals(DistribusjonKanalCode.DITT_NAV, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, DITT_NAV, TEMA) + BRUKER_LOGGET);
+		assertEquals(DITT_NAV, serviceResponse.getDistribusjonsKanal());
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(DITT_NAV) + BRUKER_LOGGET);
 
 	}
 
 	@Test
 	public void shouldSetKanalSDPNaarAltOK() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.gyldigSertifikat(SERTIFIKAT)
-				.reservasjon(Boolean.FALSE)
+				.reservasjon(FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
-				.mobiltelefonnummer(MOBIL).build();
+				.mobiltelefonnummer(MOBIL)
+				.build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(DistribusjonKanalCode.SDP, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, SDP, TEMA) + "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.");
+
+		assertEquals(SDP, serviceResponse.getDistribusjonsKanal());
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(SDP) + "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.");
 
 	}
 
 	@Test
 	public void shouldSetKanalSDPNaarBrukerIkkeVarslesMenEpostOgMobilErTomme() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.gyldigSertifikat(SERTIFIKAT)
-				.reservasjon(Boolean.FALSE)
-				.leverandoerAdresse(LEVERANDORADRESSE).build();
+				.reservasjon(FALSE)
+				.leverandoerAdresse(LEVERANDORADRESSE)
+				.build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Epostadresse og mobiltelefon - feltene er tomme");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Epostadresse og mobiltelefon - feltene er tomme");
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarMobilOgEpostMangler() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, TRUE);
-		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
 				.brukerAdresse(BRUKERADRESSE)
 				.gyldigSertifikat(SERTIFIKAT)
-				.reservasjon(Boolean.FALSE)
+				.reservasjon(FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(null)
-				.mobiltelefonnummer(null).build();
+				.mobiltelefonnummer(null)
+				.build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
+
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
+
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi");
 	}
 
 	@Test
 	public void shouldSetKanalDittNavNaarPaalogginsnivaa4OgIkkeSDP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
-		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.brukerAdresse(BRUKERADRESSE)
-				.reservasjon(Boolean.FALSE)
-				.leverandoerAdresse(LEVERANDORADRESSE)
-				.epostadresse(EPOSTADRESSE)
-				.mobiltelefonnummer(MOBIL).build();
+
+		DigitalKontaktinformasjonTo dkiResponse = digitalKontaktinformasjonNoReservationInvalidCertificate();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
-		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
-		assertEquals(DistribusjonKanalCode.DITT_NAV, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, DITT_NAV, TEMA) + BRUKER_LOGGET);
+		assertEquals(DITT_NAV, serviceResponse.getDistribusjonsKanal());
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(DITT_NAV) + BRUKER_LOGGET);
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarIkkePaalogginsnivaa4OgIkkeSDPOgArkivert() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+
 		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.brukerAdresse(BRUKERADRESSE)
-				.reservasjon(Boolean.FALSE)
+				.gyldigSertifikat(SERTIFIKAT)
+				.reservasjon(FALSE)
 				.leverandoerAdresse(LEVERANDORADRESSE)
 				.epostadresse(EPOSTADRESSE)
-				.mobiltelefonnummer(MOBIL).build();
+				.mobiltelefonnummer(MOBIL)
+				.build();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(false).personIdent(FNR).build();
+		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder()
+				.harLoggetPaaNivaa4(false)
+				.personIdent(FNR)
+				.build();
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + BRUKER_IKKE_LOGGET);
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + BRUKER_IKKE_LOGGET);
 
 	}
 
 	@Test
 	public void shouldSetKanalPrintNaarPaalogginsnivaaIkkeFunnet4OgIkkeSDP() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
-		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.brukerAdresse(BRUKERADRESSE)
-				.reservasjon(Boolean.FALSE)
-				.leverandoerAdresse(LEVERANDORADRESSE)
-				.epostadresse(EPOSTADRESSE)
-				.mobiltelefonnummer(MOBIL).build();
+
+		DigitalKontaktinformasjonTo dkiResponse = digitalKontaktinformasjonNoReservationInvalidCertificate();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
 		SikkerhetsnivaaTo sikkerhetsnivaaTo = null;
 		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Paaloggingsnivaa ikke tilgjengelig");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Paaloggingsnivaa ikke tilgjengelig");
 
 	}
 
 	@Test
 	public void shouldSetKanaPrintNaarPaalogginsnivaa4OgIkkeSDPOgIkkeArkivert() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, Boolean.FALSE);
+		DokumentTypeInfoTo response = new DokumentTypeInfoTo("JOARK", null, FALSE);
 		when(dokumentTypeInfoConsumer.hentDokumenttypeInfo(anyString())).thenReturn(response);
-		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
-				.foedselsdato(LocalDate.now().minusYears(18))
-				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
-		DigitalKontaktinformasjonTo dkiResponse = DigitalKontaktinformasjonTo.builder()
-				.brukerAdresse(BRUKERADRESSE)
-				.reservasjon(Boolean.FALSE)
-				.leverandoerAdresse(LEVERANDORADRESSE)
-				.epostadresse(EPOSTADRESSE)
-				.mobiltelefonnummer(MOBIL).build();
+
+		DigitalKontaktinformasjonTo dkiResponse = digitalKontaktinformasjonNoReservationInvalidCertificate();
 		when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(anyString(), anyBoolean())).thenReturn(dkiResponse);
-		SikkerhetsnivaaTo sikkerhetsnivaaTo = SikkerhetsnivaaTo.builder().harLoggetPaaNivaa4(true).personIdent(FNR).build();
-		when(sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(anyString())).thenReturn(sikkerhetsnivaaTo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().erArkivert(ER_ARKIVERT_FALSE)
 				.build());
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(CONSUMER_ID, PRINT, TEMA) + "Dokumentet er ikke arkivert");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Dokumentet er ikke arkivert");
 
+	}
+
+	private static DigitalKontaktinformasjonTo digitalKontaktinformasjonNoReservationInvalidCertificate() {
+		return DigitalKontaktinformasjonTo.builder()
+				.brukerAdresse(BRUKERADRESSE)
+				.reservasjon(FALSE)
+				.leverandoerAdresse(LEVERANDORADRESSE)
+				.epostadresse(EPOSTADRESSE)
+				.mobiltelefonnummer(MOBIL)
+				.build();
 	}
 
 	private DokDistKanalRequest.DokDistKanalRequestBuilder baseDokDistKanalRequestBuilder() {
 		return DokDistKanalRequest.builder()
 				.dokumentTypeId(DOKUMENTTYPEID)
 				.mottakerId(FNR)
-				.mottakerType(MottakerTypeCode.PERSON)
+				.mottakerType(PERSON)
 				.brukerId(FNR)
 				.erArkivert(ER_ARKIVERT_TRUE)
 				.tema(TEMA);
 	}
 
-	private static String createLogMelding(String consumerId, DistribusjonKanalCode kanalCode, String tema) {
-		return format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: ", consumerId, tema, kanalCode);
+	private static String createLogMelding(DistribusjonKanalCode kanalCode) {
+		return format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: ", CONSUMER_ID, TEMA, kanalCode);
 	}
 
 }
