@@ -80,8 +80,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);
-					assertThat(it.regel()).isEqualTo(regel.name());
+					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);					assertThat(it.regel()).isEqualTo(regel.name());
 					assertThat(it.regelBegrunnelse()).isEqualTo(regel.begrunnelse);
 				});
 	}

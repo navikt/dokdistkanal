@@ -49,6 +49,7 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeId
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrganisasjon;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Slf4j
@@ -81,12 +82,13 @@ public class BestemDistribusjonskanalService {
 
 	public BestemDistribusjonskanalResponse bestemDistribusjonskanal(BestemDistribusjonskanalRequest request) {
 
-		var dokumenttypeInfo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
+		var dokumenttypeInfo = isBlank(request.getDokumenttypeId()) ? null : dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
 
-		var predefinertDistribusjonskanal = predefinertDistribusjonskanal(request, dokumenttypeInfo);
-
-		if (predefinertDistribusjonskanal != null) {
-			return predefinertDistribusjonskanal;
+		if (dokumenttypeInfo != null) {
+			var predefinertDistribusjonskanal = predefinertDistribusjonskanal(request, dokumenttypeInfo);
+			if (predefinertDistribusjonskanal != null) {
+				return predefinertDistribusjonskanal;
+			}
 		}
 
 		return switch (request.getMottakerId().length()) {
@@ -141,7 +143,10 @@ public class BestemDistribusjonskanalService {
 		}
 
 		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
-		if (!isDokumentTypeIdUsedForAarsoppgave(request.getDokumenttypeId()) && !request.getMottakerId().equals(request.getBrukerId())) {
+		if (request.getDokumenttypeId() != null &&
+			!isDokumentTypeIdUsedForAarsoppgave(request.getDokumenttypeId()) &&
+			!request.getMottakerId().equals(request.getBrukerId())) {
+
 			return createResponse(request, BRUKER_OG_MOTTAKER_ER_FORSKJELLIG);
 		}
 
@@ -165,7 +170,8 @@ public class BestemDistribusjonskanalService {
 		if (digitalKontaktinfo.isReservasjon()) {
 			return createResponse(request, BRUKER_ER_RESERVERT);
 		}
-		if (dokumentTypeInfo.isVarslingSdp() &&
+		if (dokumentTypeInfo != null &&
+			dokumentTypeInfo.isVarslingSdp() &&
 			isEmpty(digitalKontaktinfo.getEpostadresse()) &&
 			isEmpty(digitalKontaktinfo.getMobiltelefonnummer())) {
 

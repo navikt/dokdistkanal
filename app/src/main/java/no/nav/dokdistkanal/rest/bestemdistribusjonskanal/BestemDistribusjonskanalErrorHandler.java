@@ -11,7 +11,6 @@ import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2Techn
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -24,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
@@ -41,7 +41,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Funksjonell feil ved kall mot ekstern tjeneste");
 
-		log.warn(problem.getDetail(), ex);
+		log.warn("Funksjonell feil ved kall mot ekstern tjeneste. Feilmelding={}", problem.getDetail(), ex);
 
 		return problem;
 	}
@@ -55,18 +55,18 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Teknisk feil ved kall mot ekstern tjeneste");
 
-		log.warn(problem.getDetail(), ex);
+		log.warn("Teknisk feil ved kall mot ekstern tjeneste. Feilmelding={}", problem.getDetail(), ex);
 
 		return problem;
 	}
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-		String feilmelding = ex.getBindingResult().getFieldErrors().stream()
-				.map(DefaultMessageSourceResolvable::getDefaultMessage)
+		String feilmelding = ex.getFieldErrors().stream()
+				.map(it -> format("%s, mottatt %s=%s", it.getDefaultMessage(), it.getField(), it.getRejectedValue()))
 				.collect(Collectors.joining(", "));
 
-		log.warn(feilmelding, ex);
+		log.warn("Validering av request feilet med følgende feil={}", feilmelding, ex);
 
 		return ResponseEntity
 				.status(BAD_REQUEST)
