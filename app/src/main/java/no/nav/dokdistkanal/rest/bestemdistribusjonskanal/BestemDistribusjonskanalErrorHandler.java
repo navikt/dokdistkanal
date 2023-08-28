@@ -64,7 +64,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 		String feilmelding = ex.getFieldErrors().stream()
 				.map(it -> format("%s, mottatt %s=%s", it.getDefaultMessage(), it.getField(), it.getRejectedValue()))
-				.collect(Collectors.joining(", "));
+				.collect(Collectors.joining(". "));
 
 		log.warn("Validering av request feilet med følgende feil={}", feilmelding, ex);
 

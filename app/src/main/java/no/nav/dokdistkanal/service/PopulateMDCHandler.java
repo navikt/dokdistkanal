@@ -5,13 +5,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import no.nav.dokdistkanal.common.TokenUtils;
 import no.nav.dokdistkanal.exceptions.functional.CouldNotDecodeBasicAuthToken;
 import no.nav.security.token.support.core.jwt.JwtToken;
-import no.nav.security.token.support.core.jwt.JwtTokenClaims;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
@@ -40,10 +39,10 @@ public class PopulateMDCHandler implements HandlerInterceptor {
 
 
 	private void populateConsumerId(HttpServletRequest request) {
-		String consumerIdFromToken = getConsumerIdFromToken(request);
+		Optional<String> consumerIdFromToken = getConsumerIdFromToken(request);
 
-		if (isNotBlank(consumerIdFromToken)) {
-			put(CONSUMER_ID, consumerIdFromToken);
+		if (consumerIdFromToken.isPresent()) {
+			put(CONSUMER_ID, consumerIdFromToken.get());
 		} else {
 			String navConsumerId = isNotBlank(request.getHeader(NAV_CONSUMER_ID)) ? request.getHeader(NAV_CONSUMER_ID) : request.getHeader(CONSUMER_ID);
 			String username = getUsernameFromBasicAuth(request);
@@ -64,19 +63,14 @@ public class PopulateMDCHandler implements HandlerInterceptor {
 		}
 	}
 
-	private String getConsumerIdFromToken(HttpServletRequest request) {
-		final String authToken = TokenUtils.getAccessTokenFromRequest(request);
-
-		if (authToken != null) {
-			final JwtToken token = new JwtToken(authToken);
-			final JwtTokenClaims claims = token.getJwtTokenClaims();
-
-			if (claims.getAllClaims().containsKey(NAV_CUSTOM_CLAIM_AZP_NAME)) {
-				return extractConsumerId(claims.getStringClaim(NAV_CUSTOM_CLAIM_AZP_NAME));
-			}
-			return null;
-		}
-		return null;
+	private Optional<String> getConsumerIdFromToken(HttpServletRequest request) {
+		return TokenUtils.getAccessTokenFromRequest(request)
+				.map(it -> {
+					var claims = new JwtToken(it).getJwtTokenClaims();
+					if (claims.getAllClaims().containsKey(NAV_CUSTOM_CLAIM_AZP_NAME))
+						return extractConsumerId(claims.getStringClaim(NAV_CUSTOM_CLAIM_AZP_NAME));
+					return null;
+				});
 	}
 
 	private String extractConsumerId(String claim) {
