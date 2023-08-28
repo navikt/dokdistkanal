@@ -80,7 +80,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);					assertThat(it.regel()).isEqualTo(regel.name());
+					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);
+					assertThat(it.regel()).isEqualTo(regel.name());
 					assertThat(it.regelBegrunnelse()).isEqualTo(regel.begrunnelse);
 				});
 	}
@@ -266,14 +267,11 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
-
-	@ParameterizedTest
-	@MethodSource
-	void skalReturnereForPersonMedPaaloggingsnivaa(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel, String stubFile) {
+	@Test
+	void skalReturnereDittNavForBrukerMedGyldigEpostEllerMobilnummer() {
 		stubDokmet();
 		stubPdl();
 		stubDigdirKrrProxy("treg001/dki/ugyldig-sertifikat-responsebody.json");
-		stubSikkerhetsnivaa(stubFile);
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setBrukerId(request.getMottakerId());
@@ -292,17 +290,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);
-					assertThat(it.regel()).isEqualTo(regel.name());
-					assertThat(it.regelBegrunnelse()).isEqualTo(regel.begrunnelse);
+					assertThat(it.distribusjonskanal()).isEqualTo(DITT_NAV);
+					assertThat(it.regel()).isEqualTo(BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER.name());
+					assertThat(it.regelBegrunnelse()).isEqualTo(BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER.begrunnelse);
 				});
-	}
-
-	private static Stream<Arguments> skalReturnereForPersonMedPaaloggingsnivaa() {
-		return Stream.of(
-				Arguments.of(DITT_NAV, BestemDistribusjonskanalRegel.BRUKER_HAR_LOGGET_PAA_NIVAA4, "treg001/paalogging/happy-responsebody.json"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_HAR_IKKE_LOGGET_PAA_NIVAA4, "treg001/paalogging/response_har_ikke_logget_paa_nivaa4.json")
-		);
 	}
 
 	@Test
@@ -331,7 +322,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 					assertThat(it.regelBegrunnelse()).isEqualTo(BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.begrunnelse);
 				});
 	}
-
 
 	@ParameterizedTest
 	@MethodSource

@@ -42,7 +42,7 @@ public class PopulateMDCHandler implements HandlerInterceptor {
 	private void populateConsumerId(HttpServletRequest request) {
 		String consumerIdFromToken = getConsumerIdFromToken(request);
 
-		if (StringUtils.isNotBlank(consumerIdFromToken)) {
+		if (isNotBlank(consumerIdFromToken)) {
 			put(CONSUMER_ID, consumerIdFromToken);
 		} else {
 			String navConsumerId = isNotBlank(request.getHeader(NAV_CONSUMER_ID)) ? request.getHeader(NAV_CONSUMER_ID) : request.getHeader(CONSUMER_ID);

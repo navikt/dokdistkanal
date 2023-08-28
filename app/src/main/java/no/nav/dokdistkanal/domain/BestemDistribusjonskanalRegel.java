@@ -29,9 +29,9 @@ public enum BestemDistribusjonskanalRegel {
 	BRUKER_MANGLER_EPOST_OG_TELEFON(PRINT, "Bruker mangler mangler både e-post og telefonnummer"),
 	BRUKER_OG_MOTTAKER_ER_FORSKJELLIG(PRINT, "Bruker og mottaker er forskjellig"),
 	DOKUMENT_ER_IKKE_ARKIVERT(PRINT, "Dokumentet er ikke arkivert"),
-	BRUKER_HAR_LOGGET_PAA_NIVAA4(DITT_NAV, "Bruker har logget på med nivaa4 siste 18 månedene"),
-	BRUKER_HAR_IKKE_LOGGET_PAA_NIVAA4(PRINT, "Bruker har ikke logget på med nivaa4 siste 18 månedene"),
-	MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON(PRINT, "Mottaker er ikke person eller organisasjon");
+	MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON(PRINT, "Mottaker er ikke person eller organisasjon"),
+	BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER(DITT_NAV, "Bruker har gyldig e-post og/eller mobilnummer"),
+	PERSON_DEFAULT_PRINT(PRINT, "Default distribusjonskanal for personer er Print");
 
 	public final DistribusjonKanalCode distribusjonKanal;
 	public final String begrunnelse;

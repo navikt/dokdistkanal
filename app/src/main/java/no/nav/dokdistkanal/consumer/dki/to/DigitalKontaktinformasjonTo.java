@@ -25,4 +25,9 @@ public class DigitalKontaktinformasjonTo {
 		boolean hasBrukerAdresse = isNotEmpty(getBrukerAdresse());
 		return (gyldigSertifikat && hasLeverandorAdresse && hasBrukerAdresse);
 	}
+
+	public boolean harEpostEllerMobilnummer() {
+		return (isNotEmpty(getEpostadresse()) || isNotEmpty(getMobiltelefonnummer()));
+	}
 }
+

@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjon;
+import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
@@ -21,12 +22,12 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJO
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_IKKE_LOGGET_PAA_NIVAA4;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_LOGGET_PAA_NIVAA4;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_DEFAULT_PRINT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
@@ -50,7 +51,6 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisteri
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrganisasjon;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Slf4j
 @Service
@@ -60,20 +60,17 @@ public class BestemDistribusjonskanalService {
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
-	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
 	private final MeterRegistry registry;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 										   DigitalKontaktinformasjon digitalKontaktinformasjon,
-										   SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer,
 										   MeterRegistry registry,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
 		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
-		this.sikkerhetsnivaaConsumer = sikkerhetsnivaaConsumer;
 		this.registry = registry;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
@@ -136,7 +133,8 @@ public class BestemDistribusjonskanalService {
 			return resultat;
 		}
 
-		resultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo);
+		var digitalKontaktinfo = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
+		resultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo, digitalKontaktinfo);
 
 		if (resultat != null) {
 			return resultat;
@@ -158,11 +156,16 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, TEMA_HAR_BEGRENSET_INNSYN);
 		}
 
-		return evaluerSikkerhetsnivaa(request);
+		if (digitalKontaktinfo.harEpostEllerMobilnummer()) {
+			return createResponse(request, BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER);
+		}
+
+		return createResponse(request, PERSON_DEFAULT_PRINT);
 	}
 
-	private BestemDistribusjonskanalResponse evaluerDigitalKontaktinfo(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
-		var digitalKontaktinfo = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
+	private BestemDistribusjonskanalResponse evaluerDigitalKontaktinfo(BestemDistribusjonskanalRequest request,
+																	   DokumentTypeInfoTo dokumentTypeInfo,
+																	   DigitalKontaktinformasjonTo digitalKontaktinfo) {
 
 		if (digitalKontaktinfo == null) {
 			return createResponse(request, FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON);
@@ -172,15 +175,14 @@ public class BestemDistribusjonskanalService {
 		}
 		if (dokumentTypeInfo != null &&
 			dokumentTypeInfo.isVarslingSdp() &&
-			isEmpty(digitalKontaktinfo.getEpostadresse()) &&
-			isEmpty(digitalKontaktinfo.getMobiltelefonnummer())) {
+			!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 
 			return createResponse(request, BRUKER_SDP_MANGLER_VARSELINFO);
 		}
 		if (digitalKontaktinfo.verifyAddress()) {
 			return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 		}
-		if (isEmpty(digitalKontaktinfo.getEpostadresse()) && isEmpty(digitalKontaktinfo.getMobiltelefonnummer())) {
+		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
 		}
 		return null;
@@ -203,16 +205,6 @@ public class BestemDistribusjonskanalService {
 		}
 		return null;
 	}
-
-	private BestemDistribusjonskanalResponse evaluerSikkerhetsnivaa(BestemDistribusjonskanalRequest request) {
-		var sikkerhetsnivaa = sikkerhetsnivaaConsumer.hentPaaloggingsnivaa(request.getMottakerId());
-
-		if (sikkerhetsnivaa.isHarLoggetPaaNivaa4()) {
-			return createResponse(request, BRUKER_HAR_LOGGET_PAA_NIVAA4);
-		}
-		return createResponse(request, BRUKER_HAR_IKKE_LOGGET_PAA_NIVAA4);
-	}
-
 
 	private BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
 		var kanalKode = regel.distribusjonKanal.name();
