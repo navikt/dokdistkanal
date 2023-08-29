@@ -5,6 +5,7 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
@@ -12,7 +13,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 public enum BestemDistribusjonskanalRegel {
 	TEMA_HAR_BEGRENSET_INNSYN(PRINT, "Tema har begrenset innsyn"),
 	SKAL_IKKE_ARKIVERES(PRINT, "Skal ikke arkiveres"),
-	PREDEFINERT_LOKAL_PRINT(PRINT, "Brevets dokumenttype har predefinert distribusjonskanal som er Lokal Print"),
+	PREDEFINERT_LOKAL_PRINT(LOKAL_PRINT, "Brevets dokumenttype har predefinert distribusjonskanal som er Lokal Print"),
 	PREDEFINERT_INGEN_DISTRIBUSJON(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon"),
 	PREDEFINERT_TRYGDERETTEN(TRYGDERETTEN, "Predefinert distribusjonskanal er Trygderetten"),
 	ORGANISASJON_MED_INFOTRYGD_DOKUMENT(PRINT, "Mottaker er organisasjon og dokument er produsert i infotrygd"),

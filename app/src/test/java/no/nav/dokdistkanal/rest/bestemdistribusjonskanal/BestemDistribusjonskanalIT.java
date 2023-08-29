@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
@@ -32,6 +33,9 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
+/*
+ * Se https://confluence.adeo.no/pages/viewpage.action?pageId=294148459 for funksjonelle behandlingsregler
+ */
 public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static final String BESTEM_DISTRIBUSJONSKANAL_URL = "/rest/bestemDistribusjonskanal";
@@ -62,7 +66,13 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.expectStatus()
 				.isOk();
 	}
-
+	/*
+	 * Her testes følgende regler:
+	 * 1: Skal dokumentet arkiveres? Hvis nei -> PRINT
+	 * 2: Er predefinert distribusjonskanal LOKAL_PRINT? Hvis ja -> LOKAL_PRINT
+	 * 3: Er predefinert distribusjonskanal INGEN_DISTRIBUSJON? Hvis ja -> INGEN_DISTRIBUSJON
+	 * 4: redefinert distribusjonskanal TRYGDERETTEN? Hvis ja -> TRYGDERETTEN
+	 */
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnerePredefinertDistribusjonskanal(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel, String stubFile) {
@@ -91,11 +101,18 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	private static Stream<Arguments> skalReturnerePredefinertDistribusjonskanal() {
 		return Stream.of(
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.SKAL_IKKE_ARKIVERES, "treg001/dokmet/response_ingen_arkivsystem.json"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.PREDEFINERT_LOKAL_PRINT, "treg001/dokmet/response_predefinert_lokal_print.json"),
+				Arguments.of(LOKAL_PRINT, BestemDistribusjonskanalRegel.PREDEFINERT_LOKAL_PRINT, "treg001/dokmet/response_predefinert_lokal_print.json"),
 				Arguments.of(INGEN_DISTRIBUSJON, BestemDistribusjonskanalRegel.PREDEFINERT_INGEN_DISTRIBUSJON, "treg001/dokmet/response_predefinert_ingen_distribusjon.json"),
 				Arguments.of(TRYGDERETTEN, BestemDistribusjonskanalRegel.PREDEFINERT_TRYGDERETTEN, "treg001/dokmet/response_predefinert_trygderetten.json")
 		);
 	}
+
+	/*
+	 * Her testes følgende regler:
+	 * 5: Er mottakerType ORGANISASJON og dokument produsert i infotrygd? Hvis ja -> PRINT
+	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn? Hvis ja -> DPVT
+	 * -: Er mottakerType ORGANISASJON og men ikke en DPVT-organisasjon? Hvis ja -> PRINT (Default for organisasjoner)
+	 */
 
 	@ParameterizedTest
 	@MethodSource
@@ -135,6 +152,12 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		);
 	}
 
+	/*
+	 * Her testes følgende regler:
+	 * 8: Finnes mottaker i PDL? Hvis nei -> PRINT
+	 * 9: Er mottakers fødselsdato ikke satt, eller er under 18 år gammel? Hvis ja -> PRINT
+	 * 10: Er personen død? Hvis ja -> PRINT
+	 */
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnerePrintForPersonMedPersoninfo(BestemDistribusjonskanalRegel regel, String stubFile) {
@@ -169,6 +192,15 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(BestemDistribusjonskanalRegel.PERSON_ER_UNDER_18, "pdl/pdl_under_18_aar.json")
 		);
 	}
+
+	/*
+	 * Her testes følgende regler:
+	 * 11: Har personen gyldig digital kontaktinformasjon? Hvis nei -> PRINT
+	 * 12: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
+	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
+	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
+	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
+	 */
 
 	@ParameterizedTest
 	@MethodSource
@@ -212,6 +244,11 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		);
 	}
 
+	/*
+	 * Her testes følgende regler:
+	 * 16: Er bruker og mottaker forskjellig (og dokumentTypeId er ikke årsoppgave)? Hvis ja -> PRINT
+	 * 17: Er dokumentet arkivert? Hvis nei -> PRINT
+	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"000011"})
 	@NullSource
@@ -243,6 +280,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
+	/*
+	 * Her testes følgende regler:
+	 * 18: Har dokmentet tema med begrenset innsyn? Hvis ja -> PRINT
+	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP", "ARS"})
 	void skalReturnerePrintForTemaMedBegrensetInnsyn(String tema) {
@@ -274,6 +315,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
+	/*
+	 * Her testes følgende regler:
+	 * 19: Har bruker gyldig epostadresse eller mobilnummer? Hvis ja -> DITT_NAV
+	 */
 	@Test
 	void skalReturnereDittNavForBrukerMedGyldigEpostEllerMobilnummer() {
 		stubDokmet();
@@ -303,6 +348,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
+	/*
+	 * Her testes følgende regler:
+	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
+	 */
 	@Test
 	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon() {
 		stubDokmet();
