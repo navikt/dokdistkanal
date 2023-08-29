@@ -64,7 +64,6 @@ spec:
   azure:
     application:
       enabled: true
-      allowAllUsers: true
       claims:
         extra:
           - azp_name

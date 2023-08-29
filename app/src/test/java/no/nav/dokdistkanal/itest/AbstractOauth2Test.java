@@ -28,7 +28,7 @@ public abstract class AbstractOauth2Test {
 		String audience = "dokdistkanal";
 		return mockOAuth2Server.issueToken(
 				AZUREV2_ISSUER,
-				"gosys-clientid",
+				"app-clientid",
 				new DefaultOAuth2TokenCallback(
 						AZUREV2_ISSUER,
 						"subject",

@@ -14,7 +14,6 @@ import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskana
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
@@ -32,11 +31,11 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_IKKE_DPVT_ORG;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_DEFAULT_PRINT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_DOED;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_IKKE_I_PDL;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_UNDER_18;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_HAR_UKJENT_ALDER;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_STANDARD_PRINT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_LOKAL_PRINT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_TRYGDERETTEN;
@@ -126,24 +125,24 @@ public class BestemDistribusjonskanalService {
 
 	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
 
-		var resultat = evaluerPersoninfo(request, request.getTema());
+		var personinfoResultat = evaluerPersoninfo(request, request.getTema());
 
-		if (resultat != null) {
-			return resultat;
+		if (personinfoResultat != null) {
+			return personinfoResultat;
 		}
 
 		var digitalKontaktinfo = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
-		resultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo, digitalKontaktinfo);
+		var digitalKontaktinfoResultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo, digitalKontaktinfo);
 
-		if (resultat != null) {
-			return resultat;
+		if (digitalKontaktinfoResultat != null) {
+			return digitalKontaktinfoResultat;
 		}
 
-		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
-		if (request.getDokumenttypeId() != null &&
-			!isDokumentTypeIdUsedForAarsoppgave(request.getDokumenttypeId()) &&
-			!request.getMottakerId().equals(request.getBrukerId())) {
+		var dokumentTypeErIkkeAarsoppgave = request.getDokumenttypeId() == null || !isDokumentTypeIdUsedForAarsoppgave(request.getDokumenttypeId());
+		var mottarOgBrukerErForskjellig = !request.getMottakerId().equals(request.getBrukerId());
 
+		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
+		if (dokumentTypeErIkkeAarsoppgave && mottarOgBrukerErForskjellig) {
 			return createResponse(request, BRUKER_OG_MOTTAKER_ER_FORSKJELLIG);
 		}
 
@@ -159,7 +158,25 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER);
 		}
 
-		return createResponse(request, PERSON_DEFAULT_PRINT);
+		return createResponse(request, PERSON_STANDARD_PRINT);
+	}
+
+	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request, String tema) {
+		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId(), tema) : null;
+
+		if (personinfo == null) {
+			return createResponse(request, PERSON_ER_IKKE_I_PDL);
+		}
+		if (personinfo.erDoed()) {
+			return createResponse(request, PERSON_ER_DOED);
+		}
+		if (personinfo.harUkjentAlder()) {
+			return createResponse(request, PERSON_HAR_UKJENT_ALDER);
+		}
+		if (personinfo.erUnderAtten()) {
+			return createResponse(request, PERSON_ER_UNDER_18);
+		}
+		return null;
 	}
 
 	private BestemDistribusjonskanalResponse evaluerDigitalKontaktinfo(BestemDistribusjonskanalRequest request,
@@ -183,24 +200,6 @@ public class BestemDistribusjonskanalService {
 		}
 		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
-		}
-		return null;
-	}
-
-	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request, String tema) {
-		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId(), tema) : null;
-
-		if (personinfo == null) {
-			return createResponse(request, PERSON_ER_IKKE_I_PDL);
-		}
-		if (personinfo.getDoedsdato() != null) {
-			return createResponse(request, PERSON_ER_DOED);
-		}
-		if (personinfo.getFoedselsdato() == null) {
-			return createResponse(request, PERSON_HAR_UKJENT_ALDER);
-		}
-		if (LocalDate.now().minusYears(18).isBefore(personinfo.getFoedselsdato())) {
-			return createResponse(request, PERSON_ER_UNDER_18);
 		}
 		return null;
 	}

@@ -8,19 +8,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 
 import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Target({METHOD})
+@Retention(RUNTIME)
 @Documented
-@Operation(summary = "Bestemmer distribusjonskanal for et dokument basert på informasjon om mottaker, bruker, tema dokumenttype og arkivering")
+@Operation(summary = "Bestemmer distribusjonskanal for et dokument basert på informasjon om mottaker, bruker, tema, dokumenttype og arkivering")
 @ApiResponses(value = {
 		@ApiResponse(
 				responseCode = "200",
-				description = "OK - Bestemt kanal returneres sammen med hvilken regel kanalen ble bestemt på bakgrunn av og begrunnelse for valget av denne.",
+				description = "OK - Bestemt kanal returneres sammen med begrunnelse for valget.",
 				content = @Content(
 						mediaType = "application/json",
 						schema = @Schema(implementation = BestemDistribusjonskanalResponse.class)
@@ -37,7 +38,7 @@ import java.lang.annotation.Target;
 		),
 		@ApiResponse(
 				responseCode = "500",
-				description = "Internal Server Error - Inter teknisk feil. Eksempel: Kall mot en annen tjeneste feiler."
+				description = "Internal Server Error - Intern teknisk feil. Eksempel: Kall mot en annen tjeneste feiler."
 		)
 })
 public @interface SwaggerBestemDistribusjonskanal {

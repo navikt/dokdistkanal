@@ -12,7 +12,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 public enum BestemDistribusjonskanalRegel {
 	TEMA_HAR_BEGRENSET_INNSYN(PRINT, "Tema har begrenset innsyn"),
 	SKAL_IKKE_ARKIVERES(PRINT, "Skal ikke arkiveres"),
-	PREDEFINERT_LOKAL_PRINT(PRINT, "Predefinert distribusjonskanal er Lokal Print"),
+	PREDEFINERT_LOKAL_PRINT(PRINT, "Brevets dokumenttype har predefinert distribusjonskanal som er Lokal Print"),
 	PREDEFINERT_INGEN_DISTRIBUSJON(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon"),
 	PREDEFINERT_TRYGDERETTEN(TRYGDERETTEN, "Predefinert distribusjonskanal er Trygderetten"),
 	ORGANISASJON_MED_INFOTRYGD_DOKUMENT(PRINT, "Mottaker er organisasjon og dokument er produsert i infotrygd"),
@@ -25,20 +25,20 @@ public enum BestemDistribusjonskanalRegel {
 	FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON(PRINT, "Finner ikke digital kontaktinformasjon"),
 	BRUKER_ER_RESERVERT(PRINT, "Bruker har reservert seg mot digital kommunikasjon"),
 	BRUKER_SDP_MANGLER_VARSELINFO(PRINT, "Bruker skal varsles, men finner hverken mobiltelefonnummer eller e-postadresse"),
-	BRUKER_HAR_GYLDIG_SDP_ADRESSE(SDP, "Bruker har gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse."),
+	BRUKER_HAR_GYLDIG_SDP_ADRESSE(SDP, "Bruker har gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse"),
 	BRUKER_MANGLER_EPOST_OG_TELEFON(PRINT, "Bruker mangler mangler både e-post og telefonnummer"),
 	BRUKER_OG_MOTTAKER_ER_FORSKJELLIG(PRINT, "Bruker og mottaker er forskjellig"),
 	DOKUMENT_ER_IKKE_ARKIVERT(PRINT, "Dokumentet er ikke arkivert"),
 	MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON(PRINT, "Mottaker er ikke person eller organisasjon"),
 	BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER(DITT_NAV, "Bruker har gyldig e-post og/eller mobilnummer"),
-	PERSON_DEFAULT_PRINT(PRINT, "Default distribusjonskanal for personer er Print");
+	PERSON_STANDARD_PRINT(PRINT, "Standard distribusjonskanal for personer er Print");
 
 	public final DistribusjonKanalCode distribusjonKanal;
 	public final String begrunnelse;
 
-	BestemDistribusjonskanalRegel(DistribusjonKanalCode distribusjonKanal,
+	BestemDistribusjonskanalRegel(DistribusjonKanalCode distribusjonskanal,
 								  String begrunnelse) {
-		this.distribusjonKanal = distribusjonKanal;
+		this.distribusjonKanal = distribusjonskanal;
 		this.begrunnelse = begrunnelse;
 	}
 }

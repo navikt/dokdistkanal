@@ -27,7 +27,7 @@ public class DigitalKontaktinformasjonTo {
 	}
 
 	public boolean harEpostEllerMobilnummer() {
-		return (isNotEmpty(getEpostadresse()) || isNotEmpty(getMobiltelefonnummer()));
+		return isNotEmpty(getEpostadresse()) || isNotEmpty(getMobiltelefonnummer());
 	}
 }
 

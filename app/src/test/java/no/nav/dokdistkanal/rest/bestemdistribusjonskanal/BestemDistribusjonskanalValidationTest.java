@@ -27,7 +27,7 @@ public class BestemDistribusjonskanalValidationTest {
 	}
 
 	@Test
-	void skalFeilvalidereUgyldigMottarkerId() {
+	void skalFeilvalidereUgyldigMottakerId() {
 		var request = getBestemDistribusjonskanalRequest();
 		request.setMottakerId(null);
 
@@ -43,7 +43,7 @@ public class BestemDistribusjonskanalValidationTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void skalFeilvalidereUgyldigUgyldigBrukerId(String brukerId, List<String> feilmeldinger) {
+	void skalFeilvalidereUgyldigBrukerId(String brukerId, List<String> feilmeldinger) {
 		var request = getBestemDistribusjonskanalRequest();
 		request.setBrukerId(brukerId);
 
@@ -57,7 +57,7 @@ public class BestemDistribusjonskanalValidationTest {
 		});
 	}
 
-	static Stream<Arguments> skalFeilvalidereUgyldigUgyldigBrukerId() {
+	static Stream<Arguments> skalFeilvalidereUgyldigBrukerId() {
 		return Stream.of(
 				Arguments.of("", List.of("brukerId må ha en verdi")),
 				Arguments.of(" ", List.of("brukerId må ha en verdi", "brukerId kan kun inneholde tall")),

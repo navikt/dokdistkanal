@@ -11,6 +11,7 @@ import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2Techn
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
+import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
 @Slf4j
@@ -66,7 +68,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 				.map(it -> format("%s, mottatt %s=%s", it.getDefaultMessage(), it.getField(), it.getRejectedValue()))
 				.collect(Collectors.joining(". "));
 
-		log.warn("Validering av request feilet med følgende feil={}", feilmelding, ex);
+		log.warn("Validering av request feilet med feil={}", feilmelding, ex);
 
 		return ResponseEntity
 				.status(BAD_REQUEST)
@@ -74,6 +76,16 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 				.body(ProblemDetail.forStatusAndDetail(BAD_REQUEST, feilmelding));
 	}
 
+	@ExceptionHandler(JwtTokenUnauthorizedException.class)
+	ProblemDetail handleJwtTokenException(Exception ex) {
+		var feilmelding = format("Ugyldig OIDC token mangler eller er ugyldig. Feil=%s", ex.getCause().getMessage());
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(UNAUTHORIZED, feilmelding);
+		problem.setTitle("OIDC token mangler eller er ugyldig");
+
+		log.warn(feilmelding, ex);
+
+		return problem;
+	}
 
 	@ExceptionHandler({Exception.class})
 	ProblemDetail handleException(Exception ex) {

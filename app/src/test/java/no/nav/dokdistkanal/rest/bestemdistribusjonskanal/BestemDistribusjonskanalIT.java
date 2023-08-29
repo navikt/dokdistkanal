@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 public class BestemDistribusjonskanalIT extends AbstractIT {
@@ -210,16 +212,21 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		);
 	}
 
-	@Test
-	void skalReturnerePrintDersomBrukerOgMottakerErUlikOgDokumentIkkeErAarsoppgave() {
+	@ParameterizedTest
+	@ValueSource(strings = {"000011"})
+	@NullSource
+	void skalReturnerePrintDersomBrukerOgMottakerErUlikOgDokumentIkkeErAarsoppgave(String dokumentTypeId) {
 		stubDokmet();
 		stubPdl();
 		stubDigdirKrrProxy("treg001/dki/ugyldig-sertifikat-responsebody.json");
 
+		var request = bestemDistribusjonskanalRequest();
+		request.setDokumenttypeId(dokumentTypeId);
+
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(request)
 				.exchange()
 				.expectStatus()
 				.isOk()
@@ -414,6 +421,50 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
+	@Test
+	void skalReturnereUnauthorizedVedManglendeOIDCToken() {
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.bodyValue(bestemDistribusjonskanalRequest())
+				.exchange()
+				.expectStatus()
+				.isUnauthorized()
+				.expectBody(ProblemDetail.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.getStatus()).isEqualTo(UNAUTHORIZED.value());
+					assertThat(it.getTitle()).isEqualTo("OIDC token mangler eller er ugyldig");
+				});
+	}
+
+	@Test
+	void skalReturnereUnauthorizedVedUgyldigOIDCToken() {
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + "ugyldig-token")
+				.bodyValue(bestemDistribusjonskanalRequest())
+				.exchange()
+				.expectStatus()
+				.isUnauthorized()
+				.expectBody(ProblemDetail.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.getStatus()).isEqualTo(UNAUTHORIZED.value());
+					assertThat(it.getTitle()).isEqualTo("OIDC token mangler eller er ugyldig");
+				});
+	}
+
+	@Test
 	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest() {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",

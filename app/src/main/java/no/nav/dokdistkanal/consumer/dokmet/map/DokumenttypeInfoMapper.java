@@ -8,30 +8,27 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 public class DokumenttypeInfoMapper {
 
 	public static DokumentTypeInfoTo mapTo(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
-		String predefinertDistribusjonKanal = null;
+		String predefinertDistribusjonskanal = null;
 
-		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() != null &&
-			dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() != null) {
+		if (distribusjonsinfoErSatt(dokumentTypeInfoToV4)) {
 
-			predefinertDistribusjonKanal = dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
+			predefinertDistribusjonskanal = dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
 					.getDistribusjonInfo()
 					.getPredefinertDistKanal();
 		}
 
-		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null ||
-			dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null ||
-			dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
+		if (manglerDistribusjonsvarsler(dokumentTypeInfoToV4)) {
 
 			return DokumentTypeInfoTo.builder()
 					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
-					.predefinertDistKanal(predefinertDistribusjonKanal)
+					.predefinertDistKanal(predefinertDistribusjonskanal)
 					.isVarslingSdp(false)
 					.build();
 		} else {
 
 			return DokumentTypeInfoTo.builder()
 					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
-					.predefinertDistKanal(predefinertDistribusjonKanal)
+					.predefinertDistKanal(predefinertDistribusjonskanal)
 					.isVarslingSdp(dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
 							.getDistribusjonInfo()
 							.getDistribusjonVarsels()
@@ -39,6 +36,17 @@ public class DokumenttypeInfoMapper {
 							.anyMatch(distribusjonVarselTo -> SDP.toString()
 									.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();
 		}
+	}
+
+	private static boolean manglerDistribusjonsvarsler(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
+		return dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null ||
+			   dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() == null ||
+			   dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null;
+	}
+
+	private static boolean distribusjonsinfoErSatt(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
+		return dokumentTypeInfoToV4.getDokumentProduksjonsInfo() != null &&
+			   dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo() != null;
 	}
 
 }

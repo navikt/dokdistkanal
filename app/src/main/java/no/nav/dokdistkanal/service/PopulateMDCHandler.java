@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.TokenUtils;
 import no.nav.dokdistkanal.exceptions.functional.CouldNotDecodeBasicAuthToken;
 import no.nav.security.token.support.core.jwt.JwtToken;
@@ -20,6 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.MDC.put;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+@Slf4j
 public class PopulateMDCHandler implements HandlerInterceptor {
 
 	private static final String CHARSET = UTF_8.name();
@@ -66,9 +68,13 @@ public class PopulateMDCHandler implements HandlerInterceptor {
 	private Optional<String> getConsumerIdFromToken(HttpServletRequest request) {
 		return TokenUtils.getAccessTokenFromRequest(request)
 				.map(it -> {
-					var claims = new JwtToken(it).getJwtTokenClaims();
-					if (claims.getAllClaims().containsKey(NAV_CUSTOM_CLAIM_AZP_NAME))
+					try {
+						var claims = new JwtToken(it).getJwtTokenClaims();
 						return extractConsumerId(claims.getStringClaim(NAV_CUSTOM_CLAIM_AZP_NAME));
+					} catch (RuntimeException e) {
+						//Ugyldig JWT håndteres av Token Support.
+						log.error("Kunne ikke hente consumerId fra token", e);
+					}
 					return null;
 				});
 	}
