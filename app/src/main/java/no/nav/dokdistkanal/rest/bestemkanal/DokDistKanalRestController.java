@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.rest;
+package no.nav.dokdistkanal.rest.bestemkanal;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;

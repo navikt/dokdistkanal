@@ -4,7 +4,7 @@ import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.CouldNotDecodeBasicAuthToken;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
-import no.nav.dokdistkanal.exceptions.functional.DokkatFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
@@ -23,11 +23,11 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
-@ControllerAdvice
+@ControllerAdvice(basePackages = "no.nav.dokdistkanal.rest.bestemkanal")
 public class DokdistkanalRestExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler({AltinnServiceOwnerFunctionalException.class,
-			DokkatFunctionalException.class, DigitalKontaktinformasjonV2FunctionalException.class,
+			DokmetFunctionalException.class, DigitalKontaktinformasjonV2FunctionalException.class,
 			MaskinportenFunctionalException.class, PdlFunctionalException.class,
 			SikkerhetsnivaaFunctionalException.class, UgyldigInputFunctionalException.class})
 	public ResponseEntity<Object> handleBadRequestException(Exception err) {

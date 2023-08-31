@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Import;
 
 @Import(ApplicationConfig.class)
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
-@EnableJwtTokenValidation
+@EnableJwtTokenValidation(ignore = {"org.springframework", "org.springdoc"})
 public class Application {
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);

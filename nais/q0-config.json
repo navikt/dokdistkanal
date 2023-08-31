@@ -15,5 +15,17 @@
   "DOKDISTKANAL_SIKKERHETSNIVAA_URL": "https://sikkerhetsnivaa.dev.intern.nav.no/",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
-  "APPDYNAMICS": "/apikey/appdynamics/dev"
+  "APPDYNAMICS": "/apikey/appdynamics/dev",
+  "AZURE_IAC_RULES": [
+    {
+      "app": "bidrag-dokument-arkiv",
+      "namespace": "bidrag",
+      "cluster": "dev-fss"
+    },
+    {
+      "app": "bidrag-dokument-arkiv-feature",
+      "namespace": "bidrag",
+      "cluster": "dev-fss"
+    }
+  ]
 }

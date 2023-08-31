@@ -64,9 +64,21 @@ spec:
   azure:
     application:
       enabled: true
+      allowAllUsers: true
+      claims:
+        extra:
+          - azp_name
   maskinporten:
     enabled: true
     scopes:
       consumes:
         - name: altinn:serviceowner/notifications.read
   webproxy: true
+  accessPolicy:
+    inbound:
+      rules:
+    {{#each AZURE_IAC_RULES}}
+       - application: {{app}}
+         namespace: {{namespace}}
+         cluster: {{cluster}}
+    {{/each}}

@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.rest;
+package no.nav.dokdistkanal.rest.bestemkanal;
 
 
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;

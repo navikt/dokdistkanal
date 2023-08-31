@@ -1,13 +1,14 @@
-package no.nav.dokdistkanal.consumer.dokkat;
+package no.nav.dokdistkanal.consumer.dokmet;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
-import no.nav.dokdistkanal.consumer.dokkat.to.DokumentTypeInfoToV4;
+import no.nav.dokdistkanal.consumer.dokmet.map.DokumenttypeInfoMapper;
+import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoToV4;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.exceptions.functional.DokkatFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.DokkatTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -21,11 +22,9 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DOKMET;
 import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
-import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.HENT_DOKUMENTTYPE_INFO_CACHE;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -51,7 +50,6 @@ public class DokumentTypeInfoConsumer {
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 				.filter(new NavHeadersExchangeFilterFunction(NAV_CALLID))
 				.build();
-
 	}
 
 	@Cacheable(value = HENT_DOKUMENTTYPE_INFO_CACHE)
@@ -63,39 +61,9 @@ public class DokumentTypeInfoConsumer {
 				.attributes(getOAuth2AuthorizedClient())
 				.retrieve()
 				.bodyToMono(DokumentTypeInfoToV4.class)
-				.mapNotNull(this::mapTo)
+				.mapNotNull(DokumenttypeInfoMapper::mapTo)
 				.doOnError(this::handleError)
 				.block();
-	}
-
-	private DokumentTypeInfoTo mapTo(DokumentTypeInfoToV4 dokumentTypeInfoToV4) {
-		String predefinertDistribusjonKanal = null;
-		if (!(dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
-				.getDistribusjonInfo() == null)) {
-			predefinertDistribusjonKanal = dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
-					.getDistribusjonInfo()
-					.getPredefinertDistKanal();
-		}
-
-		if (dokumentTypeInfoToV4.getDokumentProduksjonsInfo() == null || dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
-				.getDistribusjonInfo() == null
-				|| dokumentTypeInfoToV4.getDokumentProduksjonsInfo().getDistribusjonInfo().getDistribusjonVarsels() == null) {
-			return DokumentTypeInfoTo.builder()
-					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
-					.predefinertDistKanal(predefinertDistribusjonKanal)
-					.isVarslingSdp(FALSE).build();
-		} else {
-			return DokumentTypeInfoTo.builder()
-					.arkivsystem(dokumentTypeInfoToV4.getArkivSystem())
-					.predefinertDistKanal(predefinertDistribusjonKanal)
-					.isVarslingSdp(dokumentTypeInfoToV4.getDokumentProduksjonsInfo()
-							.getDistribusjonInfo()
-							.getDistribusjonVarsels()
-							.stream()
-							.anyMatch(
-									distribusjonVarselTo -> SDP.toString()
-											.equals(distribusjonVarselTo.getVarselForDistribusjonKanal()))).build();
-		}
 	}
 
 	private void handleError(Throwable error) {
@@ -104,7 +72,7 @@ public class DokumentTypeInfoConsumer {
 
 			log.warn(feilmelding);
 
-			throw new DokkatTechnicalException(feilmelding, error);
+			throw new DokmetTechnicalException(feilmelding, error);
 		}
 
 		String feilmelding = format("Kall mot dokmet feilet %s med status=%s, feilmelding=%s, response=%s",
@@ -116,9 +84,9 @@ public class DokumentTypeInfoConsumer {
 		log.warn(feilmelding);
 
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new DokkatFunctionalException(feilmelding, error);
+			throw new DokmetFunctionalException(feilmelding, error);
 		} else {
-			throw new DokkatTechnicalException(feilmelding, error);
+			throw new DokmetTechnicalException(feilmelding, error);
 		}
 	}
 

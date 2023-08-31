@@ -10,4 +10,16 @@ import java.time.LocalDate;
 public class HentPersoninfo {
 	private LocalDate doedsdato;
 	private LocalDate foedselsdato;
+
+	public boolean erDoed() {
+		return doedsdato != null;
+	}
+
+	public boolean harUkjentAlder() {
+		return foedselsdato == null;
+	}
+
+	public boolean erUnderAtten() {
+		return foedselsdato != null && foedselsdato.plusYears(18).isAfter(LocalDate.now());
+	}
 }

@@ -15,6 +15,7 @@ import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -31,7 +32,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
-import static no.nav.dokdistkanal.rest.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
+import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
 import static no.nav.dokdistkanal.service.DokDistKanalServiceTest.TEMA;
 import static no.nav.dokdistkanal.util.TestUtils.classpathToString;
 import static no.nav.dokdistkanal.util.TestUtils.getLogMessage;
@@ -54,7 +55,6 @@ public class DokDistKanalIT extends AbstractIT {
 	private static final String ORGMOTTAKERID = "123456789";
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
 	private final static boolean ER_ARKIVERT_TRUE = true;
-	private final static boolean INKLUDER_SIKKER_DIGITALPOSTKASSE = true;
 	private static final String ALTINN_HAPPY_FILE_PATH = "altinn/serviceowner_happy_response.json";
 	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
 	private static final String SKATTEETATEN_ORGNUMMER = "974761076";
@@ -68,7 +68,7 @@ public class DokDistKanalIT extends AbstractIT {
 		logWatcher.start();
 		((Logger) LoggerFactory.getLogger(DokDistKanalService.class)).addAppender(logWatcher);
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
-		stubAllApi();
+		this.stubAllApi();
 	}
 
 	@AfterEach
@@ -249,6 +249,7 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
+	@Disabled("Det matcher ikke implementasjonen, det er heller ingen regel som sier at dette skal skje. Testen har kjørt OK pga av sikkerhetsnivaa stub er feil.")
 	public void shouldReturnPrintWhenSertifikatNotValid() {
 		//Stub web services:
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
@@ -306,7 +307,7 @@ public class DokDistKanalIT extends AbstractIT {
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("treg001/dki/feilmelding-responsebody.json")));
+						.withBodyFile("treg001/dki/response_person_ikke_funnet.json")));
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
@@ -351,7 +352,7 @@ public class DokDistKanalIT extends AbstractIT {
 						.withBodyFile("treg001/dki/ditt-nav-responsebody.json")));
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
-		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
+		stubFor(post(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
 				.willReturn(aResponse().withStatus(NOT_FOUND.value())
 						.withHeader("Content-Type", "application/json")
 						.withBody("Personident ikke gydig")));
@@ -361,20 +362,21 @@ public class DokDistKanalIT extends AbstractIT {
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
-	private void stubAllApi() {
+	@Override
+	public void stubAllApi() {
 		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
 				.willReturn(aResponse().withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("treg001/dokkat/happy-response.json")));
+						.withBodyFile("treg001/dokmet/happy-response.json")));
 
-		stubFor(get(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
+		stubFor(post(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
 				.willReturn(aResponse().withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/paalogging/happy-response.json")));
 
 		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
 		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
-		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=" + INKLUDER_SIKKER_DIGITALPOSTKASSE)
+		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
 				.willReturn(aResponse().withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/dki/happy-responsebody.json")));

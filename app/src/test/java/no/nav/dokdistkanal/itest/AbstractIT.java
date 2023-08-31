@@ -1,28 +1,64 @@
 package no.nav.dokdistkanal.itest;
 
-import no.nav.dokdistkanal.Application;
+import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestTemplate;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @SpringBootTest(
-		classes = {Application.class},
+		classes = {ApplicationTestConfig.class},
 		webEnvironment = RANDOM_PORT
 )
 @AutoConfigureWireMock(port = 0)
 @ActiveProfiles("itest")
 @EnableAutoConfiguration
-public abstract class AbstractIT {
+@AutoConfigureWebClient
+//Er noe krøll med stubs og concurrency tror jeg, "permidlertidig" fix. Mistenker at Wiremock holder connections til
+//HttpClient åpen litt for lenge, men usikker på om det finnes en god løsning.
+//Kan også løses med Thread.sleep(50) før eller etter hver test.
+@DirtiesContext
+public abstract class AbstractIT extends AbstractOauth2Test {
 
-	private final static String CONSUMER_ID = "srvdokdistfordeling";
+	protected static final String DOKMET_URL = "/DOKUMENTTYPEINFO_V4(.*)";
+	private static final String SIKKERHETSNIVAA_URL = "/HENTPAALOGGINGSNIVAA_V1(.*)";
+	private static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
+	private static final String MASKINPORTEN_URL = "/maskinporten";
+	private static final String AZURE_TOKEN_URL = "/azure_token";
+	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient?organizationNumber=974761076";
+	private static final String PDL_GRAPHQL_URL = "/graphql";
+
+	protected static final String DOKMET_HAPPY_FILE_PATH = "treg001/dokmet/happy-response.json";
+	private static final String SIKKERHETSNIVAA_HAPPY_FILE_PATH = "treg001/paalogging/happy-responsebody.json";
+	private static final String ALTINN_HAPPY_FILE_PATH = "altinn/serviceowner_happy_response.json";
+	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
+	private static final String DIGDIR_KRR_PROXY_HAPPY_FILE_PATH = "treg001/dki/happy-responsebody.json";
+	private static final String MASKINPORTEN_HAPPY_FILE_PATH = "altinn/maskinporten_happy_response.json";
+	private static final String AZURE_TOKEN_HAPPY_FILE_PATH = "azure/token_response_dummy.json";
+
+
 	@Value("${local.url}")
 	protected String LOCAL_ENDPOINT_URL;
 
@@ -32,6 +68,9 @@ public abstract class AbstractIT {
 	@Autowired
 	protected RestTemplate restTemplate;
 
+	@Autowired
+	public WebTestClient webTestClient;
+
 	@BeforeEach
 	public void setUp() {
 		clearCachene();
@@ -39,6 +78,95 @@ public abstract class AbstractIT {
 
 	private void clearCachene() {
 		cacheManager.getCacheNames().forEach(names -> cacheManager.getCache(names).clear());
+	}
+
+	protected void stubAllApi() {
+		stubMaskinporten();
+		stubAzure();
+		stubAltinn();
+		stubDokmet();
+		stubSikkerhetsnivaa();
+		stubDigdirKrrProxy();
+		stubPdl();
+	}
+
+	protected void stubDigdirKrrProxy() {
+		stubDigdirKrrProxy(DIGDIR_KRR_PROXY_HAPPY_FILE_PATH);
+	}
+	protected void stubPdl() {
+		stubPdl(PDL_HAPPY_FILE_PATH);
+	}
+
+	protected void stubSikkerhetsnivaa() {
+		stubSikkerhetsnivaa(SIKKERHETSNIVAA_HAPPY_FILE_PATH);
+	}
+
+	protected void stubMaskinporten() {
+		stubFor(post(urlMatching(MASKINPORTEN_URL))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(MASKINPORTEN_HAPPY_FILE_PATH)));
+	}
+
+	protected void stubAltinn() {
+		stubFor(get((ALTINN_URL))
+				.willReturn(aResponse()
+						.withHeader(CONTENT_TYPE, HAL_JSON_VALUE)
+						.withHeader(ACCEPT_ENCODING, "gzip")
+						.withBodyFile(ALTINN_HAPPY_FILE_PATH)));
+	}
+
+	protected void stubAzure() {
+		stubFor(post(AZURE_TOKEN_URL)
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(AZURE_TOKEN_HAPPY_FILE_PATH)));
+	}
+
+	protected void stubDokmet() {
+		stubDokmet(DOKMET_HAPPY_FILE_PATH);
+	}
+	protected void stubPdl(String bodyFilePath) {
+		stubFor(post(urlMatching(PDL_GRAPHQL_URL))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(bodyFilePath)));
+	}
+
+	protected void stubDigdirKrrProxy(String bodyFilePath) {
+		//leverandoerSertifikat som ligger under mappene treg001/dokmet/... er utsendt av DigDir og har utløpsdato februar 2023.
+		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
+		stubFor(post(DIGDIR_KRR_PROXY_URL)
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(bodyFilePath)));
+
+	}
+
+	protected void stubDokmet(String bodyFilePath) {
+		stubFor(get(urlPathMatching(DOKMET_URL))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(bodyFilePath)));
+	}
+
+	protected void stubDokmet(HttpStatus httpStatus) {
+		stubFor(get(urlPathMatching(DOKMET_URL))
+				.willReturn(aResponse()
+						.withStatus(httpStatus.value())));
+	}
+
+	protected void stubSikkerhetsnivaa(String bodyFilePath) {
+		stubFor(post(urlPathMatching(SIKKERHETSNIVAA_URL))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(bodyFilePath)));
 	}
 
 }

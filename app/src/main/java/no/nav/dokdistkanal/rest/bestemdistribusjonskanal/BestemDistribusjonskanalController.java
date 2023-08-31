@@ -1,9 +1,10 @@
 package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.common.DokDistKanalRequest;
-import no.nav.dokdistkanal.common.DokDistKanalResponse;
-import no.nav.dokdistkanal.service.DokDistKanalService;
+import no.nav.dokdistkanal.config.springdoc.SwaggerBestemDistribusjonskanal;
+import no.nav.dokdistkanal.service.BestemDistribusjonskanalService;
 import no.nav.security.token.support.core.api.Protected;
 import org.jboss.logging.MDC;
 import org.springframework.http.ResponseEntity;
@@ -21,21 +22,23 @@ import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
 @Protected
 @RestController
 @RequestMapping("/rest")
+@Tag(name = "bestemDistribusjonskanal", description = "Tjeneste for å bestemme distribusjonskanal")
 public class BestemDistribusjonskanalController {
 
-	private final DokDistKanalService dokDistKanalService;
+	private final BestemDistribusjonskanalService bestemDistribusjonskanalService;
 
-	public BestemDistribusjonskanalController(DokDistKanalService dokDistKanalService) {
-		this.dokDistKanalService = dokDistKanalService;
+	public BestemDistribusjonskanalController(BestemDistribusjonskanalService bestemDistribusjonskanalService) {
+		this.bestemDistribusjonskanalService = bestemDistribusjonskanalService;
 	}
 
+	@SwaggerBestemDistribusjonskanal
 	@PostMapping(value = "/bestemDistribusjonskanal")
-	public ResponseEntity<DokDistKanalResponse> bestemDistribusjonskanal(
-			@RequestBody DokDistKanalRequest request,
+	public ResponseEntity<BestemDistribusjonskanalResponse> bestemDistribusjonskanal(
+			@Valid @RequestBody BestemDistribusjonskanalRequest request,
 			@RequestHeader(value = NAV_CALLID, required = false) String navCallId) {
 
 		MDC.put(CALL_ID, getOrCreateCallId(navCallId));
 
-		return ResponseEntity.ok(dokDistKanalService.velgKanal(request));
+		return ResponseEntity.ok(bestemDistribusjonskanalService.bestemDistribusjonskanal(request));
 	}
 }

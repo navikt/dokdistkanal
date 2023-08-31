@@ -1,4 +1,4 @@
-package no.nav.dokdistkanal.consumer.dokkat.to;
+package no.nav.dokdistkanal.consumer.dokmet.to;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
