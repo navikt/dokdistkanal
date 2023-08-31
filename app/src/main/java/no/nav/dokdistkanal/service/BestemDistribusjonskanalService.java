@@ -195,7 +195,7 @@ public class BestemDistribusjonskanalService {
 
 			return createResponse(request, BRUKER_SDP_MANGLER_VARSELINFO);
 		}
-		if (digitalKontaktinfo.verifyAddress()) {
+		if (digitalKontaktinfo.verifyAddressAndCertificate()) {
 			return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 		}
 		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
