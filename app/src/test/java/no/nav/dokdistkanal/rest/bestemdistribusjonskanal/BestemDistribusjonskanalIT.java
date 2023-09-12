@@ -520,7 +520,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"12345678902",
 				"PEN",
 				"dokumentType",
-				true
+				true, 10
 		);
 	}
 

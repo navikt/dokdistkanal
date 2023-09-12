@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.domain;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
@@ -10,6 +11,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 
+@RequiredArgsConstructor
 public enum BestemDistribusjonskanalRegel {
 	TEMA_HAR_BEGRENSET_INNSYN(PRINT, "Tema har begrenset innsyn"),
 	SKAL_IKKE_ARKIVERES(PRINT, "Skal ikke arkiveres"),
@@ -32,15 +34,11 @@ public enum BestemDistribusjonskanalRegel {
 	DOKUMENT_ER_IKKE_ARKIVERT(PRINT, "Dokumentet er ikke arkivert"),
 	MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON(PRINT, "Mottaker er ikke person eller organisasjon"),
 	BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER(DITT_NAV, "Bruker har gyldig e-post og/eller mobilnummer"),
-	PERSON_STANDARD_PRINT(PRINT, "Standard distribusjonskanal for personer er Print");
+	PERSON_STANDARD_PRINT(PRINT, "Standard distribusjonskanal for personer er Print"),
+	BRUKER_SDP_MED_FILSTOERRELSE_OVER_27MB(PRINT, "Bruker har gyldig digitalt adresse, men filstørrelse er over 27MB");
 
 	public final DistribusjonKanalCode distribusjonKanal;
 	public final String begrunnelse;
 
-	BestemDistribusjonskanalRegel(DistribusjonKanalCode distribusjonskanal,
-								  String begrunnelse) {
-		this.distribusjonKanal = distribusjonskanal;
-		this.begrunnelse = begrunnelse;
-	}
 }
 

@@ -82,11 +82,35 @@ public class DokDistKanalIT extends AbstractIT {
 	 * Komplertterer fullt brevdatasett der mottaker er person
 	 */
 	@Test
-	public void shouldGetDistribusjonskanal() {
+	public void shouldRetrunSDPWhenFileSizeIsNull() {
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+	}
+
+	@Test
+	public void shouldRetrunSDPWhenFileSizeIsLessThanOrEqualTo27MB() {
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN")
+				.stoerrelse(25)
+				.build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+	}
+
+	@Test
+	public void shouldReturnPrintWhenFileSizeIsOver27MBAndValidDigitalAdresse() {
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").stoerrelse(29).build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());

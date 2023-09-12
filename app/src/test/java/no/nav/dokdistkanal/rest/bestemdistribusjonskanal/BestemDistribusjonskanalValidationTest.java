@@ -87,7 +87,7 @@ public class BestemDistribusjonskanalValidationTest {
 				"12345678910",
 				"ABC",
 				"DOK",
-				false
+				false, 26
 		);
 	}
 }
