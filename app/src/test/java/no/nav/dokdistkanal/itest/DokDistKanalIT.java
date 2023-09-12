@@ -113,7 +113,7 @@ public class DokDistKanalIT extends AbstractIT {
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").stoerrelse(29).build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test

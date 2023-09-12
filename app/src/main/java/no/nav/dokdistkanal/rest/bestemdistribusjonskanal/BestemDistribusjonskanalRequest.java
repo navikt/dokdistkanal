@@ -32,5 +32,5 @@ public class BestemDistribusjonskanalRequest {
 	boolean erArkivert;
 
 	@Schema(description = "Dokumentene filstørrelse i MByte")
-	Integer stoerrelse;;
+	Integer stoerrelse;
 }
