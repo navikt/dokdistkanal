@@ -142,10 +142,9 @@ public class DokDistKanalService {
 		}
 
 		if (dki.verifyAddressAndCertificate()) {
-			if (dokDistKanalRequest.getStoerrelse() != null && dokDistKanalRequest.getStoerrelse() > 27) {
-				return logAndReturn(PRINT, "Bruker har gyldig digitalt adresse, men filstørrelse er over 27MB.", tema);
+			if (dokDistKanalRequest.getForsendelseStoerrelse() < 27) {
+				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
 			}
-			return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
 		}
 		if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme", tema);

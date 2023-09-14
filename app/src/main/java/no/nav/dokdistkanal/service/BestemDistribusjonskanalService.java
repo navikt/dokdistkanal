@@ -25,7 +25,6 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HA
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SDP_MED_FILSTOERRELSE_OVER_27MB;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
@@ -198,11 +197,9 @@ public class BestemDistribusjonskanalService {
 		}
 
 		if (digitalKontaktinfo.verifyAddressAndCertificate()) {
-			if (request.getStoerrelse() != null && request.getStoerrelse() > 27) {
-				return createResponse(request, BRUKER_SDP_MED_FILSTOERRELSE_OVER_27MB);
-
+			if (request.getForsendelseStoerrelse() < 27) {
+				return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 			}
-			return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 		}
 		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
