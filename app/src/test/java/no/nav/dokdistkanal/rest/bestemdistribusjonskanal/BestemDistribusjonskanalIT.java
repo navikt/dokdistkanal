@@ -199,15 +199,16 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 11: Har personen gyldig digital kontaktinformasjon? Hvis nei -> PRINT
 	 * 12: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
 	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
-	 * 14: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
+	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
+	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 27 megabytes ? Hvis ja -> PRINT
-	 * 16: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
+	 *
 	 */
 
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForPersonMedDigitalKontaktinfo(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
-													 String stubFile, int forsendelseStoerrelse) {
+													 String stubFile, Integer forsendelseStoerrelse) {
 		stubPdl();
 		stubDigdirKrrProxy(stubFile);
 
@@ -243,6 +244,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "treg001/dki/response_bruker_er_reservert.json", 10),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 5),
 				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", 26),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", null),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "treg001/dki/happy-responsebody.json", 29),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 10)
 		);
@@ -530,7 +532,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@Test
-	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequestMedFilstoerrelse(int filstoerrelse) {
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequestMedFilstoerrelse(Integer filstoerrelse) {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",
 				"12345678902",

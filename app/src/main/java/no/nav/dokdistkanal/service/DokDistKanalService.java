@@ -142,9 +142,10 @@ public class DokDistKanalService {
 		}
 
 		if (dki.verifyAddressAndCertificate()) {
-			if (dokDistKanalRequest.getForsendelseStoerrelse() < 27) {
+			if (dokDistKanalRequest.getForsendelseStoerrelse() == null || dokDistKanalRequest.getForsendelseStoerrelse() < 27) {
 				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
 			}
+			log.info("Forsendelse har forstørre filstørrelse og kan ikke distribuere til DPI");
 		}
 		if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme", tema);

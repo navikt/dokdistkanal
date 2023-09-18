@@ -16,5 +16,5 @@ public class DokDistKanalRequest {
 	private String brukerId;
 	private String tema;
 	private Boolean erArkivert;
-	private int forsendelseStoerrelse;
+	private Integer forsendelseStoerrelse;
 }

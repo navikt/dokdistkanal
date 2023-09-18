@@ -197,9 +197,10 @@ public class BestemDistribusjonskanalService {
 		}
 
 		if (digitalKontaktinfo.verifyAddressAndCertificate()) {
-			if (request.getForsendelseStoerrelse() < 27) {
+			if (request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < 27) {
 				return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 			}
+			log.info("Forsendelse har forstørre filstørrelse og kan ikke distribuere til digitalpost");
 		}
 		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
