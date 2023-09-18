@@ -12,6 +12,7 @@
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
   "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q0/.default",
+  "DOKDISTKANAL_SIKKERHETSNIVAA_URL": "https://sikkerhetsnivaa.dev.intern.nav.no/",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
   "SRVDOKDISTKANAL": "/serviceuser/data/dev/srvdokdistkanal",
   "APPDYNAMICS": "/apikey/appdynamics/dev",

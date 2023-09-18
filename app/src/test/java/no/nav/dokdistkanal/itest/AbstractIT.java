@@ -43,6 +43,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public abstract class AbstractIT extends AbstractOauth2Test {
 
 	protected static final String DOKMET_URL = "/DOKUMENTTYPEINFO_V4(.*)";
+	private static final String SIKKERHETSNIVAA_URL = "/HENTPAALOGGINGSNIVAA_V1(.*)";
 	private static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
 	private static final String MASKINPORTEN_URL = "/maskinporten";
 	private static final String AZURE_TOKEN_URL = "/azure_token";
@@ -50,6 +51,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private static final String PDL_GRAPHQL_URL = "/graphql";
 
 	protected static final String DOKMET_HAPPY_FILE_PATH = "treg001/dokmet/happy-response.json";
+	private static final String SIKKERHETSNIVAA_HAPPY_FILE_PATH = "treg001/paalogging/happy-responsebody.json";
 	private static final String ALTINN_HAPPY_FILE_PATH = "altinn/serviceowner_happy_response.json";
 	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
 	private static final String DIGDIR_KRR_PROXY_HAPPY_FILE_PATH = "treg001/dki/happy-responsebody.json";
@@ -83,6 +85,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		stubAzure();
 		stubAltinn();
 		stubDokmet();
+		stubSikkerhetsnivaa();
 		stubDigdirKrrProxy();
 		stubPdl();
 	}
@@ -92,6 +95,10 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	}
 	protected void stubPdl() {
 		stubPdl(PDL_HAPPY_FILE_PATH);
+	}
+
+	protected void stubSikkerhetsnivaa() {
+		stubSikkerhetsnivaa(SIKKERHETSNIVAA_HAPPY_FILE_PATH);
 	}
 
 	protected void stubMaskinporten() {
@@ -152,6 +159,14 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		stubFor(get(urlPathMatching(DOKMET_URL))
 				.willReturn(aResponse()
 						.withStatus(httpStatus.value())));
+	}
+
+	protected void stubSikkerhetsnivaa(String bodyFilePath) {
+		stubFor(post(urlPathMatching(SIKKERHETSNIVAA_URL))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(bodyFilePath)));
 	}
 
 }

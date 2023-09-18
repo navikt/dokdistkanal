@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.Arrays;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static no.nav.dokdistkanal.consumer.sikkerhetsnivaa.SikkerhetsnivaaConsumer.HENT_PAALOGGINGSNIVAA;
 
 @Configuration
 @EnableCaching
@@ -28,6 +29,10 @@ public class LocalCacheConfig {
 	public CacheManager cacheManager() {
 		SimpleCacheManager cacheManager = new SimpleCacheManager();
 		cacheManager.setCaches(Arrays.asList(
+				new CaffeineCache(HENT_PAALOGGINGSNIVAA, Caffeine.newBuilder()
+						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME)
+						.maximumSize(1000)
+						.build()),
 				new CaffeineCache(HENT_DOKUMENTTYPE_INFO_CACHE, Caffeine.newBuilder()
 						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME)
 						.build()),

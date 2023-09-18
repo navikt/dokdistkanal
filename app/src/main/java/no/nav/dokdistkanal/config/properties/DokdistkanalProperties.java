@@ -13,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 public class DokdistkanalProperties {
 
 	private final Serviceuser serviceuser = new Serviceuser();
+	private final Sikkerhetsnivaa sikkerhetsnivaa = new Sikkerhetsnivaa();
 	private final Altinn altinn = new Altinn();
 	private final Endpoints endpoints = new Endpoints();
 
@@ -39,6 +40,18 @@ public class DokdistkanalProperties {
 		private String username;
 		@NotEmpty
 		private String password;
+	}
+
+	@Data
+	@Validated
+	public static class Sikkerhetsnivaa {
+		@NotEmpty
+		private String url;
+		private String description;
+		@Min(1)
+		private int readtimeoutms;
+		@Min(1)
+		private int connecttimeoutms;
 	}
 
 	@Data

@@ -5,10 +5,12 @@ import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalExc
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.SikkerhetsnivaaTechnicalException;
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -35,8 +37,8 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	@ExceptionHandler({DokmetFunctionalException.class,
 			AltinnServiceOwnerFunctionalException.class,
 			DigitalKontaktinformasjonV2FunctionalException.class,
-			PdlFunctionalException.class
-	})
+			PdlFunctionalException.class,
+			SikkerhetsnivaaFunctionalException.class})
 	ProblemDetail handleConsumerFunctionalException(Exception ex) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Funksjonell feil ved kall mot ekstern tjeneste");
@@ -49,8 +51,8 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	@ExceptionHandler({DokmetTechnicalException.class,
 			AltinnServiceOwnerTechnicalException.class,
 			DigitalKontaktinformasjonV2TechnicalException.class,
-			PdlTechnicalException.class
-	})
+			PdlTechnicalException.class,
+			SikkerhetsnivaaTechnicalException.class})
 	ProblemDetail handleConsumerTechnicalException(Exception ex) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Teknisk feil ved kall mot ekstern tjeneste");

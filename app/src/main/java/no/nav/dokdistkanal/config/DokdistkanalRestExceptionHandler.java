@@ -7,6 +7,7 @@ import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2Func
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.SikkerhetsnivaaFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class DokdistkanalRestExceptionHandler extends ResponseEntityExceptionHan
 	@ExceptionHandler({AltinnServiceOwnerFunctionalException.class,
 			DokmetFunctionalException.class, DigitalKontaktinformasjonV2FunctionalException.class,
 			MaskinportenFunctionalException.class, PdlFunctionalException.class,
-			UgyldigInputFunctionalException.class})
+			SikkerhetsnivaaFunctionalException.class, UgyldigInputFunctionalException.class})
 	public ResponseEntity<Object> handleBadRequestException(Exception err) {
 		Map<String, Object> responseBody = new HashMap<>();
 		logger.warn("Feilet funksjonell med feilmelding=" + err.getMessage(), err);
