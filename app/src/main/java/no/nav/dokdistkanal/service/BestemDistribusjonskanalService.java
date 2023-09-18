@@ -19,6 +19,7 @@ import java.util.Set;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE;
@@ -197,10 +198,11 @@ public class BestemDistribusjonskanalService {
 		}
 
 		if (digitalKontaktinfo.verifyAddressAndCertificate()) {
-			if (request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < 27) {
+			if (request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES) {
 				return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 			}
-			log.info("Forsendelse har forstørre filstørrelse og kan ikke distribuere til digitalpost");
+			log.info("Forsendelse er større enn {}MB og kan ikke distribueres til DPI. forsendelseStoerrelse={}MB",
+					DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES, request.getForsendelseStoerrelse());
 		}
 		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
