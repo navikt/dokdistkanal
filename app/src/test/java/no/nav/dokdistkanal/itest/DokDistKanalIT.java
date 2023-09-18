@@ -249,23 +249,6 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	@Disabled("Det matcher ikke implementasjonen, det er heller ingen regel som sier at dette skal skje. Testen har kjørt OK pga av sikkerhetsnivaa stub er feil.")
-	public void shouldReturnPrintWhenSertifikatNotValid() {
-		//Stub web services:
-		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("treg001/dki/ugyldig-sertifikat-responsebody.json")));
-		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
-		stubPostPDL(PDL_HAPPY_FILE_PATH);
-
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
-
-		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
-	}
-
-	@Test
 	public void shouldThrowFunctionalExceptionWhenTemaIsNull() {
 		//Stub web services:
 		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
@@ -341,25 +324,6 @@ public class DokDistKanalIT extends AbstractIT {
 				restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class));
 		assertEquals(BAD_REQUEST, e.getStatusCode());
 		assertThat(e.getResponseBodyAsString()).contains("Ugyldig input: Feltet tema kan ikke være null eller tomt.");
-	}
-
-	@Test
-	public void shouldThrowFunctionalExceptionFromPaaloggingsnivaaUgyldigIdent() {
-		//Stub web services:
-		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("treg001/dki/ditt-nav-responsebody.json")));
-		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
-		stubPostPDL(PDL_HAPPY_FILE_PATH);
-		stubFor(post(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
-				.willReturn(aResponse().withStatus(NOT_FOUND.value())
-						.withHeader("Content-Type", "application/json")
-						.withBody("Personident ikke gydig")));
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
-
-		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Override
