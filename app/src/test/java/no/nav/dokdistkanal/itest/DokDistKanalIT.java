@@ -28,6 +28,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
@@ -82,7 +83,7 @@ public class DokDistKanalIT extends AbstractIT {
 	 * Komplertterer fullt brevdatasett der mottaker er person
 	 */
 	@Test
-	public void shouldGetDistribusjonskanal() {
+	public void shouldReturnSDPWhenFileSizeIsNull() {
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
@@ -90,6 +91,32 @@ public class DokDistKanalIT extends AbstractIT {
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
 		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+	}
+
+	@Test
+	public void shouldReturnSDPWhenFileSizeIsLessThanOrEqualTo27MB() {
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN")
+				.forsendelseStoerrelse(25)
+				.build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+	}
+
+	@Test
+	public void shouldReturnDittNavWhenFileSizeIsOver27MBAndValidDigitalAdresse() {
+		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("BID")
+				.forsendelseStoerrelse(28)
+				.build();
+
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+		assertEquals(DITT_NAV, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -372,7 +399,7 @@ public class DokDistKanalIT extends AbstractIT {
 		stubFor(post(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
 				.willReturn(aResponse().withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("treg001/paalogging/happy-response.json")));
+						.withBodyFile("treg001/paalogging/happy-responsebody.json")));
 
 		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
 		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.

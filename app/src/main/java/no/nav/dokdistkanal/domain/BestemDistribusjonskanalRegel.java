@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.domain;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
@@ -10,6 +11,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 
+@RequiredArgsConstructor
 public enum BestemDistribusjonskanalRegel {
 	TEMA_HAR_BEGRENSET_INNSYN(PRINT, "Tema har begrenset innsyn"),
 	SKAL_IKKE_ARKIVERES(PRINT, "Skal ikke arkiveres"),
@@ -37,10 +39,5 @@ public enum BestemDistribusjonskanalRegel {
 	public final DistribusjonKanalCode distribusjonKanal;
 	public final String begrunnelse;
 
-	BestemDistribusjonskanalRegel(DistribusjonKanalCode distribusjonskanal,
-								  String begrunnelse) {
-		this.distribusjonKanal = distribusjonskanal;
-		this.begrunnelse = begrunnelse;
-	}
 }
 

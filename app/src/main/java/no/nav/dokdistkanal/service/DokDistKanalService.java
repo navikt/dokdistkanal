@@ -30,6 +30,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
@@ -46,7 +47,6 @@ public class DokDistKanalService {
 
 	private static final String LOGGET_PAA = "logget på med nivaa4 de siste 18 mnd";
 	public static final Set<String> BEGRENSET_INNSYN_TEMA = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
-
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
 	private final SikkerhetsnivaaConsumer sikkerhetsnivaaConsumer;
@@ -140,8 +140,14 @@ public class DokDistKanalService {
 		if (dokumentTypeInfoTo.isVarslingSdp() && isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Bruker skal varsles, men verken mobiltelefonnummer eller epostadresse har verdi", tema);
 		}
+
 		if (dki.verifyAddressAndCertificate()) {
-			return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
+			if (dokDistKanalRequest.getForsendelseStoerrelse() == null ||
+					dokDistKanalRequest.getForsendelseStoerrelse() < DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES) {
+				return logAndReturn(SDP, "Sertifikat, LeverandørAddresse og BrukerAdresse har verdi.", tema);
+			}
+			log.info("Forsendelse er større enn {}MB og kan ikke distribueres til DPI. forsendelseStoerrelse={}",
+					DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES, dokDistKanalRequest.getForsendelseStoerrelse());
 		}
 		if (isEmpty(dki.getEpostadresse()) && isEmpty(dki.getMobiltelefonnummer())) {
 			return logAndReturn(PRINT, "Epostadresse og mobiltelefon - feltene er tomme", tema);

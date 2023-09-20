@@ -30,4 +30,7 @@ public class BestemDistribusjonskanalRequest {
 
 	@Schema(description = "Om dokumentet er arkivert i Joark eller ikke")
 	boolean erArkivert;
+
+	@Schema(description = "Dokumentenes samlede filstørrelse i megabytes", example = "20", defaultValue = "0")
+	Integer forsendelseStoerrelse;
 }

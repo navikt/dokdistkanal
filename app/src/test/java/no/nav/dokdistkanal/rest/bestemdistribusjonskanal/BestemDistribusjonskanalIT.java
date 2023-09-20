@@ -51,7 +51,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	public void tearDown() {
 		WireMock.removeAllMappings();
 	}
-	
+
 	@Test
 	void skalBestemmeDistribusjonskanal() {
 		stubDokmet();
@@ -66,6 +66,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.expectStatus()
 				.isOk();
 	}
+
 	/*
 	 * Her testes følgende regler:
 	 * 1: Skal dokumentet arkiveres? Hvis nei -> PRINT
@@ -200,11 +201,14 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
 	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
+	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 27 megabytes ? Hvis ja -> PRINT
+	 *
 	 */
 
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForPersonMedDigitalKontaktinfo(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel, String stubFile) {
+	void skalReturnereForPersonMedDigitalKontaktinfo(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
+													 String stubFile, Integer forsendelseStoerrelse) {
 		stubPdl();
 		stubDigdirKrrProxy(stubFile);
 
@@ -217,7 +221,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(bestemDistribusjonskanalRequestMedFilstoerrelse(forsendelseStoerrelse))
 				.exchange()
 				.expectStatus()
 				.isOk()
@@ -236,13 +240,16 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForPersonMedDigitalKontaktinfo() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "treg001/dki/response_person_ikke_funnet.json"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "treg001/dki/response_bruker_er_reservert.json"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "treg001/dki/response_bruker_mangler_kontaktinfo.json"),
-				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "treg001/dki/response_bruker_mangler_kontaktinfo.json")
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "treg001/dki/response_person_ikke_funnet.json", 10),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "treg001/dki/response_bruker_er_reservert.json", 10),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 5),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", 26),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "treg001/dki/happy-responsebody.json", 29),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 10)
 		);
 	}
+
 
 	/*
 	 * Her testes følgende regler:
@@ -384,14 +391,14 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	void skalReturnereBadRequestVedUgyldigInput(String mottakerId, String brukerId, String tema) {
 
 		String jsonString = """
-            {
-              "mottakerId": "%s",
-              "brukerId": "%s",
-              "tema": "%s",
-              "dokumenttypeId": "dokumentType",
-              "erArkivert": true
-            }
-            """;
+				{
+				  "mottakerId": "%s",
+				  "brukerId": "%s",
+				  "tema": "%s",
+				  "dokumenttypeId": "dokumentType",
+				  "erArkivert": true
+				}
+				""";
 
 		String jsonRequest = String.format(jsonString, mottakerId, brukerId, tema);
 
@@ -407,7 +414,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.isBadRequest();
 	}
 
-	private static Stream<Arguments> skalReturnereBadRequestVedUgyldigInput () {
+	private static Stream<Arguments> skalReturnereBadRequestVedUgyldigInput() {
 		return Stream.of(
 				Arguments.of("", "12345678902", "PEN"),
 				Arguments.of("12345678901", null, "PEN"),
@@ -520,7 +527,18 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"12345678902",
 				"PEN",
 				"dokumentType",
-				true
+				true, 10
+		);
+	}
+
+	@Test
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequestMedFilstoerrelse(Integer filstoerrelse) {
+		return new BestemDistribusjonskanalRequest(
+				"12345678901",
+				"12345678902",
+				"PEN",
+				"dokumentType",
+				true, filstoerrelse
 		);
 	}
 
