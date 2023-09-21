@@ -109,7 +109,7 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldReturnDittNavWhenFileSizeIsOverDpiMaxFoersendelseStoerrelseAndValidDigitalAdresse() {
+	public void shouldReturnDittNavWhenFileSizeIsEqualOrOverDpiMaxFoersendelseStoerrelseAndValidDigitalAdresse() {
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
