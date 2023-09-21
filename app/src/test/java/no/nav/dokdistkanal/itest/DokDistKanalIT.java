@@ -96,12 +96,12 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldReturnSDPWhenFileSizeIsLessThanOrEqualToDpiMaxFoersendelseStoerrelse() {
+	public void shouldReturnSDPWhenFileSizeIsLessThanToDpiMaxFoersendelseStoerrelse() {
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN")
-				.forsendelseStoerrelse(DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES)
+				.forsendelseStoerrelse(DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES - 1)
 				.build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
@@ -114,7 +114,7 @@ public class DokDistKanalIT extends AbstractIT {
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("BID")
-				.forsendelseStoerrelse(DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES + 1)
+				.forsendelseStoerrelse(DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES)
 				.build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
