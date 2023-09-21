@@ -203,7 +203,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
 	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
-	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes ? Hvis ja -> PRINT
+	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
