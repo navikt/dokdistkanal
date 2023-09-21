@@ -8,6 +8,7 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.common.MottakerTypeCode;
+import no.nav.dokdistkanal.constants.DomainConstants;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
@@ -32,6 +33,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
 import static no.nav.dokdistkanal.service.DokDistKanalServiceTest.TEMA;
@@ -94,12 +96,12 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldReturnSDPWhenFileSizeIsLessThanOrEqualTo27MB() {
+	public void shouldReturnSDPWhenFileSizeIsLessThanOrEqualToDpiMaxFoersendelseStoerrelse() {
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN")
-				.forsendelseStoerrelse(25)
+				.forsendelseStoerrelse(DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES)
 				.build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
@@ -107,12 +109,12 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldReturnDittNavWhenFileSizeIsOver27MBAndValidDigitalAdresse() {
+	public void shouldReturnDittNavWhenFileSizeIsOverDpiMaxFoersendelseStoerrelseAndValidDigitalAdresse() {
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
 
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("BID")
-				.forsendelseStoerrelse(28)
+				.forsendelseStoerrelse(DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES + 1)
 				.build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
