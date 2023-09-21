@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
+import no.nav.dokdistkanal.constants.DomainConstants;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
 import no.nav.dokdistkanal.itest.AbstractIT;
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +27,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -201,10 +203,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
 	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
-	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 27 megabytes ? Hvis ja -> PRINT
-	 *
+	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
 	 */
-
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForPersonMedDigitalKontaktinfo(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
@@ -243,13 +243,12 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "treg001/dki/response_person_ikke_funnet.json", 10),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "treg001/dki/response_bruker_er_reservert.json", 10),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 5),
-				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", 26),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES - 1),
 				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", null),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "treg001/dki/happy-responsebody.json", 29),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "treg001/dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 10)
 		);
 	}
-
 
 	/*
 	 * Her testes følgende regler:
