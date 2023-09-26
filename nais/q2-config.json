@@ -27,6 +27,11 @@
       "app": "bidrag-dokument-arkiv-feature",
       "namespace": "bidrag",
       "cluster": "dev-fss"
+    },
+    {
+      "app": "familie-integrasjoner",
+      "namespace": "teamfamilie",
+      "cluster": "dev-fss"
     }
   ]
 }
