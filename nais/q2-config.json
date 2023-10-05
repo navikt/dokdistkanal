@@ -33,7 +33,7 @@
       "cluster": "dev-fss"
     },
     {
-      "app": "brev-administrasjon-q2"
+      "app": "brev-administrasjon-q2",
       "namespace": "isa",
       "cluster": "dev-gcp"
     }
