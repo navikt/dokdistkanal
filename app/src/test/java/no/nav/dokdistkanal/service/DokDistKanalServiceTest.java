@@ -97,7 +97,7 @@ public class DokDistKanalServiceTest {
 		HentPersoninfo personInfoAttenAar = HentPersoninfo.builder()
 				.foedselsdato(LocalDate.now().minusYears(18))
 				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(personInfoAttenAar);
+		when(pdlGraphQLConsumer.hentPerson(anyString())).thenReturn(personInfoAttenAar);
 	}
 
 	@AfterEach
@@ -191,7 +191,7 @@ public class DokDistKanalServiceTest {
 
 	@Test
 	public void shouldSetKanalPrintNaarIngenPerson() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(null);
+		when(pdlGraphQLConsumer.hentPerson(anyString())).thenReturn(null);
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
@@ -204,7 +204,7 @@ public class DokDistKanalServiceTest {
 		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
 				.doedsdato(LocalDate.now())
 				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+		when(pdlGraphQLConsumer.hentPerson(anyString())).thenReturn(hentPersoninfo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 
@@ -219,7 +219,7 @@ public class DokDistKanalServiceTest {
 				.doedsdato(null)
 				.foedselsdato(null)
 				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+		when(pdlGraphQLConsumer.hentPerson(anyString())).thenReturn(hentPersoninfo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 
@@ -234,7 +234,7 @@ public class DokDistKanalServiceTest {
 		HentPersoninfo hentPersoninfo = HentPersoninfo.builder()
 				.foedselsdato(LocalDate.now().minusYears(17).minusMonths(11))
 				.build();
-		when(pdlGraphQLConsumer.hentPerson(anyString(), anyString())).thenReturn(hentPersoninfo);
+		when(pdlGraphQLConsumer.hentPerson(anyString())).thenReturn(hentPersoninfo);
 
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder().build());
 

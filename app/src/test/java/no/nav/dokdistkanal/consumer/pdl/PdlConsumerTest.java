@@ -22,8 +22,8 @@ public class PdlConsumerTest {
 
     @Test
     public void shouldHentPersonOK() {
-        when(pdlConsumer.hentPerson(anyString(), anyString())).thenReturn(createHentPersonInfo());
-        HentPersoninfo hentPersoninfo = pdlConsumer.hentPerson(FNR, "PEN");
+        when(pdlConsumer.hentPerson(anyString())).thenReturn(createHentPersonInfo());
+        HentPersoninfo hentPersoninfo = pdlConsumer.hentPerson(FNR);
 
         assertNull(hentPersoninfo.getDoedsdato());
         assertThat(hentPersoninfo.getFoedselsdato(), is(FOEDSELSDATO));
@@ -31,9 +31,9 @@ public class PdlConsumerTest {
 
     @Test
     public void shouldHentFoedselsOGDoedsDato() {
-        when(pdlConsumer.hentPerson(anyString(), anyString())).thenReturn(createHentPersonInfoMedDatoe());
+        when(pdlConsumer.hentPerson(anyString())).thenReturn(createHentPersonInfoMedDatoe());
 
-        HentPersoninfo hentPersoninfo = pdlConsumer.hentPerson(FNR, "PEN");
+        HentPersoninfo hentPersoninfo = pdlConsumer.hentPerson(FNR);
 
         assertThat(hentPersoninfo.getDoedsdato(), is(DOEDSDATO));
         assertThat(hentPersoninfo.getFoedselsdato(), is(FOEDSELSDATO));
@@ -41,8 +41,8 @@ public class PdlConsumerTest {
 
     @Test
     public void shouldThrowTechnicalException() {
-        when(pdlConsumer.hentPerson(anyString(), anyString())).thenThrow(new PdlFunctionalException("Kunne ikke hente person fra Pdl"));
-        assertThrows(PdlFunctionalException.class, () -> pdlConsumer.hentPerson(FNR, "PEN"));
+        when(pdlConsumer.hentPerson(anyString())).thenThrow(new PdlFunctionalException("Kunne ikke hente person fra Pdl"));
+        assertThrows(PdlFunctionalException.class, () -> pdlConsumer.hentPerson(FNR));
     }
 
 

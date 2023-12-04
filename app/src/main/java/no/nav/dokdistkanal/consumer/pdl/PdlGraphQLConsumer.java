@@ -30,7 +30,10 @@ import static org.springframework.security.oauth2.client.web.reactive.function.c
 @Component
 public class PdlGraphQLConsumer {
 
-	private static final String HEADER_PDL_TEMA = "Tema";
+	// https://pdldocs-navno.msappproxy.net/ekstern/index.html#_dokumenter_hjemmel
+	private static final String HEADER_PDL_BEHANDLINGSNUMMER = "behandlingsnummer";
+	// https://behandlingskatalog.nais.adeo.no/process/purpose/ARKIVPLEIE/756fd557-b95e-4b20-9de9-6179fb8317e6
+	private static final String ARKIVPLEIE_BEHANDLINGSNUMMER = "B315";
 
 	private final WebClient webClient;
 	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
@@ -42,19 +45,21 @@ public class PdlGraphQLConsumer {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
-				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.defaultHeaders(httpHeaders -> {
+					httpHeaders.set(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+					httpHeaders.set(HEADER_PDL_BEHANDLINGSNUMMER, ARKIVPLEIE_BEHANDLINGSNUMMER);
+				})
 				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
 	}
 
 	@Retryable(retryFor = PdlTechnicalException.class)
-	public HentPersoninfo hentPerson(final String aktoerId, final String tema) {
+	public HentPersoninfo hentPerson(final String aktoerId) {
 
 		log.debug("Henter personinfo for aktørId={}", aktoerId);
 
 		return webClient.post()
 				.attributes(getOAuth2AuthorizedClient())
-				.header(HEADER_PDL_TEMA, tema)
 				.bodyValue(mapRequest(aktoerId))
 				.retrieve()
 				.bodyToMono(PDLHentPersonResponse.class)
@@ -64,7 +69,7 @@ public class PdlGraphQLConsumer {
 	}
 
 	private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
-		if (response.getErrors() != null ){
+		if (response.getErrors() != null) {
 			return null;
 		}
 

@@ -104,7 +104,7 @@ public class DokDistKanalService {
 	}
 
 	public DokDistKanalResponse validerPersonAndVelgKanal(DokDistKanalRequest dokDistKanalRequest, String tema, DokumentTypeInfoTo dokumentTypeInfoTo) {
-		HentPersoninfo hentPersoninfo = isFolkeregisterident(dokDistKanalRequest) ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId(), tema) : null;
+		HentPersoninfo hentPersoninfo = isFolkeregisterident(dokDistKanalRequest) ? pdlGraphQLConsumer.hentPerson(dokDistKanalRequest.getMottakerId()) : null;
 
 		if (hentPersoninfo == null) {
 			return logAndReturn(PRINT, "Finner ikke personen i PDL", tema);
