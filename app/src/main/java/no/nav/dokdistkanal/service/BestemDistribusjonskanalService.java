@@ -126,7 +126,7 @@ public class BestemDistribusjonskanalService {
 
 	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
 
-		var personinfoResultat = evaluerPersoninfo(request, request.getTema());
+		var personinfoResultat = evaluerPersoninfo(request);
 
 		if (personinfoResultat != null) {
 			return personinfoResultat;
@@ -162,8 +162,8 @@ public class BestemDistribusjonskanalService {
 		return createResponse(request, PERSON_STANDARD_PRINT);
 	}
 
-	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request, String tema) {
-		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId(), tema) : null;
+	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request) {
+		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId()) : null;
 
 		if (personinfo == null) {
 			return createResponse(request, PERSON_ER_IKKE_I_PDL);

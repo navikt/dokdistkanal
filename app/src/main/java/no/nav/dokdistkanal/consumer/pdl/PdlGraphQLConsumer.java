@@ -51,7 +51,7 @@ public class PdlGraphQLConsumer {
 	}
 
 	@Retryable(retryFor = PdlTechnicalException.class)
-	public HentPersoninfo hentPerson(final String aktoerId, final String tema) {
+	public HentPersoninfo hentPerson(final String aktoerId) {
 
 		log.debug("Henter personinfo for aktørId={}", aktoerId);
 
