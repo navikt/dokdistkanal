@@ -45,7 +45,10 @@ public class PdlGraphQLConsumer {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
-				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+				.defaultHeaders(httpHeaders -> {
+					httpHeaders.set(CONTENT_TYPE, APPLICATION_JSON_VALUE);
+					httpHeaders.set(HEADER_PDL_BEHANDLINGSNUMMER, ARKIVPLEIE_BEHANDLINGSNUMMER);
+				})
 				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
 	}
@@ -57,7 +60,6 @@ public class PdlGraphQLConsumer {
 
 		return webClient.post()
 				.attributes(getOAuth2AuthorizedClient())
-				.header(HEADER_PDL_BEHANDLINGSNUMMER, ARKIVPLEIE_BEHANDLINGSNUMMER)
 				.bodyValue(mapRequest(aktoerId))
 				.retrieve()
 				.bodyToMono(PDLHentPersonResponse.class)
