@@ -34,7 +34,6 @@ public class PdlGraphQLConsumer {
 	private static final String HEADER_PDL_BEHANDLINGSNUMMER = "behandlingsnummer";
 	// https://behandlingskatalog.nais.adeo.no/process/purpose/ARKIVPLEIE/756fd557-b95e-4b20-9de9-6179fb8317e6
 	private static final String ARKIVPLEIE_BEHANDLINGSNUMMER = "B315";
-	private static final String HEADER_PDL_TEMA = "Tema";
 
 	private final WebClient webClient;
 	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
@@ -58,7 +57,6 @@ public class PdlGraphQLConsumer {
 
 		return webClient.post()
 				.attributes(getOAuth2AuthorizedClient())
-				.header(HEADER_PDL_TEMA, tema)
 				.header(HEADER_PDL_BEHANDLINGSNUMMER, ARKIVPLEIE_BEHANDLINGSNUMMER)
 				.bodyValue(mapRequest(aktoerId))
 				.retrieve()
@@ -69,7 +67,7 @@ public class PdlGraphQLConsumer {
 	}
 
 	private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
-		if (response.getErrors() != null ){
+		if (response.getErrors() != null) {
 			return null;
 		}
 
