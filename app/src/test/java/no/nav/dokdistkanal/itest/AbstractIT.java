@@ -56,7 +56,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private static final String MASKINPORTEN_HAPPY_FILE_PATH = "altinn/maskinporten_happy_response.json";
 	private static final String AZURE_TOKEN_HAPPY_FILE_PATH = "azure/token_response_dummy.json";
 
-
 	@Value("${local.url}")
 	protected String LOCAL_ENDPOINT_URL;
 
@@ -90,6 +89,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	protected void stubDigdirKrrProxy() {
 		stubDigdirKrrProxy(DIGDIR_KRR_PROXY_HAPPY_FILE_PATH);
 	}
+
 	protected void stubPdl() {
 		stubPdl(PDL_HAPPY_FILE_PATH);
 	}
@@ -121,6 +121,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	protected void stubDokmet() {
 		stubDokmet(DOKMET_HAPPY_FILE_PATH);
 	}
+
 	protected void stubPdl(String bodyFilePath) {
 		stubFor(post(urlMatching(PDL_GRAPHQL_URL))
 				.willReturn(aResponse()
@@ -137,7 +138,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(bodyFilePath)));
-
 	}
 
 	protected void stubDokmet(String bodyFilePath) {

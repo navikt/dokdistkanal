@@ -8,7 +8,6 @@ import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.common.MottakerTypeCode;
-import no.nav.dokdistkanal.constants.DomainConstants;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.exceptions.DokDistKanalSecurityException;
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
@@ -16,7 +15,6 @@ import no.nav.dokdistkanal.service.DokDistKanalService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -32,7 +30,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.ORGANISASJON;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.SAMHANDLER_HPR;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_KANAL_URI_PATH;
@@ -50,14 +51,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class DokDistKanalIT extends AbstractIT {
 
-	private final static String CONSUMER_ID = "srvdokdistfordeling";
+	private static final String CONSUMER_ID = "srvdokdistfordeling";
 	private static final String DOKUMENTTYPEID = "000009";
 	private static final String MOTTAKERID = "12345678901";
-	private final static String BOST_MOTTAKERID = "80000123456";
-	private final static String ONLY_ONE_MOTTAKERID = "11111111111";
+	private static final String BOST_MOTTAKERID = "80000123456";
+	private static final String ONLY_ONE_MOTTAKERID = "11111111111";
 	private static final String ORGMOTTAKERID = "123456789";
 	private static final String SAMHANDLERMOTTAKERID = "987654321";
-	private final static boolean ER_ARKIVERT_TRUE = true;
+	private static final boolean ER_ARKIVERT_TRUE = true;
 	private static final String ALTINN_HAPPY_FILE_PATH = "altinn/serviceowner_happy_response.json";
 	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
 	private static final String SKATTEETATEN_ORGNUMMER = "974761076";
@@ -70,8 +71,9 @@ public class DokDistKanalIT extends AbstractIT {
 		logWatcher = new ListAppender<>();
 		logWatcher.start();
 		((Logger) LoggerFactory.getLogger(DokDistKanalService.class)).addAppender(logWatcher);
+
 		MDC.put(MDCConstants.CONSUMER_ID, CONSUMER_ID);
-		this.stubAllApi();
+		stubAllApi();
 	}
 
 	@AfterEach
@@ -92,7 +94,7 @@ public class DokDistKanalIT extends AbstractIT {
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().tema("PEN").build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+		assertEquals(SDP, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -105,7 +107,7 @@ public class DokDistKanalIT extends AbstractIT {
 				.build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(DistribusjonKanalCode.SDP, actualResponse.getDistribusjonsKanal());
+		assertEquals(SDP, actualResponse.getDistribusjonsKanal());
 	}
 
 	@Test
@@ -145,8 +147,12 @@ public class DokDistKanalIT extends AbstractIT {
 
 	@Test
 	public void shouldGetDistribusjonskanalPrintForOrganisasjon() {
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder().mottakerId(ORGMOTTAKERID).tema("PEN")
-				.mottakerType(MottakerTypeCode.ORGANISASJON).brukerId(ORGMOTTAKERID).build();
+		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
+				.mottakerId(ORGMOTTAKERID)
+				.tema("PEN")
+				.mottakerType(ORGANISASJON)
+				.brukerId(ORGMOTTAKERID)
+				.build();
 
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
 		stubPostPDL(PDL_HAPPY_FILE_PATH);
@@ -162,7 +168,7 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldGetDistribusjonskanalPrintForSamhandler() {
 		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
 				.mottakerId(SAMHANDLERMOTTAKERID)
-				.mottakerType(MottakerTypeCode.SAMHANDLER_HPR)
+				.mottakerType(SAMHANDLER_HPR)
 				.brukerId(SAMHANDLERMOTTAKERID)
 				.tema("PEN")
 				.build();
@@ -193,7 +199,7 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldGetDPVTWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsNotFromInfotrygd() {
 		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
 				.mottakerId(SKATTEETATEN_ORGNUMMER)
-				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.mottakerType(ORGANISASJON)
 				.brukerId(SKATTEETATEN_ORGNUMMER)
 				.tema("PEN")
 				.build();
@@ -210,7 +216,7 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndResponseFromAltinnContainsFalse() {
 		DokDistKanalRequest request = dokDistKanalRequestBuilder(INFOTRYGD_DOKUMENTTYPE_ID)
 				.mottakerId(SKATTEETATEN_ORGNUMMER)
-				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.mottakerType(ORGANISASJON)
 				.brukerId(SKATTEETATEN_ORGNUMMER)
 				.tema("PEN")
 				.build();
@@ -227,7 +233,7 @@ public class DokDistKanalIT extends AbstractIT {
 	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsFromInfotrygd() {
 		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
 				.mottakerId(SKATTEETATEN_ORGNUMMER)
-				.mottakerType(MottakerTypeCode.ORGANISASJON)
+				.mottakerType(ORGANISASJON)
 				.brukerId(SKATTEETATEN_ORGNUMMER)
 				.tema("PEN")
 				.build();
@@ -358,19 +364,22 @@ public class DokDistKanalIT extends AbstractIT {
 	@Override
 	public void stubAllApi() {
 		stubFor(get(urlPathMatching("/DOKUMENTTYPEINFO_V4(.*)"))
-				.willReturn(aResponse().withStatus(OK.value())
+				.willReturn(aResponse()
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/dokmet/happy-response.json")));
 
 		stubFor(post(urlPathMatching("/HENTPAALOGGINGSNIVAA_V1(.*)"))
-				.willReturn(aResponse().withStatus(OK.value())
+				.willReturn(aResponse()
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/paalogging/happy-responsebody.json")));
 
 		//leverandoerSertifikat som ligger under mappene treg001/dokkat/... er utsendt av DigDir og har utløpsdato februar 2023.
 		//Det må byttes ut innen den tid hvis ikke vil testene feile. Mer info i README.
 		stubFor(post("/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true")
-				.willReturn(aResponse().withStatus(OK.value())
+				.willReturn(aResponse()
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile("treg001/dki/happy-responsebody.json")));
 

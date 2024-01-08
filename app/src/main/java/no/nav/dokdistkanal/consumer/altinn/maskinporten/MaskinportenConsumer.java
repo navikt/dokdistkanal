@@ -6,7 +6,6 @@ import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
@@ -43,7 +42,6 @@ public class MaskinportenConsumer {
 	private final RestTemplate restTemplate;
 	private final MaskinportenProperties maskinportenProperties;
 
-	@Autowired
 	public MaskinportenConsumer(RestTemplateBuilder restTemplateBuilder,
 								MaskinportenProperties maskinportenProperties,
 								HttpClient httpClient) {
