@@ -10,7 +10,6 @@
 	</parent>
 
 	<artifactId>app</artifactId>
-	<packaging>jar</packaging>
 
 	<dependencies>
 		<dependency>
@@ -97,8 +96,10 @@
 		<dependency>
 			<groupId>no.nav.security</groupId>
 			<artifactId>token-validation-spring-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<finalName>app</finalName>
 		<plugins>

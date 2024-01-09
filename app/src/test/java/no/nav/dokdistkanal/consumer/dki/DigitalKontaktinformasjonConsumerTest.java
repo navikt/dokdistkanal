@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DigitalKontaktinformasjonConsumerTest {
+
     private final static String FNR = "12345678901";
     private final static String EPOSTADRESSE = "adresse@test.no";
     private final static String MOBIL = "123 45 678";
@@ -28,7 +29,6 @@ public class DigitalKontaktinformasjonConsumerTest {
     private final static boolean INKLUDER_SIKKER_DIGITAL_POST = true;
 
     private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer = mock(DigitalKontaktinformasjonConsumer.class);
-
 
     @Test
     public void shouldHentDKI() {
@@ -60,28 +60,27 @@ public class DigitalKontaktinformasjonConsumerTest {
     }
 
     @Test
-    public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() throws Exception {
+    public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() {
         when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
                 .thenThrow(new DigitalKontaktinformasjonV2FunctionalException("Funksjonell feil"));
 
         assertThrows(DigitalKontaktinformasjonV2FunctionalException.class, () -> digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST));
-
-
     }
 
     @Test
     public void shouldReturnNullWhenNoKontaktinfo() {
-        when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
-                .thenReturn(null);
+        when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class))).thenReturn(null);
+
         DigitalKontaktinformasjonTo digitalKontaktinformasjonTo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST);
 
         assertNull(digitalKontaktinformasjonTo);
     }
 
     @Test
-    public void shouldThrowTechnicalExceptionWhenRuntimeException() throws Exception {
+    public void shouldThrowTechnicalExceptionWhenRuntimeException() {
         when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
                 .thenThrow(new DigitalKontaktinformasjonV2TechnicalException("Teknisk feil"));
+
         assertThrows(DigitalKontaktinformasjonV2TechnicalException.class,
                 () -> digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST));
     }
@@ -98,7 +97,6 @@ public class DigitalKontaktinformasjonConsumerTest {
     }
 
     private DigitalKontaktinformasjonTo createEmptyResponse() {
-        return DigitalKontaktinformasjonTo.builder()
-                .build();
+        return DigitalKontaktinformasjonTo.builder().build();
     }
 }

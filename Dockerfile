@@ -16,6 +16,6 @@ RUN chmod +x /run-java.sh
 USER apprunner
 
 ENV APPD_ENABLED=true
-ENV MAIN_CLASS="org.springframework.boot.loader.JarLauncher"
+ENV MAIN_CLASS="org.springframework.boot.loader.launch.JarLauncher"
 ENV JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom \
                -Dspring.profiles.active=nais"

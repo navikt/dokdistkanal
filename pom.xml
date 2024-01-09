@@ -15,20 +15,20 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.1</version>
+		<version>3.2.1</version>
 	</parent>
 
 	<properties>
 		<java.version>17</java.version>
 
-		<resilience4j.version>2.1.0</resilience4j.version>
+		<resilience4j.version>2.2.0</resilience4j.version>
 		<logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
-		<nimbus-jose-jwt.version>9.31</nimbus-jose-jwt.version>
-		<token-support.version>3.1.0</token-support.version>
-		<springdoc-openapi-starter-webmvc-ui.version>2.1.0</springdoc-openapi-starter-webmvc-ui.version>
+		<nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
+		<token-support.version>3.2.0</token-support.version>
+		<springdoc-openapi-starter-webmvc-ui.version>2.3.0</springdoc-openapi-starter-webmvc-ui.version>
 
 		<!-- Test -->
-		<spring-cloud-contract-wiremock.version>4.0.4</spring-cloud-contract-wiremock.version>
+		<spring-cloud-contract-wiremock.version>4.1.0</spring-cloud-contract-wiremock.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.1.0</maven-toolchains-plugin.version>

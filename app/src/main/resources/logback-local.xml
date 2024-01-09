@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="false" debug="false">
-
-	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>[%t, %d, %-5p, %C:%L] - %.-100000m%n</pattern>
-		</encoder>
-	</appender>
+<included>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
 	<root level="INFO">
 		<appender-ref ref="CONSOLE"/>
@@ -14,12 +10,4 @@
 	<logger name="no.nav.dokdistkanal" level="DEBUG" additivity="false">
 		<appender-ref ref="CONSOLE"/>
 	</logger>
-
-
-	<logger name="org.apache.cxf.interceptor" additivity="true">
-		    
-		<appender-ref ref="CONSOLE"/>
-		  
-	</logger>
-
-</configuration>
+</included>

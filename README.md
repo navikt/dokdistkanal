@@ -7,7 +7,7 @@ Følgende distribusjonskanaler kan bli returnert:
 - SDP
 - DITT_NAV
 - TRYGDERETTEN
-- DPV (kommer)
+- DPV
 
 Mer informasjon om hvordan appen fungerer finner du på [Confluence-siden for dokdistkanal](https://confluence.adeo.no/display/BOA/DokdistKanal-+BestemDistribusjonskanal).
 
