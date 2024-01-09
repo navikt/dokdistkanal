@@ -30,6 +30,11 @@
       "app": "familie-integrasjoner-q1",
       "namespace": "teamfamilie",
       "cluster": "dev-fss"
+    },
+    {
+      "app": "kabal-api",
+      "namespace": "klage",
+      "cluster": "dev-gcp"
     }
   ]
 }
