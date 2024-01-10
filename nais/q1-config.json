@@ -35,6 +35,11 @@
       "app": "kabal-api",
       "namespace": "klage",
       "cluster": "dev-gcp"
+    },
+    {
+      "app": "klage-fss-proxy",
+      "namespace": "klage",
+      "cluster": "dev-fss"
     }
   ]
 }
