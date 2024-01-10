@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
-import no.nav.dokdistkanal.common.MottakerTypeCode;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.common.MottakerTypeCode.ORGANISASJON;
 import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -27,11 +25,10 @@ public class DokdistkanalValidator {
 	private static final String ONLY_ONES = "11111111111";
 
 	private static final Set<String> AARSOPPGAVE_DOKUMENTTYPE_ID = Set.of("000053", "000077");
-	private static final Set<String> VALID_DPVT_ORGANISASJONSNUMMER = Set.of("974761076", "987926279", "912998827", "983887457", "914760011", "875432702", "971574909", "985569258");
 	private static final Set<String> INFOTRYGD_DOKUMENTTYPE_ID = Set.of("000044", "000045", "000046", "000249");
 
 	public static boolean erGyldigAltinnNotifikasjonMottaker(ValidateRecipientResponse validateRecipientResponse) {
-		return validateRecipientResponse.inboxAccessible() &
+		return validateRecipientResponse.inboxAccessible() &&
 			   (validateRecipientResponse.canReceiveNotificationBySms() || validateRecipientResponse.canReceiveNotificationByEmail());
 	}
 
@@ -41,18 +38,6 @@ public class DokdistkanalValidator {
 
 	public static boolean isOrgNummerWithInfotrygdDokumentTypeId(String dokumentTypeId) {
 		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokumentTypeId);
-	}
-
-	public static boolean isValidDPVTOrgNummer(DokDistKanalRequest dokDistKanalRequest) {
-		return ORGANISASJON.equals(dokDistKanalRequest.getMottakerType()) && VALID_DPVT_ORGANISASJONSNUMMER.contains(dokDistKanalRequest.getMottakerId());
-	}
-
-	public static boolean isValidDPVTOrgNummer(MottakerTypeCode mottakerType, String mottakerId) {
-		return ORGANISASJON.equals(mottakerType) && VALID_DPVT_ORGANISASJONSNUMMER.contains(mottakerId);
-	}
-
-	public static boolean isValidDPVTOrganisasjon(String mottakerId) {
-		return VALID_DPVT_ORGANISASJONSNUMMER.contains(mottakerId);
 	}
 
 	public static void validateInput(DokDistKanalRequest dokDistKanalRequest) {

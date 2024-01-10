@@ -20,6 +20,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -46,7 +47,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
 	private static final String MASKINPORTEN_URL = "/maskinporten";
 	private static final String AZURE_TOKEN_URL = "/azure_token";
-	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient?organizationNumber=974761076";
+	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient";
 	private static final String PDL_GRAPHQL_URL = "/graphql";
 
 	protected static final String DOKMET_HAPPY_FILE_PATH = "treg001/dokmet/happy-response.json";
@@ -90,6 +91,10 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		stubDigdirKrrProxy(DIGDIR_KRR_PROXY_HAPPY_FILE_PATH);
 	}
 
+	protected void stubAltinn() {
+		stubAltinn(ALTINN_HAPPY_FILE_PATH);
+	}
+
 	protected void stubPdl() {
 		stubPdl(PDL_HAPPY_FILE_PATH);
 	}
@@ -102,12 +107,12 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withBodyFile(MASKINPORTEN_HAPPY_FILE_PATH)));
 	}
 
-	protected void stubAltinn() {
-		stubFor(get((ALTINN_URL))
+	protected void stubAltinn(String bodyFilePath) {
+		stubFor(get(urlPathEqualTo(ALTINN_URL))
 				.willReturn(aResponse()
 						.withHeader(CONTENT_TYPE, HAL_JSON_VALUE)
 						.withHeader(ACCEPT_ENCODING, "gzip")
-						.withBodyFile(ALTINN_HAPPY_FILE_PATH)));
+						.withBodyFile(bodyFilePath)));
 	}
 
 	protected void stubAzure() {

@@ -145,22 +145,6 @@ public class DokDistKanalIT extends AbstractIT {
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
 	}
 
-	@Test
-	public void shouldGetDistribusjonskanalPrintForOrganisasjon() {
-		DokDistKanalRequest request = baseDokDistKanalRequestBuilder()
-				.mottakerId(ORGMOTTAKERID)
-				.tema("PEN")
-				.mottakerType(ORGANISASJON)
-				.brukerId(ORGMOTTAKERID)
-				.build();
-
-		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
-		stubPostPDL(PDL_HAPPY_FILE_PATH);
-
-		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
-	}
-
 	/**
 	 * Komplertterer fullt brevdatasett der mottaker er samhandler
 	 */
@@ -196,54 +180,48 @@ public class DokDistKanalIT extends AbstractIT {
 	}
 
 	@Test
-	public void shouldGetDPVTWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsNotFromInfotrygd() {
-		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
-				.mottakerId(SKATTEETATEN_ORGNUMMER)
+	public void shouldReturnPrintForOrganizationWhenDokumentTypeIdIsFromInfotrygd() {
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(SKATTEETATEN_ORGNUMMER)
 				.mottakerType(ORGANISASJON)
-				.brukerId(SKATTEETATEN_ORGNUMMER)
-				.tema("PEN")
+				.dokumentTypeId(INFOTRYGD_DOKUMENTTYPE_ID)
 				.build();
 
+		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+
+		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
+		assertThat(getLogMessage(logWatcher)).contains("(Tema=PEN) til PRINT: Mottaker er av typen ORGANISASJON med infotrygd dokumentTypeId=" + INFOTRYGD_DOKUMENTTYPE_ID);
+	}
+
+	@Test
+	public void shouldReturnDPVTForOrganizationWithVarslingsinformasjon() {
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
 		stubGetAltinn(ALTINN_HAPPY_FILE_PATH);
-		stubPostPDL(PDL_HAPPY_FILE_PATH);
+
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(SKATTEETATEN_ORGNUMMER)
+				.mottakerType(ORGANISASJON)
+				.build();
 
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+
 		assertEquals(DPVT, actualResponse.getDistribusjonsKanal());
-		assertThat(getLogMessage(logWatcher)).contains("er en gyldig altinn-serviceowner notifikasjonsmottaker");
+		assertThat(getLogMessage(logWatcher)).contains("(Tema=PEN) til DPVT: Mottaker er av typen ORGANISASJON, og er en gyldig altinn-serviceowner notifikasjonsmottaker");
 	}
 
 	@Test
-	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndResponseFromAltinnContainsFalse() {
-		DokDistKanalRequest request = dokDistKanalRequestBuilder(INFOTRYGD_DOKUMENTTYPE_ID)
-				.mottakerId(SKATTEETATEN_ORGNUMMER)
+	public void shouldReturnPrintForOrganizationWithoutVarslingsinformasjon() {
+		stubPostPDL(PDL_HAPPY_FILE_PATH);
+		stubGetAltinn("altinn/serviceowner_with_false_response.json");
+
+		DokDistKanalRequest request = dokDistKanalRequestBuilder(SKATTEETATEN_ORGNUMMER)
 				.mottakerType(ORGANISASJON)
-				.brukerId(SKATTEETATEN_ORGNUMMER)
-				.tema("PEN")
 				.build();
 
-		stubGetAltinn("altinn/serviceowner_with_false_response.json");
-		stubPostPDL(PDL_HAPPY_FILE_PATH);
-
 		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
+
 		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
-		assertThat(getLogMessage(logWatcher)).contains("(Tema=PEN) til PRINT: Mottaker er av typen ORGANISASJON");
-	}
-
-	@Test
-	public void shouldReturnPrintWhenOrgNummerIsFromDPVTListAndDokumentTypeIdIsFromInfotrygd() {
-		DokDistKanalRequest request = dokDistKanalRequestBuilder(DOKUMENTTYPEID)
-				.mottakerId(SKATTEETATEN_ORGNUMMER)
-				.mottakerType(ORGANISASJON)
-				.brukerId(SKATTEETATEN_ORGNUMMER)
-				.tema("PEN")
-				.build();
-
-		stubGetAltinn("altinn/serviceowner_with_false_response.json");
-		stubPostPDL(PDL_HAPPY_FILE_PATH);
-
-		DokDistKanalResponse actualResponse = restTemplate.postForObject(LOCAL_ENDPOINT_URL + BESTEM_KANAL_URI_PATH, request, DokDistKanalResponse.class);
-		assertEquals(PRINT, actualResponse.getDistribusjonsKanal());
-		assertThat(getLogMessage(logWatcher)).contains("til PRINT: Mottaker er av typen ORGANISASJON");
+		assertThat(getLogMessage(logWatcher)).contains("(Tema=PEN) til PRINT: Mottaker er av typen ORGANISASJON, men mangler varslingsinformasjon for DPV-sending");
 	}
 
 	@Test
