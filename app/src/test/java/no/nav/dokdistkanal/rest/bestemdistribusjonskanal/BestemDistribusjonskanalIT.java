@@ -113,19 +113,14 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * Her testes følgende regler:
 	 * 5: Er mottakerType ORGANISASJON og dokument produsert i infotrygd? Hvis ja -> PRINT
 	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn? Hvis ja -> DPVT
-	 * -: Er mottakerType ORGANISASJON, men mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * -: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel, String mottakerId, String dokumentTypeId) {
 		stubDokmet();
 		stubDigdirKrrProxy();
-
-		if (regel == BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO) {
-			stubAltinn("altinn/serviceowner_with_false_response.json");
-		} else {
-			stubAltinn();
-		}
+		stubAltinn();
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setMottakerId(mottakerId);

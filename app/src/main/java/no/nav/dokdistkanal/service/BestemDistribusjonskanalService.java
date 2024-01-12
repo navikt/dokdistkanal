@@ -115,11 +115,8 @@ public class BestemDistribusjonskanalService {
 		}
 
 		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-		if (erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
-			return createResponse(request, ORGANISASJON_MED_ALTINN_INFO);
-		} else {
-			return createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
-		}
+		return erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient) ?
+				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 	}
 
 	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
