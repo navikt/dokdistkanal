@@ -10,6 +10,7 @@ import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.common.DokDistKanalResponse;
 import no.nav.dokdistkanal.constants.MDCConstants;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
+import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -36,6 +37,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
@@ -65,6 +67,7 @@ public class DokDistKanalServiceTest {
 	private final static String LEVERANDORADRESSE = "Leverandøradresse";
 	private final static String BRUKERADRESSE = "Brukeradresse";
 	private final static String BRUKERID = "55443322110";
+	private final static String ORGNR = "974761076";
 	private final static String ANNEN_BRUKERID = "01122334455";
 	private final static Boolean ER_ARKIVERT_FALSE = FALSE;
 	private final static Boolean ER_ARKIVERT_TRUE = TRUE;
@@ -166,16 +169,46 @@ public class DokDistKanalServiceTest {
 	}
 
 	@Test
-	public void shouldSetKanalPrintNaarOrganisasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+	public void shouldSetKanalPrintHvisOrganisasjonHarInfotrygdDokumentId() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
 		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder()
-				.brukerId(BRUKERID)
+				.brukerId(ORGNR)
 				.mottakerType(ORGANISASJON)
-				.mottakerId(BRUKERID)
+				.mottakerId(ORGNR)
+				.dokumentTypeId("000046")
 				.build());
 
 		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
-		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Mottaker er av typen ORGANISASJON");
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Mottaker er av typen ORGANISASJON med infotrygd dokumentTypeId=000046");
+	}
 
+	@Test
+	public void shouldSetKanalDPVTHvisOrganisasjonHarVarslingsinformasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		when(altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(ORGNR))
+				.thenReturn(new ValidateRecipientResponse(true, true, true));
+
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder()
+				.brukerId(ORGNR)
+				.mottakerType(ORGANISASJON)
+				.mottakerId(ORGNR)
+				.build());
+
+		assertEquals(DPVT, serviceResponse.getDistribusjonsKanal());
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(DPVT) + "Mottaker er av typen ORGANISASJON, og er en gyldig altinn-serviceowner notifikasjonsmottaker");
+	}
+
+	@Test
+	public void shouldSetKanalPrintHvisOrganisasjonManglerVarslingsinformasjon() throws DokDistKanalFunctionalException, DokDistKanalSecurityException {
+		when(altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(ORGNR))
+				.thenReturn(new ValidateRecipientResponse(false, false, true));
+
+		DokDistKanalResponse serviceResponse = service.velgKanal(baseDokDistKanalRequestBuilder()
+				.brukerId(ORGNR)
+				.mottakerType(ORGANISASJON)
+				.mottakerId(ORGNR)
+				.build());
+
+		assertEquals(PRINT, serviceResponse.getDistribusjonsKanal());
+		assertThat(TestUtils.getLogMessage(logWatcher)).contains(createLogMelding(PRINT) + "Mottaker er av typen ORGANISASJON, men mangler varslingsinformasjon for DPV-sending");
 	}
 
 	@Test

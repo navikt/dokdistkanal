@@ -29,9 +29,9 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SD
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_IKKE_DPVT_ORG;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_DOED;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_IKKE_I_PDL;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_UNDER_18;
@@ -48,7 +48,6 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNo
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrganisasjon;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
@@ -111,17 +110,13 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse organisasjon(BestemDistribusjonskanalRequest request) {
-		if (isValidDPVTOrganisasjon(request.getMottakerId())) {
-			if (isOrgNummerWithInfotrygdDokumentTypeId(request.getDokumenttypeId())) {
-				return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
-			}
-			var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-
-			if (erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
-				return createResponse(request, ORGANISASJON_MED_ALTINN_INFO);
-			}
+		if (isOrgNummerWithInfotrygdDokumentTypeId(request.getDokumenttypeId())) {
+			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
-		return createResponse(request, ORGANISASJON_ER_IKKE_DPVT_ORG);
+
+		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
+		return erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient) ?
+				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 	}
 
 	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {

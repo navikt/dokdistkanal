@@ -27,6 +27,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.common.MottakerTypeCode.ORGANISASJON;
 import static no.nav.dokdistkanal.common.MottakerTypeCode.PERSON;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
@@ -35,7 +36,6 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNo
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isValidDPVTOrgNummer;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.validateInput;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -90,16 +90,19 @@ public class DokDistKanalService {
 
 
 	private DokDistKanalResponse validerOrganisasjonAndVelgKanal(DokDistKanalRequest dokDistKanalRequest, String tema) {
-		if (isValidDPVTOrgNummer(dokDistKanalRequest)) {
+		if (mottakertypeErOrganisasjon(dokDistKanalRequest)) {
 			if (isOrgNummerWithInfotrygdDokumentTypeId(dokDistKanalRequest)) {
 				return logAndReturn(PRINT, format("Mottaker er av typen %s med infotrygd dokumentTypeId=%s", dokDistKanalRequest.getMottakerType().name(), dokDistKanalRequest.getDokumentTypeId()), tema);
 			}
-			ValidateRecipientResponse serviceOwnerValidReciepient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(dokDistKanalRequest.getMottakerId());
 
-			if (erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidReciepient)) {
-				return logAndReturn(DPVT, format("Mottaker er av typen %s og er en gyldig altinn-serviceowner notifikasjonsmottaker", dokDistKanalRequest.getMottakerType().name()), tema);
+			ValidateRecipientResponse serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(dokDistKanalRequest.getMottakerId());
+			if (erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
+				return logAndReturn(DPVT, format("Mottaker er av typen %s, og er en gyldig altinn-serviceowner notifikasjonsmottaker", dokDistKanalRequest.getMottakerType().name()), tema);
+			} else {
+				return logAndReturn(PRINT, format("Mottaker er av typen %s, men mangler varslingsinformasjon for DPV-sending", dokDistKanalRequest.getMottakerType().name()), tema);
 			}
 		}
+
 		return logAndReturn(PRINT, format("Mottaker er av typen %s", dokDistKanalRequest.getMottakerType().name()), tema);
 	}
 
@@ -174,5 +177,9 @@ public class DokDistKanalService {
 
 		log.info(format("BestemKanal: Sender melding fra %s (Tema=%s) til %s: %s", consumerId(), tema, kanalKode.name(), reason));
 		return DokDistKanalResponse.builder().distribusjonsKanal(kanalKode).build();
+	}
+
+	private static boolean mottakertypeErOrganisasjon(DokDistKanalRequest dokDistKanalRequest) {
+		return ORGANISASJON.equals(dokDistKanalRequest.getMottakerType());
 	}
 }
