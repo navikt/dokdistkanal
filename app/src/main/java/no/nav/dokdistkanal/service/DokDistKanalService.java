@@ -33,7 +33,7 @@ import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraAarsoppgave;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.validateInput;
@@ -151,7 +151,7 @@ public class DokDistKanalService {
 		}
 
 		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
-		if (!isDokumentTypeIdUsedForAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
+		if (!erDokumentFraAarsoppgave(dokDistKanalRequest.getDokumentTypeId()) && !dokDistKanalRequest.getMottakerId()
 				.equals(dokDistKanalRequest.getBrukerId())) {
 			return logAndReturn(PRINT, "Bruker og mottaker er forskjellige", tema);
 		}

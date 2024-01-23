@@ -34,12 +34,28 @@ public class DokdistkanalValidator {
 			   (validateRecipientResponse.canReceiveNotificationBySms() || validateRecipientResponse.canReceiveNotificationByEmail());
 	}
 
+	public static boolean erDokumentFraInfotrygd(String dokumentTypeId) {
+		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokumentTypeId);
+	}
+
+	public static boolean erOrganisasjonsnummer(BestemDistribusjonskanalRequest request) {
+		return OrganisasjonsnummerValidator.isValid(request.getMottakerId());
+	}
+
+	public static boolean erIdentitetsnummer(String mottakerId) {
+		return FOLKEREGISTERIDENT_REGEX.matcher(mottakerId).matches() && !ONLY_ONES.equals(mottakerId);
+	}
+
+	public static boolean erDokumentFraAarsoppgave(String dokumentTypeId) {
+		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
+	}
+
+	// Brukt i bestemKanal-endepunktet - blir fjernet når endepunktet blir sanert
 	public static boolean isOrgNummerWithInfotrygdDokumentTypeId(DokDistKanalRequest dokDistKanalRequest) {
 		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokDistKanalRequest.getDokumentTypeId());
 	}
-
-	public static boolean dokumentKommerFraInfotrygd(String dokumentTypeId) {
-		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokumentTypeId);
+	public static boolean isFolkeregisterident(DokDistKanalRequest dokDistKanalRequest) {
+		return FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
 	}
 
 	public static void validateInput(DokDistKanalRequest dokDistKanalRequest) {
@@ -50,22 +66,6 @@ public class DokdistkanalValidator {
 		assertNotNullOrEmpty("brukerId", dokDistKanalRequest.getBrukerId());
 		assertNotNull("erArkivert", dokDistKanalRequest.getErArkivert());
 		assertNotNullOrEmpty("tema", dokDistKanalRequest.getTema());
-	}
-
-	public static boolean isFolkeregisterident(DokDistKanalRequest dokDistKanalRequest) {
-		return FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
-	}
-
-	public static boolean organisasjonErUgyldig(BestemDistribusjonskanalRequest request) {
-		return !OrganisasjonsnummerValidator.isValid(request.getMottakerId());
-	}
-
-	public static boolean fnrEllerDnrErGyldigMedEnkelValidering(String mottakerId) {
-		return FOLKEREGISTERIDENT_REGEX.matcher(mottakerId).matches() && !ONLY_ONES.equals(mottakerId);
-	}
-
-	public static boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
-		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
 	}
 
 	private static void assertNotNullOrEmpty(String fieldName, String value) {
