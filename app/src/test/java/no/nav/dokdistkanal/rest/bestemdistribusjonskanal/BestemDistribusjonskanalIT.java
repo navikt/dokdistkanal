@@ -111,6 +111,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
+	 * -: Er mottakerType ORGANISASJON med ugyldig org.nr.? Hvis ja -> PRINT
 	 * 5: Er mottakerType ORGANISASJON og dokument produsert i infotrygd? Hvis ja -> PRINT
 	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn? Hvis ja -> DPVT
 	 * -: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
@@ -148,10 +149,44 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_ER_UGYLDIG, "123456789", "000000"),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044"),
 				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "123456789", "000000")
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000")
 		);
+	}
+
+	/*
+	 * Her testes følgende regler:
+	 * -: Er FNR/DNR gyldig? Hvis nei -> PRINT
+	 */
+	@ParameterizedTest
+	@ValueSource(strings = {"82345678902", "11111111111"} )
+	void skalReturnerePrintForUgyldigFnrEllerDnr(String mottakerId) {
+		stubDokmet();
+
+		var request = bestemDistribusjonskanalRequest();
+		request.setMottakerId(mottakerId);
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
+				.returnResult()
+				.getResponseBody();
+
+		var FORVENTET_REGEL = BestemDistribusjonskanalRegel.PERSON_HAR_UGYLDIG_FNR_ELLER_DNR;
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.distribusjonskanal()).isEqualTo(PRINT);
+					assertThat(it.regel()).isEqualTo(FORVENTET_REGEL.name());
+					assertThat(it.regelBegrunnelse()).isEqualTo(FORVENTET_REGEL.begrunnelse);
+				});
 	}
 
 	/*
@@ -199,7 +234,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * Her testes følgende regler:
 	 * 11: Har personen gyldig digital kontaktinformasjon? Hvis nei -> PRINT
 	 * 12: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
-	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
+	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvis ja -> PRINT
 	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT

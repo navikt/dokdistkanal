@@ -26,6 +26,7 @@
 		<nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
 		<token-support.version>3.2.0</token-support.version>
 		<springdoc-openapi-starter-webmvc-ui.version>2.3.0</springdoc-openapi-starter-webmvc-ui.version>
+		<nocommons.version>0.16.0</nocommons.version>
 
 		<!-- Test -->
 		<spring-cloud-contract-wiremock.version>4.1.0</spring-cloud-contract-wiremock.version>
@@ -60,6 +61,11 @@
 				<groupId>org.springdoc</groupId>
 				<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 				<version>${springdoc-openapi-starter-webmvc-ui.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>no.bekk.bekkopen</groupId>
+				<artifactId>nocommons</artifactId>
+				<version>${nocommons.version}</version>
 			</dependency>
 
 			<!-- Test -->

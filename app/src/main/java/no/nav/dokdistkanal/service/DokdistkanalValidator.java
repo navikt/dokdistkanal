@@ -1,9 +1,11 @@
 package no.nav.dokdistkanal.service;
 
 import lombok.extern.slf4j.Slf4j;
+import no.bekk.bekkopen.org.OrganisasjonsnummerValidator;
 import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -36,7 +38,7 @@ public class DokdistkanalValidator {
 		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokDistKanalRequest.getDokumentTypeId());
 	}
 
-	public static boolean isOrgNummerWithInfotrygdDokumentTypeId(String dokumentTypeId) {
+	public static boolean dokumentKommerFraInfotrygd(String dokumentTypeId) {
 		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokumentTypeId);
 	}
 
@@ -54,9 +56,14 @@ public class DokdistkanalValidator {
 		return FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
 	}
 
-	public static boolean isFolkeregisterident(String mottakerId) {
+	public static boolean organisasjonErUgyldig(BestemDistribusjonskanalRequest request) {
+		return !OrganisasjonsnummerValidator.isValid(request.getMottakerId());
+	}
+
+	public static boolean fnrEllerDnrErGyldigMedEnkelValidering(String mottakerId) {
 		return FOLKEREGISTERIDENT_REGEX.matcher(mottakerId).matches() && !ONLY_ONES.equals(mottakerId);
 	}
+
 	public static boolean isDokumentTypeIdUsedForAarsoppgave(String dokumentTypeId) {
 		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
 	}

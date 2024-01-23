@@ -49,7 +49,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private static final String MASKINPORTEN_URL = "/maskinporten";
 	private static final String AZURE_TOKEN_URL = "/azure_token";
 	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient";
-	private static final String ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON = "/altinn/serviceowner/notifications/validaterecipient?organizationNumber=123456789";
+	private static final String ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON = "/altinn/serviceowner/notifications/validaterecipient?organizationNumber=889640782";
 	private static final String PDL_GRAPHQL_URL = "/graphql";
 
 	protected static final String DOKMET_HAPPY_FILE_PATH = "treg001/dokmet/happy-response.json";

@@ -29,12 +29,14 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SD
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_UGYLDIG;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_DOED;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_IKKE_I_PDL;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_ER_UNDER_18;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_HAR_UGYLDIG_FNR_ELLER_DNR;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_HAR_UKJENT_ALDER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PERSON_STANDARD_PRINT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_INGEN_DISTRIBUSJON;
@@ -44,10 +46,11 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.SKAL_IKKE
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.TEMA_HAR_BEGRENSET_INNSYN;
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.fnrEllerDnrErGyldigMedEnkelValidering;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.organisasjonErUgyldig;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.dokumentKommerFraInfotrygd;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
@@ -110,7 +113,11 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse organisasjon(BestemDistribusjonskanalRequest request) {
-		if (isOrgNummerWithInfotrygdDokumentTypeId(request.getDokumenttypeId())) {
+		if (organisasjonErUgyldig(request)) {
+			return createResponse(request, ORGANISASJON_ER_UGYLDIG);
+		}
+
+		if (dokumentKommerFraInfotrygd(request.getDokumenttypeId())) {
 			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
 
@@ -158,7 +165,11 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request) {
-		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId()) : null;
+		if (!fnrEllerDnrErGyldigMedEnkelValidering(request.getMottakerId())) {
+			return createResponse(request, PERSON_HAR_UGYLDIG_FNR_ELLER_DNR);
+		}
+
+		var personinfo = pdlGraphQLConsumer.hentPerson(request.getMottakerId());
 
 		if (personinfo == null) {
 			return createResponse(request, PERSON_ER_IKKE_I_PDL);
