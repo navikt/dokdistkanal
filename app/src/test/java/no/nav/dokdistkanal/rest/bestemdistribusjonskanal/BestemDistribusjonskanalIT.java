@@ -150,7 +150,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		return Stream.of(
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044"),
 				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "123456789", "000000")
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000")
 		);
 	}
 
@@ -199,7 +199,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * Her testes følgende regler:
 	 * 11: Har personen gyldig digital kontaktinformasjon? Hvis nei -> PRINT
 	 * 12: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
-	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvsi ja -> PRINT
+	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvis ja -> PRINT
 	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
 	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
@@ -357,12 +357,13 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * Her testes følgende regler:
 	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
 	 */
-	@Test
-	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon() {
+	@ParameterizedTest
+	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111"} )
+	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon(String mottakerId) {
 		stubDokmet();
 
 		var request = bestemDistribusjonskanalRequest();
-		request.setMottakerId("12345");
+		request.setMottakerId(mottakerId);
 
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)

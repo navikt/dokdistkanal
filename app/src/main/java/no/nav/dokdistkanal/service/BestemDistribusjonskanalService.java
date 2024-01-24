@@ -44,10 +44,11 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.SKAL_IKKE
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.TEMA_HAR_BEGRENSET_INNSYN;
 import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraInfotrygd;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isDokumentTypeIdUsedForAarsoppgave;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isFolkeregisterident;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.isOrgNummerWithInfotrygdDokumentTypeId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erIdentitetsnummer;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erOrganisasjonsnummer;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraAarsoppgave;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
@@ -74,7 +75,6 @@ public class BestemDistribusjonskanalService {
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
 	}
 
-
 	public BestemDistribusjonskanalResponse bestemDistribusjonskanal(BestemDistribusjonskanalRequest request) {
 
 		var dokumenttypeInfo = isBlank(request.getDokumenttypeId()) ? null : dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
@@ -87,10 +87,26 @@ public class BestemDistribusjonskanalService {
 		}
 
 		return switch (request.getMottakerId().length()) {
-			case 9 -> organisasjon(request);
-			case 11 -> person(request, dokumenttypeInfo);
+			case 9 -> validerOrgNrOgBestemKanal(request);
+			case 11 -> validerIdNrOgBestemKanal(request, dokumenttypeInfo);
 			default -> createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
 		};
+	}
+
+	private BestemDistribusjonskanalResponse validerOrgNrOgBestemKanal(BestemDistribusjonskanalRequest request) {
+		if (!erOrganisasjonsnummer(request)) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		}
+
+		return organisasjon(request);
+	}
+
+	private BestemDistribusjonskanalResponse validerIdNrOgBestemKanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
+		if (!erIdentitetsnummer(request.getMottakerId())) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		}
+
+		return person(request, dokumenttypeInfo);
 	}
 
 	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
@@ -110,7 +126,7 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse organisasjon(BestemDistribusjonskanalRequest request) {
-		if (isOrgNummerWithInfotrygdDokumentTypeId(request.getDokumenttypeId())) {
+		if (erDokumentFraInfotrygd(request.getDokumenttypeId())) {
 			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
 
@@ -134,11 +150,11 @@ public class BestemDistribusjonskanalService {
 			return digitalKontaktinfoResultat;
 		}
 
-		var dokumentTypeErIkkeAarsoppgave = request.getDokumenttypeId() == null || !isDokumentTypeIdUsedForAarsoppgave(request.getDokumenttypeId());
-		var mottarOgBrukerErForskjellig = !request.getMottakerId().equals(request.getBrukerId());
+		var dokumentTypeErIkkeAarsoppgave = request.getDokumenttypeId() == null || !erDokumentFraAarsoppgave(request.getDokumenttypeId());
+		var mottakerOgBrukerErForskjellig = !request.getMottakerId().equals(request.getBrukerId());
 
 		//DokumentTypeId brukt for aarsoppgave skal ikke gjøre sjekk på om brukerId og mottakerId er ulik
-		if (dokumentTypeErIkkeAarsoppgave && mottarOgBrukerErForskjellig) {
+		if (dokumentTypeErIkkeAarsoppgave && mottakerOgBrukerErForskjellig) {
 			return createResponse(request, BRUKER_OG_MOTTAKER_ER_FORSKJELLIG);
 		}
 
@@ -158,7 +174,7 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse evaluerPersoninfo(BestemDistribusjonskanalRequest request) {
-		var personinfo = isFolkeregisterident(request.getMottakerId()) ? pdlGraphQLConsumer.hentPerson(request.getMottakerId()) : null;
+		var personinfo = pdlGraphQLConsumer.hentPerson(request.getMottakerId());
 
 		if (personinfo == null) {
 			return createResponse(request, PERSON_ER_IKKE_I_PDL);

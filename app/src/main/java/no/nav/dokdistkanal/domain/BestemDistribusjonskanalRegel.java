@@ -40,4 +40,3 @@ public enum BestemDistribusjonskanalRegel {
 	public final String begrunnelse;
 
 }
-
