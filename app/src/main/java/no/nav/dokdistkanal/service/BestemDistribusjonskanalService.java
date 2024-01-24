@@ -87,22 +87,26 @@ public class BestemDistribusjonskanalService {
 		}
 
 		return switch (request.getMottakerId().length()) {
-			case 9 -> {
-				if (!erOrganisasjonsnummer(request)) {
-					yield createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
-				}
-
-				yield organisasjon(request);
-			}
-			case 11 -> {
-				if (!erIdentitetsnummer(request.getMottakerId())) {
-					yield createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
-				}
-
-				yield person(request, dokumenttypeInfo);
-			}
+			case 9 -> validerOrgNrOgBestemKanal(request);
+			case 11 -> validerIdNrOgBestemKanal(request, dokumenttypeInfo);
 			default -> createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
 		};
+	}
+
+	private BestemDistribusjonskanalResponse validerOrgNrOgBestemKanal(BestemDistribusjonskanalRequest request) {
+		if (!erOrganisasjonsnummer(request)) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		}
+
+		return organisasjon(request);
+	}
+
+	private BestemDistribusjonskanalResponse validerIdNrOgBestemKanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
+		if (!erIdentitetsnummer(request.getMottakerId())) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		}
+
+		return person(request, dokumenttypeInfo);
 	}
 
 	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
