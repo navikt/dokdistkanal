@@ -17,6 +17,11 @@
   "APPDYNAMICS": "/apikey/appdynamics/prod",
   "AZURE_IAC_RULES": [
     {
+      "app": "dokdistfordeling",
+      "namespace": "teamdokumenthandtering",
+      "cluster": "prod-fss"
+    },
+    {
       "app": "bidrag-dokument-arkiv",
       "namespace": "bidrag",
       "cluster": "prod-fss"
