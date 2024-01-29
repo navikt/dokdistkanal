@@ -17,11 +17,6 @@
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "AZURE_IAC_RULES": [
     {
-      "app": "dokdistfordeling-q4",
-      "namespace": "teamdokumenthandtering",
-      "cluster": "dev-fss"
-    },
-    {
       "app": "bidrag-dokument-arkiv",
       "namespace": "bidrag",
       "cluster": "dev-fss"
