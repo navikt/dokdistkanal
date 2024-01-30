@@ -22,6 +22,11 @@
       "cluster": "dev-fss"
     },
     {
+      "app": "dokprod-q1",
+      "namespace": "teamdokumenthandtering",
+      "cluster": "dev-fss"
+    },
+    {
       "app": "bidrag-dokument-arkiv",
       "namespace": "bidrag",
       "cluster": "dev-fss"
