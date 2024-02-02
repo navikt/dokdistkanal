@@ -1,9 +1,10 @@
-package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
+package no.nav.dokdistkanal.itest;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
-import no.nav.dokdistkanal.itest.AbstractIT;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,8 +1,9 @@
-package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
+package no.nav.dokdistkanal;
 
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

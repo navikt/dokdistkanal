@@ -54,6 +54,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @Service
 public class BestemDistribusjonskanalService {
 
+	public static final String BESTEM_DISTRIBUSJON_KANAL = "bestemDistribusjonKanal";
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
