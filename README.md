@@ -36,4 +36,4 @@ Sertifikatene er knyttet til testbrukerne utsendt av DigDir som kan finnes [her]
 Ved hjelp av [dkif](https://dkif-u1.dev.adeo.no/swagger-ui.html) i u1 kan sertifikatene knyttet til testbrukerne hentes ut.
 
 ## Andre spørsmål?
-Spørsmål om koden eller prosjektet kan stilles på [Slack-kanalen for \#Team Dokumentløsninger](https://nav-it.slack.com/archives/C6W9E5GPJ)
+Spørsmål om koden eller prosjektet kan stilles på [Slack-kanalen for \#Team Dokumentløsninger](https://nav-it.slack.com/archives/C6W9E5GPJ).
