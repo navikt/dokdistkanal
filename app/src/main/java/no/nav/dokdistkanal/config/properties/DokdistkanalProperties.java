@@ -11,7 +11,6 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DokdistkanalProperties {
 
-	private final Serviceuser serviceuser = new Serviceuser();
 	private final Altinn altinn = new Altinn();
 	private final Endpoints endpoints = new Endpoints();
 
@@ -29,15 +28,6 @@ public class DokdistkanalProperties {
 
 		@NotEmpty
 		private String scope;
-	}
-
-	@Data
-	@Validated
-	public static class Serviceuser {
-		@NotEmpty
-		private String username;
-		@NotEmpty
-		private String password;
 	}
 
 	@Data
