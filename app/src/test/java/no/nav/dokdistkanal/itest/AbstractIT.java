@@ -79,15 +79,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		cacheManager.getCacheNames().forEach(names -> cacheManager.getCache(names).clear());
 	}
 
-	protected void stubAllApi() {
-		stubMaskinporten();
-		stubAzure();
-		stubAltinn();
-		stubDokmet();
-		stubDigdirKrrProxy();
-		stubPdl();
-	}
-
 	protected void stubDigdirKrrProxy() {
 		stubDigdirKrrProxy(DIGDIR_KRR_PROXY_HAPPY_FILE_PATH);
 	}
