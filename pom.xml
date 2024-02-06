@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.2.1</version>
+		<version>3.2.2</version>
 	</parent>
 
 	<properties>
@@ -29,7 +29,7 @@
 		<nocommons.version>0.16.0</nocommons.version>
 
 		<!-- Test -->
-		<spring-cloud-contract-wiremock.version>4.1.0</spring-cloud-contract-wiremock.version>
+		<spring-cloud-contract-wiremock.version>4.1.1</spring-cloud-contract-wiremock.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.1.0</maven-toolchains-plugin.version>
