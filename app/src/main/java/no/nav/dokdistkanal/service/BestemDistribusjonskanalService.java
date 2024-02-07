@@ -42,13 +42,12 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINE
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.PREDEFINERT_TRYGDERETTEN;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.SKAL_IKKE_ARKIVERES;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.TEMA_HAR_BEGRENSET_INNSYN;
-import static no.nav.dokdistkanal.rest.bestemkanal.DokDistKanalRestController.BESTEM_DISTRIBUSJON_KANAL;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.consumerId;
+import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraAarsoppgave;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraInfotrygd;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erIdentitetsnummer;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erOrganisasjonsnummer;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraAarsoppgave;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
@@ -56,6 +55,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class BestemDistribusjonskanalService {
 
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
+	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
 	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
@@ -225,7 +225,7 @@ public class BestemDistribusjonskanalService {
 		var kanalKode = regel.distribusjonKanal.name();
 
 		Counter.builder("dok_request_counter")
-				.tag("process", BESTEM_DISTRIBUSJON_KANAL)
+				.tag("process", BESTEM_DISTRIBUSJONSKANAL)
 				.tag("type", "velgKanal")
 				.tag("consumer_name", "ukjent")
 				.tag("event", kanalKode)

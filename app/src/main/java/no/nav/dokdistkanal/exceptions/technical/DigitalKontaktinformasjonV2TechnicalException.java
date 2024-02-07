@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
-
 @ResponseStatus(value = SERVICE_UNAVAILABLE)
 public class DigitalKontaktinformasjonV2TechnicalException extends DokDistKanalFunctionalException {
+
 	public DigitalKontaktinformasjonV2TechnicalException(String message, Throwable cause) {
 		super(message, cause);
 	}

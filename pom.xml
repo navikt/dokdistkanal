@@ -21,7 +21,6 @@
 	<properties>
 		<java.version>17</java.version>
 
-		<resilience4j.version>2.2.0</resilience4j.version>
 		<logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
 		<nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
 		<token-support.version>3.2.0</token-support.version>
@@ -41,11 +40,6 @@
 				<groupId>net.logstash.logback</groupId>
 				<artifactId>logstash-logback-encoder</artifactId>
 				<version>${logstash-logback-encoder.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.github.resilience4j</groupId>
-				<artifactId>resilience4j-spring-boot3</artifactId>
-				<version>${resilience4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.nimbusds</groupId>

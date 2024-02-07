@@ -2,19 +2,15 @@ package no.nav.dokdistkanal.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.bekk.bekkopen.org.OrganisasjonsnummerValidator;
-import no.nav.dokdistkanal.common.DokDistKanalRequest;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
-import no.nav.dokdistkanal.exceptions.functional.UgyldigInputFunctionalException;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static java.lang.String.format;
 import static no.nav.dokdistkanal.constants.MDCConstants.CONSUMER_ID;
 import static no.nav.dokdistkanal.constants.MDCConstants.USER_ID;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.slf4j.MDC.get;
 
@@ -48,36 +44,6 @@ public class DokdistkanalValidator {
 
 	public static boolean erDokumentFraAarsoppgave(String dokumentTypeId) {
 		return AARSOPPGAVE_DOKUMENTTYPE_ID.contains(dokumentTypeId);
-	}
-
-	// Brukt i bestemKanal-endepunktet - blir fjernet når endepunktet blir sanert
-	public static boolean isOrgNummerWithInfotrygdDokumentTypeId(DokDistKanalRequest dokDistKanalRequest) {
-		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokDistKanalRequest.getDokumentTypeId());
-	}
-	public static boolean isFolkeregisterident(DokDistKanalRequest dokDistKanalRequest) {
-		return FOLKEREGISTERIDENT_REGEX.matcher(dokDistKanalRequest.getMottakerId()).matches() && !ONLY_ONES.equals(dokDistKanalRequest.getMottakerId());
-	}
-
-	public static void validateInput(DokDistKanalRequest dokDistKanalRequest) {
-		assertNotNullOrEmpty("dokumentTypeId", dokDistKanalRequest.getDokumentTypeId());
-		assertNotNullOrEmpty("mottakerId", dokDistKanalRequest.getMottakerId());
-		assertNotNullOrEmpty("mottakerType", dokDistKanalRequest.getMottakerType() == null ?
-				null : dokDistKanalRequest.getMottakerType().name());
-		assertNotNullOrEmpty("brukerId", dokDistKanalRequest.getBrukerId());
-		assertNotNull("erArkivert", dokDistKanalRequest.getErArkivert());
-		assertNotNullOrEmpty("tema", dokDistKanalRequest.getTema());
-	}
-
-	private static void assertNotNullOrEmpty(String fieldName, String value) {
-		if (isEmpty(value)) {
-			throw new UgyldigInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null eller tomt. Fikk %s=%s", fieldName, fieldName, value));
-		}
-	}
-
-	private static void assertNotNull(String fieldName, Boolean value) {
-		if (value == null) {
-			throw new UgyldigInputFunctionalException(format("Ugyldig input: Feltet %s kan ikke være null. Fikk %s=%s", fieldName, fieldName, value));
-		}
 	}
 
 	public static String consumerId() {
