@@ -3,7 +3,8 @@
   "APPD_NAME": "dokdistkanal",
   "INGRESSES": [
     "https://dokdistkanal-q2.dev.intern.nav.no",
-    "https://dokdistkanal.dev.intern.nav.no"
+    "https://dokdistkanal.dev.intern.nav.no",
+    "https://dokdistkanal.dev-fss-pub.nais.io"
   ],
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
