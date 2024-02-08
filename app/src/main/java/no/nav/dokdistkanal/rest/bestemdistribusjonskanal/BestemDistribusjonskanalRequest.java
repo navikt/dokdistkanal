@@ -23,8 +23,9 @@ public class BestemDistribusjonskanalRequest {
 	@Size(max = 11, message = "brukerId må være et tall med maks 11 siffer")
 	String brukerId;
 
-	@Schema(description = "Tema som forsendelsen tilhører.", example = "FOR (foreldrepenger)")
+	@Schema(description = "Tema som forsendelsen tilhører.", example = "FOR")
 	@NotBlank(message = "tema må ha en verdi")
+	@Pattern(regexp = "^[A-Z]*$", message = "tema kan kun inneholde store bokstaver")
 	@Size(max = 3, min = 3, message = "tema må bestå av nøyaktig 3 tegn")
 	String tema;
 

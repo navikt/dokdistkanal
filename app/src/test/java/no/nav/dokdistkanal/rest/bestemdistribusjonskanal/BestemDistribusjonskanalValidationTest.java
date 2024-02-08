@@ -44,6 +44,7 @@ public class BestemDistribusjonskanalValidationTest {
 
 	static Stream<Arguments> skalFeilvalidereUgyldigMottakerId() {
 		return Stream.of(
+				Arguments.of(null, List.of("mottakerId må ha en verdi")),
 				Arguments.of("", List.of("mottakerId må ha en verdi")),
 				Arguments.of(" ", List.of("mottakerId må ha en verdi", "mottakerId kan kun inneholde tall")),
 				Arguments.of("123abc", List.of("mottakerId kan kun inneholde tall")),
@@ -69,6 +70,7 @@ public class BestemDistribusjonskanalValidationTest {
 
 	static Stream<Arguments> skalFeilvalidereUgyldigBrukerId() {
 		return Stream.of(
+				Arguments.of(null, List.of("brukerId må ha en verdi")),
 				Arguments.of("", List.of("brukerId må ha en verdi")),
 				Arguments.of(" ", List.of("brukerId må ha en verdi", "brukerId kan kun inneholde tall")),
 				Arguments.of("123abc", List.of("brukerId kan kun inneholde tall")),
@@ -76,26 +78,38 @@ public class BestemDistribusjonskanalValidationTest {
 		);
 	}
 
-	@Test
-	void skalFeilvalidereUgyldigTema() {
+	@ParameterizedTest
+	@MethodSource
+	void skalFeilvalidereUgyldigTema(String tema, List<String> feilmeldinger) {
 		var request = getBestemDistribusjonskanalRequest();
-		request.setTema(null);
+		request.setTema(tema);
 
 		var violations = validator.validate(request);
 
 		assertThat(violations)
-				.hasSize(1)
+				.hasSize(feilmeldinger.size())
 				.allSatisfy(it -> {
-					assertThat(it.getMessage()).isEqualTo("tema må ha en verdi");
+					assertThat(it.getMessage()).isIn(feilmeldinger);
 					assertThat(it.getPropertyPath().toString()).isEqualTo("tema");
 				});
+	}
+
+	static Stream<Arguments> skalFeilvalidereUgyldigTema() {
+		return Stream.of(
+				Arguments.of(null, List.of("tema må ha en verdi")),
+				Arguments.of("   ", List.of("tema må ha en verdi", "tema kan kun inneholde store bokstaver")),
+				Arguments.of("far", List.of("tema kan kun inneholde store bokstaver")),
+				Arguments.of("far1", List.of("tema må bestå av nøyaktig 3 tegn", "tema kan kun inneholde store bokstaver")),
+				Arguments.of("FA", List.of("tema må bestå av nøyaktig 3 tegn")),
+				Arguments.of("FARA", List.of("tema må bestå av nøyaktig 3 tegn"))
+		);
 	}
 
 	private BestemDistribusjonskanalRequest getBestemDistribusjonskanalRequest() {
 		return new BestemDistribusjonskanalRequest(
 				"12345678910",
 				"12345678910",
-				"ABC",
+				"FAR",
 				"DOK",
 				false, 26
 		);
