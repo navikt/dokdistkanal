@@ -10,8 +10,11 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class BestemDistribusjonskanalRequest {
+
 	@Schema(description = "Identifikator for mottaker av dokumentet")
 	@NotBlank(message = "mottakerId må ha en verdi")
+	@Pattern(regexp = "^[0-9]*$", message = "mottakerId kan kun inneholde tall")
+	@Size(max = 20, message = "mottakerId må være et tall med maks 20 siffer")
 	String mottakerId;
 
 	@Schema(description = "Identifikator for bruker/organisasjon")
