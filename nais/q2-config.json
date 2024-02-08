@@ -4,6 +4,7 @@
   "INGRESSES": [
     "https://dokdistkanal-q2.dev.intern.nav.no",
     "https://dokdistkanal.dev.intern.nav.no",
+    "https://dokdistkanal-q2.dev-fss-pub.nais.io",
     "https://dokdistkanal.dev-fss-pub.nais.io"
   ],
   "MIN_REPLICAS": 1,
