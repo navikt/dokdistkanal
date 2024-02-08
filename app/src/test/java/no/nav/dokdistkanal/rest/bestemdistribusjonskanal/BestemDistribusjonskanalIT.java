@@ -29,6 +29,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -502,7 +503,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + "ugyldig-token")
+				.header(AUTHORIZATION, "Bearer " + "ugyldig-token")
 				.bodyValue(bestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
@@ -519,7 +520,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
-	@Test
 	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest() {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",
@@ -530,7 +530,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		);
 	}
 
-	@Test
 	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequestMedFilstoerrelse(Integer filstoerrelse) {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",
