@@ -48,7 +48,7 @@ public class BestemDistribusjonskanalValidationTest {
 				Arguments.of("", List.of("mottakerId må ha en verdi")),
 				Arguments.of(" ", List.of("mottakerId må ha en verdi", "mottakerId kan kun inneholde tall")),
 				Arguments.of("123abc", List.of("mottakerId kan kun inneholde tall")),
-				Arguments.of("123456789012345678901", List.of("mottakerId må være et tall med maks 20 siffer"))
+				Arguments.of("123456789012345678901", List.of("mottakerId kan ha maks 20 tegn"))
 		);
 	}
 
@@ -74,7 +74,7 @@ public class BestemDistribusjonskanalValidationTest {
 				Arguments.of("", List.of("brukerId må ha en verdi")),
 				Arguments.of(" ", List.of("brukerId må ha en verdi", "brukerId kan kun inneholde tall")),
 				Arguments.of("123abc", List.of("brukerId kan kun inneholde tall")),
-				Arguments.of("1234567891011", List.of("brukerId må være et tall med maks 11 siffer"))
+				Arguments.of("1234567891011", List.of("brukerId kan ha maks 11 tegn"))
 		);
 	}
 
@@ -99,9 +99,9 @@ public class BestemDistribusjonskanalValidationTest {
 				Arguments.of(null, List.of("tema må ha en verdi")),
 				Arguments.of("   ", List.of("tema må ha en verdi", "tema kan kun inneholde store bokstaver")),
 				Arguments.of("far", List.of("tema kan kun inneholde store bokstaver")),
-				Arguments.of("far1", List.of("tema må bestå av nøyaktig 3 tegn", "tema kan kun inneholde store bokstaver")),
-				Arguments.of("FA", List.of("tema må bestå av nøyaktig 3 tegn")),
-				Arguments.of("FARA", List.of("tema må bestå av nøyaktig 3 tegn"))
+				Arguments.of("far1", List.of("tema må ha nøyaktig 3 tegn", "tema kan kun inneholde store bokstaver")),
+				Arguments.of("FA", List.of("tema må ha nøyaktig 3 tegn")),
+				Arguments.of("FARA", List.of("tema må ha nøyaktig 3 tegn"))
 		);
 	}
 

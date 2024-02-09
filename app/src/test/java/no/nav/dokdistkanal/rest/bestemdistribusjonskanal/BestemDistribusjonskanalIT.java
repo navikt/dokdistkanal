@@ -526,7 +526,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"12345678902",
 				"PEN",
 				"dokumentType",
-				true, 10
+				true,
+				10
 		);
 	}
 
@@ -536,7 +537,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"12345678902",
 				"PEN",
 				"dokumentType",
-				true, filstoerrelse
+				true,
+				filstoerrelse
 		);
 	}
 
