@@ -34,7 +34,7 @@ import static org.springframework.security.oauth2.client.web.reactive.function.c
 
 @Slf4j
 @Component
-public class DigitalKontaktinformasjonConsumer implements DigitalKontaktinformasjon {
+public class DigitalKontaktinformasjonConsumer {
 
 	private static final String INGEN_KONTAKTINFORMASJON_FEILMELDING = "person_ikke_funnet";
 	private static final String SIKKER_DIGITAL_POSTADRESSE_URI = "/rest/v1/personer?inkluderSikkerDigitalPost={inkluderSikkerDigitalPost}";
