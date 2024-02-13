@@ -56,6 +56,30 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@Test
+	void shouldSetDokumenttypeIdIfNullAndBestemmeDistribusjonskanal() {
+
+		stubDokmet();
+		stubPdl();
+		stubDigdirKrrProxy();
+
+		BestemDistribusjonskanalResponse response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(bestemDistribusjonskanalRequest(null))
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
+				.returnResult().getResponseBody();
+
+		assertThat(response).isNotNull()
+				.satisfies(it -> {
+					assertThat(it.distribusjonskanal()).isEqualTo(SDP);
+				});
+
+	}
+
+	@Test
 	void skalBestemmeDistribusjonskanal() {
 		stubDokmet();
 		stubPdl();
@@ -360,7 +384,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
 	 */
 	@ParameterizedTest
-	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111"} )
+	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111"})
 	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon(String mottakerId) {
 		stubDokmet();
 
@@ -527,6 +551,17 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"12345678902",
 				"PEN",
 				"dokumentType",
+				true,
+				10
+		);
+	}
+
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest(String dokumentTypeId) {
+		return new BestemDistribusjonskanalRequest(
+				"12345678901",
+				"12345678902",
+				"PEN",
+				dokumentTypeId,
 				true,
 				10
 		);

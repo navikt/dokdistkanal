@@ -54,7 +54,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @Service
 public class BestemDistribusjonskanalService {
 
-	public static final String BESTEM_DISTRIBUSJON_KANAL = "bestemDistribusjonKanal";
+	public static final String DEFAULT_DOKUMENTTYPE_ID = "U000001";
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
@@ -78,7 +78,11 @@ public class BestemDistribusjonskanalService {
 
 	public BestemDistribusjonskanalResponse bestemDistribusjonskanal(BestemDistribusjonskanalRequest request) {
 
-		var dokumenttypeInfo = isBlank(request.getDokumenttypeId()) ? null : dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
+		if (isBlank(request.getDokumenttypeId())) {
+			request.setDokumenttypeId(DEFAULT_DOKUMENTTYPE_ID);
+		}
+
+		var dokumenttypeInfo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
 
 		if (dokumenttypeInfo != null) {
 			var predefinertDistribusjonskanal = predefinertDistribusjonskanal(request, dokumenttypeInfo);

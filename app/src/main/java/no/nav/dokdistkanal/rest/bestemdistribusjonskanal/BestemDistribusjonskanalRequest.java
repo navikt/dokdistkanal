@@ -29,7 +29,7 @@ public class BestemDistribusjonskanalRequest {
 	@Size(max = 3, min = 3, message = "tema må ha nøyaktig 3 tegn")
 	String tema;
 
-	@Schema(description = "Typen dokument som skal distribueres")
+	@Schema(description = "Typen dokument som skal distribueres", defaultValue = "U000001")
 	String dokumenttypeId;
 
 	@Schema(description = "Om dokumentet er arkivert i Joark eller ikke")
