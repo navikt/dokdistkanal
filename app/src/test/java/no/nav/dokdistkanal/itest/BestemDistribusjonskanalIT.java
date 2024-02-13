@@ -56,7 +56,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@Test
-	void shouldSetDokumenttypeIdIfNullAndBestemmeDistribusjonskanal() {
+	void skalSettDokumenttypeIdHvisNullOgReturnereBestemmeDistribusjonskanal() {
 
 		stubDokmet();
 		stubPdl();
@@ -65,7 +65,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		BestemDistribusjonskanalResponse response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest(null))
+				.bodyValue(bestemDistribusjonskanalMedNullDokumenttypeId())
 				.exchange()
 				.expectStatus()
 				.isOk()
@@ -556,12 +556,12 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		);
 	}
 
-	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest(String dokumentTypeId) {
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalMedNullDokumenttypeId() {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",
 				"12345678902",
 				"PEN",
-				dokumentTypeId,
+				null,
 				true,
 				10
 		);
