@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
-import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjon;
+import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoTo;
@@ -59,21 +59,21 @@ public class BestemDistribusjonskanalService {
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
-	private final DigitalKontaktinformasjon digitalKontaktinformasjon;
+	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
 	private final MeterRegistry registry;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
-										   DigitalKontaktinformasjon digitalKontaktinformasjon,
-										   MeterRegistry registry,
+										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
-										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer) {
+										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
+										   MeterRegistry registry) {
 		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
-		this.digitalKontaktinformasjon = digitalKontaktinformasjon;
-		this.registry = registry;
+		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
+		this.registry = registry;
 	}
 
 	public BestemDistribusjonskanalResponse bestemDistribusjonskanal(BestemDistribusjonskanalRequest request) {
@@ -144,7 +144,7 @@ public class BestemDistribusjonskanalService {
 			return personinfoResultat;
 		}
 
-		var digitalKontaktinfo = digitalKontaktinformasjon.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
+		var digitalKontaktinfo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
 		var digitalKontaktinfoResultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo, digitalKontaktinfo);
 
 		if (digitalKontaktinfoResultat != null) {
