@@ -1,9 +1,10 @@
-package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
+package no.nav.dokdistkanal.itest;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
-import no.nav.dokdistkanal.itest.AbstractIT;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
+import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,30 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	@AfterEach
 	public void tearDown() {
 		WireMock.removeAllMappings();
+	}
+
+	@Test
+	void skalSettDokumenttypeIdHvisNullOgReturnereBestemmeDistribusjonskanal() {
+
+		stubDokmet();
+		stubPdl();
+		stubDigdirKrrProxy();
+
+		BestemDistribusjonskanalResponse response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(bestemDistribusjonskanalMedNullDokumenttypeId())
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
+				.returnResult().getResponseBody();
+
+		assertThat(response).isNotNull()
+				.satisfies(it -> {
+					assertThat(it.distribusjonskanal()).isEqualTo(SDP);
+				});
+
 	}
 
 	@Test
@@ -359,7 +384,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
 	 */
 	@ParameterizedTest
-	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111"} )
+	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111"})
 	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon(String mottakerId) {
 		stubDokmet();
 
@@ -527,6 +552,17 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"12345678902",
 				"PEN",
 				"dokumentType",
+				true,
+				10
+		);
+	}
+
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalMedNullDokumenttypeId() {
+		return new BestemDistribusjonskanalRequest(
+				"12345678901",
+				"12345678902",
+				"PEN",
+				null,
 				true,
 				10
 		);
