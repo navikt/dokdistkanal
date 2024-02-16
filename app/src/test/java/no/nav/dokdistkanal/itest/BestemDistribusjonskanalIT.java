@@ -384,7 +384,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
 	 */
 	@ParameterizedTest
-	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111"})
+	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111", "GB:UK010"})
 	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon(String mottakerId) {
 		stubDokmet();
 
@@ -447,10 +447,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of("12345678901", "123456789012", "PEN"),
 				Arguments.of("12345678901", "12345678902", null),
 				Arguments.of("12345678901", "123456789012", "TO"),
-				Arguments.of("12345678901", "123456789012", "FIRE")
+				Arguments.of("12345678901", "123456789012", "FIRE"),
+				Arguments.of("111111111111111111111", "12345678902", "PEN")
 		);
 	}
-
 
 	@ParameterizedTest
 	@ValueSource(ints = {500, 400})
