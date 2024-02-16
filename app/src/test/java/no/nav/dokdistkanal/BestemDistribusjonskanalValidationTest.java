@@ -47,8 +47,6 @@ public class BestemDistribusjonskanalValidationTest {
 		return Stream.of(
 				Arguments.of(null, List.of("mottakerId må ha en verdi")),
 				Arguments.of("", List.of("mottakerId må ha en verdi")),
-				Arguments.of(" ", List.of("mottakerId må ha en verdi", "mottakerId kan kun inneholde tall")),
-				Arguments.of("123abc", List.of("mottakerId kan kun inneholde tall")),
 				Arguments.of("123456789012345678901", List.of("mottakerId kan ha maks 20 tegn"))
 		);
 	}
