@@ -1,8 +1,8 @@
 package no.nav.dokdistkanal.consumer.dki;
 
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -62,9 +62,9 @@ public class DigitalKontaktinformasjonConsumerTest {
     @Test
     public void shouldThrowFunctionalExceptionWhenSikkerhetsbegrensning() {
         when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
-                .thenThrow(new DigitalKontaktinformasjonV2FunctionalException("Funksjonell feil"));
+                .thenThrow(new DigitalKontaktinformasjonFunctionalException("Funksjonell feil"));
 
-        assertThrows(DigitalKontaktinformasjonV2FunctionalException.class, () -> digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST));
+        assertThrows(DigitalKontaktinformasjonFunctionalException.class, () -> digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST));
     }
 
     @Test
@@ -79,9 +79,9 @@ public class DigitalKontaktinformasjonConsumerTest {
     @Test
     public void shouldThrowTechnicalExceptionWhenRuntimeException() {
         when(digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(any(String.class), any(boolean.class)))
-                .thenThrow(new DigitalKontaktinformasjonV2TechnicalException("Teknisk feil"));
+                .thenThrow(new DigitalKontaktinformasjonTechnicalException("Teknisk feil"));
 
-        assertThrows(DigitalKontaktinformasjonV2TechnicalException.class,
+        assertThrows(DigitalKontaktinformasjonTechnicalException.class,
                 () -> digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(FNR, INKLUDER_SIKKER_DIGITAL_POST));
     }
 

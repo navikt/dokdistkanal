@@ -5,9 +5,9 @@ import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dokmet.map.DokumenttypeInfoMapper;
 import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoToV4;
-import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokdistkanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
@@ -53,7 +53,7 @@ public class DokumentTypeInfoConsumer {
 	}
 
 	@Cacheable(value = HENT_DOKUMENTTYPE_INFO_CACHE)
-	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = DokDistKanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Retryable(retryFor = DokdistkanalTechnicalException.class, noRetryFor = DokdistkanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
 
 		return webClient.get()

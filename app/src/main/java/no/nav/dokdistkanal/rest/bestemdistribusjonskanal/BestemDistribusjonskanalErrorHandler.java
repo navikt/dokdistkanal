@@ -2,11 +2,11 @@ package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
-import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
@@ -34,7 +34,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 
 	@ExceptionHandler({DokmetFunctionalException.class,
 			AltinnServiceOwnerFunctionalException.class,
-			DigitalKontaktinformasjonV2FunctionalException.class,
+			DigitalKontaktinformasjonFunctionalException.class,
 			PdlFunctionalException.class
 	})
 	ProblemDetail handleConsumerFunctionalException(Exception ex) {
@@ -48,7 +48,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 
 	@ExceptionHandler({DokmetTechnicalException.class,
 			AltinnServiceOwnerTechnicalException.class,
-			DigitalKontaktinformasjonV2TechnicalException.class,
+			DigitalKontaktinformasjonTechnicalException.class,
 			PdlTechnicalException.class
 	})
 	ProblemDetail handleConsumerTechnicalException(Exception ex) {

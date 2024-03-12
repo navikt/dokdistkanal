@@ -6,10 +6,10 @@ import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
 import no.nav.dokdistkanal.consumer.dki.to.PostPersonerRequest;
-import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
-import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DokdistkanalFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -54,7 +54,7 @@ public class DigitalKontaktinformasjonConsumer {
 				.build();
 	}
 
-	@Retryable(retryFor = DokDistKanalTechnicalException.class, noRetryFor = DokDistKanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Retryable(retryFor = DokdistkanalTechnicalException.class, noRetryFor = DokdistkanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
 
 		final String fnrTrimmed = personidentifikator.trim();
@@ -76,7 +76,7 @@ public class DigitalKontaktinformasjonConsumer {
 			if (errorMsg != null && errorMsg.contains(INGEN_KONTAKTINFORMASJON_FEILMELDING)) {
 				return null;
 			} else {
-				throw new DigitalKontaktinformasjonV2FunctionalException(format("Kall mot digdir-krr-proxy feilet funksjonelt med feilmelding=%s",
+				throw new DigitalKontaktinformasjonFunctionalException(format("Kall mot digdir-krr-proxy feilet funksjonelt med feilmelding=%s",
 						errorMsg == null ? "Ingen feilmelding" : errorMsg));
 			}
 		}
@@ -100,7 +100,7 @@ public class DigitalKontaktinformasjonConsumer {
 
 			log.warn(feilmelding);
 
-			throw new DigitalKontaktinformasjonV2TechnicalException(feilmelding, error);
+			throw new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
 		}
 
 		String feilmelding = format("Kall mot digdir-krr-proxy feilet %s med status=%s, feilmelding=%s, response=%s",
@@ -112,9 +112,9 @@ public class DigitalKontaktinformasjonConsumer {
 		log.warn(feilmelding);
 
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new DigitalKontaktinformasjonV2FunctionalException(feilmelding, error);
+			throw new DigitalKontaktinformasjonFunctionalException(feilmelding, error);
 		} else {
-			throw new DigitalKontaktinformasjonV2TechnicalException(feilmelding, error);
+			throw new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
 		}
 	}
 

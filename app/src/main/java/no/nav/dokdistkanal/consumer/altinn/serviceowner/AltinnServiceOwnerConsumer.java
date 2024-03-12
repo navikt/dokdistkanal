@@ -4,7 +4,7 @@ import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -48,7 +48,7 @@ public class AltinnServiceOwnerConsumer {
 				.build();
 	}
 
-	@Retryable(retryFor = DokDistKanalTechnicalException.class, backoff = @Backoff(delay = 200))
+	@Retryable(retryFor = DokdistkanalTechnicalException.class, backoff = @Backoff(delay = 200))
 	public ValidateRecipientResponse isServiceOwnerValidRecipient(String orgNummer) {
 		String altinnUrl = UriComponentsBuilder.fromUriString(dokdistkanalProperties.getAltinn().getUrl())
 				.path(SERVICEOWNER_PATH)
