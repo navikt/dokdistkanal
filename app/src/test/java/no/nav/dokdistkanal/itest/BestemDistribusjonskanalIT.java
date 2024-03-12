@@ -128,10 +128,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnerePredefinertDistribusjonskanal() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.SKAL_IKKE_ARKIVERES, "treg001/dokmet/response_ingen_arkivsystem.json"),
-				Arguments.of(LOKAL_PRINT, BestemDistribusjonskanalRegel.PREDEFINERT_LOKAL_PRINT, "treg001/dokmet/response_predefinert_lokal_print.json"),
-				Arguments.of(INGEN_DISTRIBUSJON, BestemDistribusjonskanalRegel.PREDEFINERT_INGEN_DISTRIBUSJON, "treg001/dokmet/response_predefinert_ingen_distribusjon.json"),
-				Arguments.of(TRYGDERETTEN, BestemDistribusjonskanalRegel.PREDEFINERT_TRYGDERETTEN, "treg001/dokmet/response_predefinert_trygderetten.json")
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.SKAL_IKKE_ARKIVERES, "dokmet/response_ingen_arkivsystem.json"),
+				Arguments.of(LOKAL_PRINT, BestemDistribusjonskanalRegel.PREDEFINERT_LOKAL_PRINT, "dokmet/response_predefinert_lokal_print.json"),
+				Arguments.of(INGEN_DISTRIBUSJON, BestemDistribusjonskanalRegel.PREDEFINERT_INGEN_DISTRIBUSJON, "dokmet/response_predefinert_ingen_distribusjon.json"),
+				Arguments.of(TRYGDERETTEN, BestemDistribusjonskanalRegel.PREDEFINERT_TRYGDERETTEN, "dokmet/response_predefinert_trygderetten.json")
 		);
 	}
 
@@ -238,7 +238,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDigdirKrrProxy(stubFile);
 
 		if (regel == BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON) {
-			stubDokmet("treg001/dokmet/response_ikke_sdp_varsling.json");
+			stubDokmet("dokmet/response_ikke_sdp_varsling.json");
 		} else {
 			stubDokmet();
 		}
@@ -265,13 +265,13 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForPersonMedDigitalKontaktinfo() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "treg001/dki/response_person_ikke_funnet.json", 10),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "treg001/dki/response_bruker_er_reservert.json", 10),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 5),
-				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES - 1),
-				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "treg001/dki/happy-responsebody.json", null),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "treg001/dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "treg001/dki/response_bruker_mangler_kontaktinfo.json", 10)
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "dki/response_person_ikke_funnet.json", 10),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "dki/response_bruker_er_reservert.json", 10),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "dki/response_bruker_mangler_kontaktinfo.json", 5),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES - 1),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "dki/response_bruker_mangler_kontaktinfo.json", 10)
 		);
 	}
 
@@ -286,7 +286,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	void skalReturnerePrintDersomBrukerOgMottakerErUlikOgDokumentIkkeErAarsoppgave(String dokumentTypeId) {
 		stubDokmet();
 		stubPdl();
-		stubDigdirKrrProxy("treg001/dki/ugyldig-sertifikat-responsebody.json");
+		stubDigdirKrrProxy("dki/ugyldig-sertifikat-responsebody.json");
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setDokumenttypeId(dokumentTypeId);
@@ -320,7 +320,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	void skalReturnerePrintForTemaMedBegrensetInnsyn(String tema) {
 		stubDokmet();
 		stubPdl();
-		stubDigdirKrrProxy("treg001/dki/ugyldig-sertifikat-responsebody.json");
+		stubDigdirKrrProxy("dki/ugyldig-sertifikat-responsebody.json");
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setBrukerId(request.getMottakerId());
@@ -354,7 +354,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	void skalReturnereDittNavForBrukerMedGyldigEpostEllerMobilnummer() {
 		stubDokmet();
 		stubPdl();
-		stubDigdirKrrProxy("treg001/dki/ugyldig-sertifikat-responsebody.json");
+		stubDigdirKrrProxy("dki/ugyldig-sertifikat-responsebody.json");
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setBrukerId(request.getMottakerId());
