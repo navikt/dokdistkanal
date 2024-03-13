@@ -13,6 +13,7 @@ public class DokdistkanalProperties {
 
 	private final Altinn altinn = new Altinn();
 	private final Endpoints endpoints = new Endpoints();
+	private final EnhetsregisterEndpoint enhetsregister = new EnhetsregisterEndpoint();
 
 	@Data
 	public static class Endpoints {
@@ -37,6 +38,13 @@ public class DokdistkanalProperties {
 		private String url;
 		@NotEmpty
 		private String apiKey;
+	}
+
+	@Data
+	@Validated
+	public static final class EnhetsregisterEndpoint {
+		@NotEmpty
+		private String url;
 	}
 
 }

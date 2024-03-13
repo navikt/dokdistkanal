@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal.itest;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import lombok.SneakyThrows;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
@@ -13,13 +14,19 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import wiremock.org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
@@ -33,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -42,6 +50,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static final String BESTEM_DISTRIBUSJONSKANAL_URL = "/rest/bestemDistribusjonskanal";
+	private static final String HENT_ENHET_OK_PATH = "enhetsregisteret/ikke_konkurs_enhetsregisteret.json";
+	private static final String GRUPPEROLLER_OK_PATH = "enhetsregisteret/enhets_grupperoller.json";
+	private static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
+	private static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
+
 
 	@BeforeEach
 	public void setUp() {
@@ -138,15 +151,21 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	/*
 	 * Her testes følgende regler:
 	 * 5: Er mottakerType ORGANISASJON og dokument produsert i infotrygd? Hvis ja -> PRINT
-	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn? Hvis ja -> DPVT
-	 * -: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * 4: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn, ikke konkurs og har enhets grupperoller? Hvis ja -> DPVT
+	 * 4.1: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * 4.2: Er mottakerType ORGANISASJON, har varslingsinformasjon i Altinn og konkurs? Hvis ja -> PRINT
+	 * 4.3: Er mottakerType ORGANISASJON, har varslingsinformasjon i Altinn, ikke konkurs og registert person er døde eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel, String mottakerId, String dokumentTypeId) {
+	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
+									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath) {
+		"dokdistkanal.enhetsregister.url".toUpperCase();
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubAltinn();
+		stubEnhetsregisteret(OK, hentEnhetPath, "974761076");
+		stubEnhetsGruppeRoller(mottakerId, grupperollerPath);
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setMottakerId(mottakerId);
@@ -174,9 +193,11 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044"),
-				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000")
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
+				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
 		);
 	}
 
@@ -584,5 +605,17 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 			headers.setBearerAuth(jwt());
 			headers.add(NAV_CONSUMER_ID, "testConsumer");
 		};
+	}
+
+	@SneakyThrows
+	public static String classpathToString(String classpathResource) {
+		try {
+			InputStream inputStream = new ClassPathResource(classpathResource).getInputStream();
+			String message = IOUtils.toString(inputStream, UTF_8);
+			IOUtils.closeQuietly(inputStream);
+			return message;
+		} catch (IOException e) {
+			throw new IOException(format("Kunne ikke åpne classpath-ressurs %s", classpathResource), e);
+		}
 	}
 }

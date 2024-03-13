@@ -1,0 +1,73 @@
+{
+  "rollegrupper": [
+    {
+      "type": {
+        "kode": "DAGL",
+        "beskrivelse": "Daglig leder",
+        "_links": {
+          "self": {
+            "href": "https://data.brreg.no/enhetsregisteret/api/roller/rollegruppetyper/DAGL"
+          }
+        }
+      },
+      "sistEndret": "2015-10-14",
+      "roller": [
+        {
+          "type": {
+            "kode": "DAGL",
+            "beskrivelse": "Daglig leder",
+            "_links": {
+              "self": {
+                "href": "https://data.brreg.no/enhetsregisteret/api/roller/rolletyper/DAGL"
+              }
+            }
+          },
+          "person": {
+            "fodselsdato": "1982-07-25",
+            "erDoed": true
+          },
+          "fratraadt": false,
+          "rekkefolge": 0
+        }
+      ]
+    },
+    {
+      "roller": [
+        {
+          "type": {
+            "kode": "MEDL",
+            "beskrivelse": "Styremedlem",
+            "_links": {
+              "self": {
+                "href": "https://data.brreg.no/enhetsregisteret/api/roller/rolletyper/MEDL"
+              }
+            }
+          },
+          "person": {
+            "fodselsdato": "1982-11-10",
+            "erDoed": false
+          },
+          "fratraadt": false,
+          "rekkefolge": 1
+        },
+        {
+          "type": {
+            "kode": "MEDL",
+            "beskrivelse": "Styremedlem",
+            "_links": {
+              "self": {
+                "href": "https://data.brreg.no/enhetsregisteret/api/roller/rolletyper/MEDL"
+              }
+            }
+          },
+          "person": {
+            "fodselsdato": "1986-05-02",
+            "erDoed": false
+          },
+          "fratraadt": false,
+          "rekkefolge": 2
+        }
+      ]
+    }
+  ]
+}

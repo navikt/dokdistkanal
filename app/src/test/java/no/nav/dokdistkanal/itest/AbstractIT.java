@@ -16,6 +16,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestTemplate;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -110,6 +111,23 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		stubFor(get(urlEqualTo(ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON))
 				.willReturn(response
 						.withBodyFile(RESPONS_UTEN_VARSLINGSINFORMASJON)));
+	}
+
+	protected void stubEnhetsregisteret(HttpStatus status, String path, String orgNummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + orgNummer))
+				.willReturn(aResponse()
+						.withStatus(status.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(path)));
+	}
+
+	protected void stubEnhetsGruppeRoller(String orgNummer, String path) {
+		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + orgNummer + "/roller"))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(path))
+		);
 	}
 
 	protected void stubAzure() {

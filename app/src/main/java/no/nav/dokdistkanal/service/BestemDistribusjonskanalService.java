@@ -4,6 +4,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
+import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
+import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsRegisterConsumer;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -64,8 +66,11 @@ public class BestemDistribusjonskanalService {
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
+	private final BrregEnhetsRegisterConsumer brregEnhetsRegisterConsumer;
+
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
+										   BrregEnhetsRegisterConsumer brregEnhetsRegisterConsumer,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 										   MeterRegistry registry) {
@@ -73,6 +78,7 @@ public class BestemDistribusjonskanalService {
 		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
+		this.brregEnhetsRegisterConsumer = brregEnhetsRegisterConsumer;
 		this.registry = registry;
 	}
 
@@ -136,7 +142,7 @@ public class BestemDistribusjonskanalService {
 		}
 
 		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-		return erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient) ?
+		return erEnhetenIkkeKonkursOgHarRolleGruppe(serviceOwnerValidRecipient, request.getMottakerId()) ?
 				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 	}
 
@@ -224,6 +230,16 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
 		}
 		return null;
+	}
+
+	public boolean erEnhetenIkkeKonkursOgHarRolleGruppe(ValidateRecipientResponse validateRecipientResponse, String orgNummer) {
+		if (erGyldigAltinnNotifikasjonMottaker(validateRecipientResponse)) {
+			boolean erKonkurs = brregEnhetsRegisterConsumer.hentEnhet(orgNummer);
+			if (!erKonkurs) {
+				return brregEnhetsRegisterConsumer.hentEnhetsRollegrupper(orgNummer);
+			}
+		}
+		return false;
 	}
 
 	private BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
