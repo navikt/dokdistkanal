@@ -21,7 +21,7 @@ import static org.springframework.util.CollectionUtils.isEmpty;
  * Brønnøysundregistrene
  */
 @Component
-public class BrregEnhetsRegisterConsumer {
+public class BrregEnhetsregisterConsumer {
 
 	private static final Set<String> ROLLER_TYPE = Set.of("DAGL", "INNH", "LEDE", "BEST", "DTPR", "DTSO");
 
@@ -29,7 +29,7 @@ public class BrregEnhetsRegisterConsumer {
 	public static final String ROLLER = "roller";
 	private final WebClient webClient;
 
-	public BrregEnhetsRegisterConsumer(WebClient webClient,
+	public BrregEnhetsregisterConsumer(WebClient webClient,
 									   DokdistkanalProperties dokdistkanalProperties) {
 		this.webClient = webClient.mutate()
 				.baseUrl(dokdistkanalProperties.getEnhetsregister().getUrl())

@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
-import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsRegisterConsumer;
+import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsregisterConsumer;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -66,11 +66,11 @@ public class BestemDistribusjonskanalService {
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
-	private final BrregEnhetsRegisterConsumer brregEnhetsRegisterConsumer;
+	private final BrregEnhetsregisterConsumer brregEnhetsRegisterConsumer;
 
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
-										   BrregEnhetsRegisterConsumer brregEnhetsRegisterConsumer,
+										   BrregEnhetsregisterConsumer brregEnhetsRegisterConsumer,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 										   MeterRegistry registry) {
