@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.util.CollectionUtils.isEmpty;
@@ -46,8 +45,7 @@ public class BrregEnhetsRegisterConsumer {
 				.bodyToMono(HentEnhetResponse.class)
 				.doOnError(handleErrors())
 				.block();
-		return response == null ? null : response.konkurs();
-
+		return response == null || response.konkurs();
 	}
 
 	@Retryable(retryFor = EnhetsRegisterTechnicalException.class)
@@ -56,7 +54,7 @@ public class BrregEnhetsRegisterConsumer {
 				.uri(uriBuilder -> uriBuilder.pathSegment(BREG_PATH, orgNummer, ROLLER).build())
 				.retrieve()
 				.bodyToMono(EnhetsRolleResponse.class)
-				.map(roller -> isContainsValidRolleType(roller))
+				.map(this::isContainsValidRolleType)
 				.doOnError(handleErrors())
 				.block();
 
@@ -78,7 +76,7 @@ public class BrregEnhetsRegisterConsumer {
 		if (person == null) {
 			return false;
 		}
-		return person.erDoed() || isBlank(person.fodselsdato());
+		return person.erDoed() || person.fodselsdato() == null;
 	}
 
 	private Consumer<Throwable> handleErrors() {

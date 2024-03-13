@@ -160,7 +160,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	@MethodSource
 	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
 									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath) {
-		"dokdistkanal.enhetsregister.url".toUpperCase();
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubAltinn();
