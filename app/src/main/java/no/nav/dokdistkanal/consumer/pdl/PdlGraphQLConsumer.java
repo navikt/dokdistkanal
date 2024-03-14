@@ -6,25 +6,19 @@ import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
-import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALL_ID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
+import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
 @Slf4j
 @Component
@@ -36,12 +30,9 @@ public class PdlGraphQLConsumer {
 	private static final String ARKIVPLEIE_BEHANDLINGSNUMMER = "B315";
 
 	private final WebClient webClient;
-	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
 	public PdlGraphQLConsumer(DokdistkanalProperties dokdistkanalProperties,
-							  WebClient webClient,
-							  ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+							  WebClient webClient) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
@@ -59,7 +50,7 @@ public class PdlGraphQLConsumer {
 		log.debug("Henter personinfo for aktørId={}", aktoerId);
 
 		return webClient.post()
-				.attributes(getOAuth2AuthorizedClient())
+				.attributes(clientRegistrationId(CLIENT_REGISTRATION_PDL))
 				.bodyValue(mapRequest(aktoerId))
 				.retrieve()
 				.bodyToMono(PDLHentPersonResponse.class)
@@ -130,11 +121,6 @@ public class PdlGraphQLConsumer {
 		} else {
 			throw new PdlTechnicalException(feilmelding, error);
 		}
-	}
-
-	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
-		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(getOAuth2AuthorizeRequestForAzure(CLIENT_REGISTRATION_PDL));
-		return oauth2AuthorizedClient(clientMono.block());
 	}
 
 }

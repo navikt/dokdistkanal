@@ -12,24 +12,17 @@ import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
-
-import java.util.Map;
-import java.util.function.Consumer;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DOKMET;
-import static no.nav.dokdistkanal.azure.AzureProperties.getOAuth2AuthorizeRequestForAzure;
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.HENT_DOKUMENTTYPE_INFO_CACHE;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction.oauth2AuthorizedClient;
+import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
 @Service
 @Slf4j
@@ -38,12 +31,9 @@ public class DokumentTypeInfoConsumer {
 	private static final String DOKUMENTTYPE_INFO_URI = "/rest/dokumenttypeinfo/{dokumenttypeId}";
 
 	private final WebClient webClient;
-	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
 	public DokumentTypeInfoConsumer(DokdistkanalProperties dokdistkanalProperties,
-									WebClient webClient,
-									ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
-		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
+									WebClient webClient) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getDokmet().getUrl())
@@ -58,7 +48,7 @@ public class DokumentTypeInfoConsumer {
 
 		return webClient.get()
 				.uri(DOKUMENTTYPE_INFO_URI, dokumenttypeId)
-				.attributes(getOAuth2AuthorizedClient())
+				.attributes(clientRegistrationId(CLIENT_REGISTRATION_DOKMET))
 				.retrieve()
 				.bodyToMono(DokumentTypeInfoToV4.class)
 				.mapNotNull(DokumenttypeInfoMapper::mapTo)
@@ -88,11 +78,6 @@ public class DokumentTypeInfoConsumer {
 		} else {
 			throw new DokmetTechnicalException(feilmelding, error);
 		}
-	}
-
-	private Consumer<Map<String, Object>> getOAuth2AuthorizedClient() {
-		Mono<OAuth2AuthorizedClient> clientMono = oAuth2AuthorizedClientManager.authorize(getOAuth2AuthorizeRequestForAzure(CLIENT_REGISTRATION_DOKMET));
-		return oauth2AuthorizedClient(clientMono.block());
 	}
 
 }
