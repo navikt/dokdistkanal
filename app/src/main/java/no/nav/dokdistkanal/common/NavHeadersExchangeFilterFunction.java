@@ -7,9 +7,7 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import reactor.core.publisher.Mono;
 
-import static no.nav.dokdistkanal.constants.DomainConstants.APP_NAME;
 import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
-import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 
 public class NavHeadersExchangeFilterFunction implements ExchangeFilterFunction {
 
