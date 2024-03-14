@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsregisterConsumer;
+import no.nav.dokdistkanal.consumer.brreg.EnhetsRolleResponse;
+import no.nav.dokdistkanal.consumer.brreg.HentEnhetResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -16,6 +18,7 @@ import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskana
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Set;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
@@ -51,6 +54,7 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNo
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erIdentitetsnummer;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erOrganisasjonsnummer;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Slf4j
 @Service
@@ -58,6 +62,8 @@ public class BestemDistribusjonskanalService {
 
 	public static final String DEFAULT_DOKUMENTTYPE_ID = "U000001";
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
+	private static final Set<String> ROLLER_TYPE = Set.of("DAGL", "INNH", "LEDE", "BEST", "DTPR", "DTSO");
+
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
@@ -142,7 +148,7 @@ public class BestemDistribusjonskanalService {
 		}
 
 		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-		return erEnhetenIkkeKonkursOgHarRolleGruppe(serviceOwnerValidRecipient, request.getMottakerId()) ?
+		return erEnhetenGyldigNotifikasjonMottakerOgIkkeKonkursOgHarRolleGruppe(serviceOwnerValidRecipient, request.getMottakerId()) ?
 				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 	}
 
@@ -232,11 +238,11 @@ public class BestemDistribusjonskanalService {
 		return null;
 	}
 
-	public boolean erEnhetenIkkeKonkursOgHarRolleGruppe(ValidateRecipientResponse validateRecipientResponse, String orgNummer) {
+	private boolean erEnhetenGyldigNotifikasjonMottakerOgIkkeKonkursOgHarRolleGruppe(ValidateRecipientResponse validateRecipientResponse, String orgNummer) {
 		if (erGyldigAltinnNotifikasjonMottaker(validateRecipientResponse)) {
-			boolean erKonkurs = brregEnhetsRegisterConsumer.hentEnhet(orgNummer);
+			boolean erKonkurs = erEnhetenKonkurs(orgNummer);
 			if (!erKonkurs) {
-				return brregEnhetsRegisterConsumer.hentEnhetsRollegrupper(orgNummer);
+				return isContainsValidRolleType(orgNummer);
 			}
 		}
 		return false;
@@ -255,5 +261,32 @@ public class BestemDistribusjonskanalService {
 		log.info("bestemDistribusjonskanal: Sender melding fra {} (Tema={}) til {}: {}", consumerId(), request.getTema(), kanalKode, regel.begrunnelse);
 
 		return new BestemDistribusjonskanalResponse(regel);
+	}
+
+	private boolean erEnhetenKonkurs(String orgNummer) {
+		HentEnhetResponse hentEnhetResponse = brregEnhetsRegisterConsumer.hentEnhet(orgNummer);
+		return hentEnhetResponse == null || hentEnhetResponse.konkurs();
+	}
+
+	private boolean isContainsValidRolleType(String orgNummer) {
+
+		EnhetsRolleResponse response = brregEnhetsRegisterConsumer.hentEnhetsRollegrupper(orgNummer);
+
+		if (response == null || isEmpty(response.rollegrupper())) {
+			return false;
+		}
+
+		return response.rollegrupper().stream()
+				.flatMap(roller -> roller.roller().stream())
+				.filter(Objects::nonNull)
+				.filter(rolle -> !erPersonDoedOrIkkeFodselsdato(rolle.person()))
+				.anyMatch(r -> ROLLER_TYPE.contains(r.type().kode()));
+	}
+
+	private boolean erPersonDoedOrIkkeFodselsdato(EnhetsRolleResponse.Person person) {
+		if (person == null) {
+			return false;
+		}
+		return person.erDoed() || person.fodselsdato() == null;
 	}
 }

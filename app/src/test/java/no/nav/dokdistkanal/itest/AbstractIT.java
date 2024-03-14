@@ -59,6 +59,13 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private static final String MASKINPORTEN_HAPPY_FILE_PATH = "altinn/maskinporten_happy_response.json";
 	private static final String AZURE_TOKEN_HAPPY_FILE_PATH = "azure/token_response_dummy.json";
 
+	public static final String BESTEM_DISTRIBUSJONSKANAL_URL = "/rest/bestemDistribusjonskanal";
+	public static final String HENT_ENHET_OK_PATH = "enhetsregisteret/ikke_konkurs_enhetsregisteret.json";
+	public static final String GRUPPEROLLER_OK_PATH = "enhetsregisteret/enhets_grupperoller.json";
+	public static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
+	public static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
+	public static final String MOTTAKER_ID = "974761076";
+
 	@Value("${local.url}")
 	protected String LOCAL_ENDPOINT_URL;
 
@@ -121,10 +128,10 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withBodyFile(path)));
 	}
 
-	protected void stubEnhetsGruppeRoller(String orgNummer, String path) {
+	protected void stubEnhetsGruppeRoller(HttpStatus status, String path, String orgNummer) {
 		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + orgNummer + "/roller"))
 				.willReturn(aResponse()
-						.withStatus(OK.value())
+						.withStatus(status.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path))
 		);
