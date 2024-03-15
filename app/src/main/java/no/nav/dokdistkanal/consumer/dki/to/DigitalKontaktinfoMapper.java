@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal.consumer.dki.to;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse.DigitalKontaktinfo;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateExpiredException;
@@ -12,21 +13,19 @@ import java.util.Base64;
 @Slf4j
 public class DigitalKontaktinfoMapper {
 
-	public static DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(PostPersonerResponse.DigitalKontaktinfo digitalKontaktinfo) {
+	public static DigitalKontaktinformasjonTo mapDigitalKontaktinformasjon(DigitalKontaktinfo digitalKontaktinfo) {
 
 		if (digitalKontaktinfo == null) {
 			return null;
 		} else {
 			return DigitalKontaktinformasjonTo.builder()
-					.brukerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse()
-							.getAdresse() : null)
+					.brukerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse().getAdresse() : null)
 					.epostadresse(digitalKontaktinfo.isKanVarsles() ? digitalKontaktinfo.getEpostadresse() : null)
-					.leverandoerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse()
-							.getLeverandoerAdresse() : null)
+					.leverandoerAdresse(digitalKontaktinfo.getSikkerDigitalPostkasse() != null ? digitalKontaktinfo.getSikkerDigitalPostkasse().getLeverandoerAdresse() : null)
 					.mobiltelefonnummer(digitalKontaktinfo.isKanVarsles() ? digitalKontaktinfo.getMobiltelefonnummer() : null)
 					.reservasjon(digitalKontaktinfo.isReservert())
-					.gyldigSertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse() != null && isSertifikatPresentAndValid(digitalKontaktinfo.getSikkerDigitalPostkasse()
-							.getLeverandoerSertifikat()))
+					.gyldigSertifikat(digitalKontaktinfo.getSikkerDigitalPostkasse() != null &&
+									  isSertifikatPresentAndValid(digitalKontaktinfo.getSikkerDigitalPostkasse().getLeverandoerSertifikat()))
 					.build();
 		}
 	}

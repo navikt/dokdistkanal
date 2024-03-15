@@ -2,12 +2,12 @@ package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
-import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2FunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
@@ -36,12 +36,11 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 
 	@ExceptionHandler({DokmetFunctionalException.class,
 			AltinnServiceOwnerFunctionalException.class,
-			DigitalKontaktinformasjonV2FunctionalException.class,
+			DigitalKontaktinformasjonFunctionalException.class,
 			EnhetsregisterFunctionalException.class,
 			PdlFunctionalException.class
 	})
 	ProblemDetail handleConsumerFunctionalException(Exception ex) {
-
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Funksjonell feil ved kall mot ekstern tjeneste");
 
@@ -52,7 +51,8 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 
 	@ExceptionHandler({DokmetTechnicalException.class,
 			AltinnServiceOwnerTechnicalException.class,
-			DigitalKontaktinformasjonV2TechnicalException.class,
+			DigitalKontaktinformasjonTechnicalException.class,
+			PdlTechnicalException.class,
 			PdlTechnicalException.class,
 			EnhetsregisterTechnicalException.class
 	})

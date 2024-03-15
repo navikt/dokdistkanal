@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 @ResponseStatus(value = SERVICE_UNAVAILABLE)
-public class DokmetTechnicalException extends DokdistkanalTechnicalException {
-	public DokmetTechnicalException(String message, Throwable cause) {
+public class DigitalKontaktinformasjonTechnicalException extends DokdistkanalTechnicalException {
+
+	public DigitalKontaktinformasjonTechnicalException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.consumer.brreg;
 
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -27,7 +26,7 @@ public class BrregEnhetsregisterConsumer {
 				.build();
 	}
 
-	@Retryable(retryFor = DokDistKanalTechnicalException.class)
+	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
 	public HentEnhetResponse hentEnhet(String orgnummer) {
 		return webClient.get()
 				.uri("/enheter/{orgnummer}", orgnummer)
@@ -37,7 +36,7 @@ public class BrregEnhetsregisterConsumer {
 				.block();
 	}
 
-	@Retryable(retryFor = DokDistKanalTechnicalException.class)
+	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
 	public EnhetsRolleResponse hentEnhetsRollegrupper(String orgnummer) {
 		return webClient.get()
 				.uri("/enheter/{orgnummer}/roller", orgnummer)
