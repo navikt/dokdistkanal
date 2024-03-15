@@ -460,7 +460,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {500, 503})
+	@ValueSource(ints = {500, 400})
 	void skalReturnereInternalServerErrorVedFeilFraEksternTjeneste(int httpStatusCode) {
 		HttpStatus httpStatus = HttpStatus.valueOf(httpStatusCode);
 		stubDokmet(httpStatus);
@@ -496,7 +496,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.bodyValue(bestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
-				.is4xxClientError()
+				.is5xxServerError()
 				.expectBody(ProblemDetail.class)
 				.returnResult()
 				.getResponseBody();
@@ -504,7 +504,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(it.getStatus()).isEqualTo(BAD_REQUEST.value());
+					assertThat(it.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
 					assertThat(it.getTitle()).isEqualTo("Funksjonell feil ved kall mot ekstern tjeneste");
 				});
 	}
@@ -528,7 +528,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.bodyValue(request)
 				.exchange()
 				.expectStatus()
-				.is4xxClientError()
+				.is5xxServerError()
 				.expectBody(ProblemDetail.class)
 				.returnResult()
 				.getResponseBody();
@@ -536,7 +536,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(it.getStatus()).isEqualTo(NOT_FOUND.value());
+					assertThat(it.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
 					assertThat(it.getTitle()).isEqualTo("Funksjonell feil ved kall mot ekstern tjeneste");
 				});
 	}

@@ -1,9 +1,9 @@
 package no.nav.dokdistkanal.consumer.brreg;
 
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
-import no.nav.dokdistkanal.exceptions.functional.EnhetsRegisterFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.EnhetsRegisterTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,14 +14,9 @@ import java.util.function.Consumer;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-/**
- * Brønnøysundregistrene
- */
 @Component
 public class BrregEnhetsregisterConsumer {
 
-	private static final String BREG_PATH = "enheter";
-	private static final String ROLLER = "roller";
 	private final WebClient webClient;
 
 	public BrregEnhetsregisterConsumer(WebClient webClient,
@@ -33,9 +28,9 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = DokDistKanalTechnicalException.class)
-	public HentEnhetResponse hentEnhet(String orgNummer) {
+	public HentEnhetResponse hentEnhet(String orgnummer) {
 		return webClient.get()
-				.uri(uriBuilder -> uriBuilder.pathSegment(BREG_PATH, orgNummer).build())
+				.uri("/enheter/{orgnummer}", orgnummer)
 				.retrieve()
 				.bodyToMono(HentEnhetResponse.class)
 				.doOnError(handleErrors())
@@ -43,9 +38,9 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = DokDistKanalTechnicalException.class)
-	public EnhetsRolleResponse hentEnhetsRollegrupper(String orgNummer) {
+	public EnhetsRolleResponse hentEnhetsRollegrupper(String orgnummer) {
 		return webClient.get()
-				.uri(uriBuilder -> uriBuilder.pathSegment(BREG_PATH, orgNummer, ROLLER).build())
+				.uri("/enheter/{orgnummer}/roller", orgnummer)
 				.retrieve()
 				.bodyToMono(EnhetsRolleResponse.class)
 				.doOnError(handleErrors())
@@ -56,9 +51,9 @@ public class BrregEnhetsregisterConsumer {
 	private Consumer<Throwable> handleErrors() {
 		return error -> {
 			if (error instanceof WebClientResponseException webException && webException.getStatusCode().is4xxClientError()) {
-				throw new EnhetsRegisterFunctionalException("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding=" + webException.getMessage(), webException);
+				throw new EnhetsregisterFunctionalException("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding=" + webException.getMessage(), webException);
 			} else {
-				throw new EnhetsRegisterTechnicalException("Kall mot Brønnøysundregistrene feilet teknisk:", error);
+				throw new EnhetsregisterTechnicalException("Kall mot Brønnøysundregistrene feilet teknisk:", error);
 			}
 		};
 	}

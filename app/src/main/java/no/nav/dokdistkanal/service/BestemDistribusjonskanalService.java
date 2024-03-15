@@ -62,7 +62,7 @@ public class BestemDistribusjonskanalService {
 
 	public static final String DEFAULT_DOKUMENTTYPE_ID = "U000001";
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
-	private static final Set<String> ROLLER_TYPE = Set.of("DAGL", "INNH", "LEDE", "BEST", "DTPR", "DTSO");
+	private static final Set<String> GYLDIG_ROLLETYPE_FOR_DPVT = Set.of("DAGL", "INNH", "LEDE", "BEST", "DTPR", "DTSO");
 
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
@@ -72,11 +72,11 @@ public class BestemDistribusjonskanalService {
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
-	private final BrregEnhetsregisterConsumer brregEnhetsRegisterConsumer;
+	private final BrregEnhetsregisterConsumer brregEnhetsregisterConsumer;
 
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
-										   BrregEnhetsregisterConsumer brregEnhetsRegisterConsumer,
+										   BrregEnhetsregisterConsumer brregEnhetsregisterConsumer,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 										   MeterRegistry registry) {
@@ -84,7 +84,7 @@ public class BestemDistribusjonskanalService {
 		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
-		this.brregEnhetsRegisterConsumer = brregEnhetsRegisterConsumer;
+		this.brregEnhetsregisterConsumer = brregEnhetsregisterConsumer;
 		this.registry = registry;
 	}
 
@@ -148,7 +148,7 @@ public class BestemDistribusjonskanalService {
 		}
 
 		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-		return erEnhetenGyldigNotifikasjonMottakerOgIkkeKonkursOgHarRolleGruppe(serviceOwnerValidRecipient, request.getMottakerId()) ?
+		return erGyldigDpvtMottaker(serviceOwnerValidRecipient, request.getMottakerId()) ?
 				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 	}
 
@@ -238,11 +238,11 @@ public class BestemDistribusjonskanalService {
 		return null;
 	}
 
-	private boolean erEnhetenGyldigNotifikasjonMottakerOgIkkeKonkursOgHarRolleGruppe(ValidateRecipientResponse validateRecipientResponse, String orgNummer) {
+	private boolean erGyldigDpvtMottaker(ValidateRecipientResponse validateRecipientResponse, String orgNummer) {
 		if (erGyldigAltinnNotifikasjonMottaker(validateRecipientResponse)) {
 			boolean erKonkurs = erEnhetenKonkurs(orgNummer);
 			if (!erKonkurs) {
-				return isContainsValidRolleType(orgNummer);
+				return harEnhetenGyldigRolletypeForDpvt(orgNummer);
 			}
 		}
 		return false;
@@ -264,13 +264,13 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private boolean erEnhetenKonkurs(String orgNummer) {
-		HentEnhetResponse hentEnhetResponse = brregEnhetsRegisterConsumer.hentEnhet(orgNummer);
+		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterConsumer.hentEnhet(orgNummer);
 		return hentEnhetResponse == null || hentEnhetResponse.konkurs();
 	}
 
-	private boolean isContainsValidRolleType(String orgNummer) {
+	private boolean harEnhetenGyldigRolletypeForDpvt(String orgNummer) {
 
-		EnhetsRolleResponse response = brregEnhetsRegisterConsumer.hentEnhetsRollegrupper(orgNummer);
+		EnhetsRolleResponse response = brregEnhetsregisterConsumer.hentEnhetsRollegrupper(orgNummer);
 
 		if (response == null || isEmpty(response.rollegrupper())) {
 			return false;
@@ -279,11 +279,11 @@ public class BestemDistribusjonskanalService {
 		return response.rollegrupper().stream()
 				.flatMap(roller -> roller.roller().stream())
 				.filter(Objects::nonNull)
-				.filter(rolle -> !erPersonDoedOrIkkeFodselsdato(rolle.person()))
-				.anyMatch(r -> ROLLER_TYPE.contains(r.type().kode()));
+				.filter(rolle -> !erPersonDoedEllerManglerFodselsdato(rolle.person()))
+				.anyMatch(r -> GYLDIG_ROLLETYPE_FOR_DPVT.contains(r.type().kode()));
 	}
 
-	private boolean erPersonDoedOrIkkeFodselsdato(EnhetsRolleResponse.Person person) {
+	private boolean erPersonDoedEllerManglerFodselsdato(EnhetsRolleResponse.Person person) {
 		if (person == null) {
 			return false;
 		}

@@ -6,7 +6,6 @@
   ],
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
-  "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
   "DOKDISTKANAL_ENDPOINTS_DOKMET_URL": "https://dokmet.dev.intern.nav.no",
   "DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE": "api://dev-fss.teamdokumenthandtering.dokmet/.default",
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.dev.nav.no",
@@ -14,6 +13,7 @@
   "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q0/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
+  "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "AZURE_IAC_RULES": [
     {
