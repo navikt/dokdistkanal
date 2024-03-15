@@ -80,3 +80,6 @@ spec:
          namespace: {{namespace}}
          cluster: {{cluster}}
     {{/each}}
+    outbound:
+      external:
+        host: "data.brreg.no"
