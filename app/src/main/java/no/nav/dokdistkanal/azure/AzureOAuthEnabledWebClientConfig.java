@@ -31,7 +31,16 @@ import static org.springframework.security.oauth2.core.ClientAuthenticationMetho
 public class AzureOAuthEnabledWebClientConfig {
 
 	@Bean
-	WebClient webClient(ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+	WebClient webClient() {
+		HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(20))
+				.proxyWithSystemProperties();
+		return WebClient.builder()
+				.clientConnector(new ReactorClientHttpConnector(httpClient))
+				.build();
+	}
+
+	@Bean
+	WebClient azureOauth2WebClient(ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		ServerOAuth2AuthorizedClientExchangeFilterFunction oAuth2AuthorizedClientExchangeFilterFunction = new ServerOAuth2AuthorizedClientExchangeFilterFunction(oAuth2AuthorizedClientManager);
 
 		var nettyHttpClient = HttpClient.create()

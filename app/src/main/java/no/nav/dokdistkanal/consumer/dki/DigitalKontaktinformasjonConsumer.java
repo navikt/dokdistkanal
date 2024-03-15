@@ -10,6 +10,7 @@ import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonV2Func
 import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonV2TechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -44,7 +45,7 @@ public class DigitalKontaktinformasjonConsumer {
 
 	public DigitalKontaktinformasjonConsumer(DokdistkanalProperties dokdistkanalProperties,
 											 ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager,
-											 WebClient webClient) {
+											 @Qualifier("azureOauth2WebClient") WebClient webClient) {
 		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 		this.webClient = webClient
 				.mutate()

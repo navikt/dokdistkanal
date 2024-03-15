@@ -9,6 +9,7 @@ import no.nav.dokdistkanal.exceptions.functional.DokDistKanalFunctionalException
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokDistKanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -41,7 +42,7 @@ public class DokumentTypeInfoConsumer {
 	private final ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
 
 	public DokumentTypeInfoConsumer(DokdistkanalProperties dokdistkanalProperties,
-									WebClient webClient,
+									@Qualifier("azureOauth2WebClient") WebClient webClient,
 									ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		this.oAuth2AuthorizedClientManager = oAuth2AuthorizedClientManager;
 		this.webClient = webClient
