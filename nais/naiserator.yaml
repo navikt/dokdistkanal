@@ -73,6 +73,9 @@ spec:
         - name: altinn:serviceowner/notifications.read
   webproxy: true
   accessPolicy:
+    outbound:
+      external:
+        - host: "data.brreg.no"
     inbound:
       rules:
     {{#each AZURE_IAC_RULES}}
@@ -80,6 +83,4 @@ spec:
          namespace: {{namespace}}
          cluster: {{cluster}}
     {{/each}}
-    outbound:
-      external:
-        host: "data.brreg.no"
+
