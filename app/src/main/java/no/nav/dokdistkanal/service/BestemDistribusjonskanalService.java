@@ -4,10 +4,6 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
-import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
-import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsregisterConsumer;
-import no.nav.dokdistkanal.consumer.brreg.EnhetsRolleResponse;
-import no.nav.dokdistkanal.consumer.brreg.HentEnhetResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -18,7 +14,6 @@ import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskana
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Set;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
@@ -34,6 +29,8 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SD
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
@@ -54,7 +51,6 @@ import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNo
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erIdentitetsnummer;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erOrganisasjonsnummer;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Slf4j
 @Service
@@ -62,7 +58,6 @@ public class BestemDistribusjonskanalService {
 
 	public static final String DEFAULT_DOKUMENTTYPE_ID = "U000001";
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
-	private static final Set<String> GYLDIG_ROLLETYPE_FOR_DPVT = Set.of("DAGL", "INNH", "LEDE", "BEST", "DTPR", "DTSO");
 
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
@@ -72,11 +67,11 @@ public class BestemDistribusjonskanalService {
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
-	private final BrregEnhetsregisterConsumer brregEnhetsregisterConsumer;
+	private final BrregEnhetsregisterService brregEnhetsregisterService;
 
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
-										   BrregEnhetsregisterConsumer brregEnhetsregisterConsumer,
+										   BrregEnhetsregisterService brregEnhetsregisterService,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 										   MeterRegistry registry) {
@@ -84,7 +79,7 @@ public class BestemDistribusjonskanalService {
 		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
-		this.brregEnhetsregisterConsumer = brregEnhetsregisterConsumer;
+		this.brregEnhetsregisterService = brregEnhetsregisterService;
 		this.registry = registry;
 	}
 
@@ -147,9 +142,8 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
 
-		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-		return erGyldigDpvtMottaker(serviceOwnerValidRecipient, request.getMottakerId()) ?
-				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
+
+		return erGyldigDpvtMottaker(request);
 	}
 
 	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
@@ -238,17 +232,30 @@ public class BestemDistribusjonskanalService {
 		return null;
 	}
 
-	private boolean erGyldigDpvtMottaker(ValidateRecipientResponse validateRecipientResponse, String orgNummer) {
-		if (erGyldigAltinnNotifikasjonMottaker(validateRecipientResponse)) {
-			boolean erKonkurs = erEnhetenKonkurs(orgNummer);
-			if (!erKonkurs) {
-				return harEnhetenGyldigRolletypeForDpvt(orgNummer);
-			}
+	private BestemDistribusjonskanalResponse erGyldigDpvtMottaker(BestemDistribusjonskanalRequest request) {
+
+		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
+
+		if (!erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
+			return createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 		}
-		return false;
+
+		boolean erEnhetenKonkurs = brregEnhetsregisterService.erEnhetenKonkurs(request.getMottakerId());
+
+		if (erEnhetenKonkurs) {
+			return createResponse(request, ORGANISASJON_ER_KONKURS);
+		}
+
+		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(request.getMottakerId());
+
+		if (!harEnhetenGyldigRolletypeForDpvt) {
+			return createResponse(request, ORGANISASJON_MANGLER_NODVENDIG_ROLLER);
+		}
+
+		return createResponse(request, ORGANISASJON_MED_ALTINN_INFO);
 	}
 
-	private BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
+	public BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
 		var kanalKode = regel.distribusjonKanal.name();
 
 		Counter.builder("dok_request_counter")
@@ -263,30 +270,5 @@ public class BestemDistribusjonskanalService {
 		return new BestemDistribusjonskanalResponse(regel);
 	}
 
-	private boolean erEnhetenKonkurs(String orgNummer) {
-		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterConsumer.hentEnhet(orgNummer);
-		return hentEnhetResponse == null || hentEnhetResponse.konkurs();
-	}
 
-	private boolean harEnhetenGyldigRolletypeForDpvt(String orgNummer) {
-
-		EnhetsRolleResponse response = brregEnhetsregisterConsumer.hentEnhetsRollegrupper(orgNummer);
-
-		if (response == null || isEmpty(response.rollegrupper())) {
-			return false;
-		}
-
-		return response.rollegrupper().stream()
-				.flatMap(roller -> roller.roller().stream())
-				.filter(Objects::nonNull)
-				.filter(rolle -> !erPersonDoedEllerManglerFodselsdato(rolle.person()))
-				.anyMatch(r -> GYLDIG_ROLLETYPE_FOR_DPVT.contains(r.type().kode()));
-	}
-
-	private boolean erPersonDoedEllerManglerFodselsdato(EnhetsRolleResponse.Person person) {
-		if (person == null) {
-			return false;
-		}
-		return person.erDoed() || person.fodselsdato() == null;
-	}
 }

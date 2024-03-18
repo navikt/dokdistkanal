@@ -182,8 +182,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
 				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
 		);
 	}
 
