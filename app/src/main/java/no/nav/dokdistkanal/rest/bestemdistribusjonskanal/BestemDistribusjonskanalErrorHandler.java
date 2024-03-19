@@ -44,7 +44,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Funksjonell feil ved kall mot ekstern tjeneste");
 
-		log.warn("Funksjonell feil ved kall mot ekstern tjeneste. Feilmelding={}", problem.getDetail(), ex);
+		log.warn(problem.getDetail(), ex);
 
 		return problem;
 	}
@@ -60,7 +60,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
 		problem.setTitle("Teknisk feil ved kall mot ekstern tjeneste");
 
-		log.warn("Teknisk feil ved kall mot ekstern tjeneste. Feilmelding={}", problem.getDetail(), ex);
+		log.warn(problem.getDetail(), ex);
 
 		return problem;
 	}

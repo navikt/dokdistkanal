@@ -128,10 +128,10 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withBodyFile(path)));
 	}
 
-	protected void stubEnhetsGruppeRoller(HttpStatus status, String path, String orgNummer) {
+	protected void stubEnhetsGruppeRoller(String path, String orgNummer) {
 		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + orgNummer + "/roller"))
 				.willReturn(aResponse()
-						.withStatus(status.value())
+						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path))
 		);

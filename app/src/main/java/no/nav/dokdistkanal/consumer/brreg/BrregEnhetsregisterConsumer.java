@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.function.Consumer;
 
+import static java.lang.String.format;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -49,10 +50,18 @@ public class BrregEnhetsregisterConsumer {
 
 	private Consumer<Throwable> handleErrors() {
 		return error -> {
-			if (error instanceof WebClientResponseException webException && webException.getStatusCode().is4xxClientError()) {
-				throw new EnhetsregisterFunctionalException("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding=" + webException.getMessage(), webException);
+			if (!(error instanceof WebClientResponseException response)) {
+				String feilmelding = format("Kall mot Brønnøysundregistrene feilet teknisk med feilmelding=%s", error.getMessage());
+
+				throw new EnhetsregisterFunctionalException(feilmelding, error);
+			}
+
+			WebClientResponseException webException = (WebClientResponseException) error;
+			String feilmelding = webException.getResponseBodyAsString() == null ? webException.getMessage() : webException.getResponseBodyAsString();
+			if (webException.getStatusCode().is4xxClientError()) {
+				throw new EnhetsregisterFunctionalException("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding=" + feilmelding, webException);
 			} else {
-				throw new EnhetsregisterTechnicalException("Kall mot Brønnøysundregistrene feilet teknisk:", error);
+				throw new EnhetsregisterTechnicalException("Kall mot Brønnøysundregistrene feilet teknisk med feilmelding=" + feilmelding, webException);
 			}
 		};
 	}

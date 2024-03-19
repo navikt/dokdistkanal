@@ -1,0 +1,8 @@
+{
+  "timestamp" : "2021-05-28T11:34:33.435+0000",
+  "status" : 500,
+  "error" : "Internal Server Error",
+  "message" : "Internal Server Error",
+  "path" : "/enhetsregisteret/api/enheter/999999999/roller",
+  "trace" : "5631709a-6e3e-4b72-94e7-fcbf6341272a"
+}

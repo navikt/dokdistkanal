@@ -151,7 +151,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDigdirKrrProxy();
 		stubAltinn();
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
-		stubEnhetsGruppeRoller(OK, grupperollerPath, mottakerId);
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setMottakerId(mottakerId);
@@ -515,8 +515,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubAltinn();
-		stubEnhetsregisteret(NOT_FOUND, "", MOTTAKER_ID);
-		stubEnhetsGruppeRoller(OK, GRUPPEROLLER_OK_PATH, MOTTAKER_ID);
+		stubEnhetsregisteret(INTERNAL_SERVER_ERROR, "enhetsregisteret/brreg_internalserver_error.json", MOTTAKER_ID);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, MOTTAKER_ID);
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setMottakerId(MOTTAKER_ID);
@@ -537,7 +537,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.isNotNull()
 				.satisfies(it -> {
 					assertThat(it.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
-					assertThat(it.getTitle()).isEqualTo("Funksjonell feil ved kall mot ekstern tjeneste");
+					assertThat(it.getTitle()).isEqualTo("Teknisk feil ved kall mot ekstern tjeneste");
 				});
 	}
 
