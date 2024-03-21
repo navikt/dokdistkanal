@@ -9,6 +9,8 @@ import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -35,7 +37,7 @@ public class DigitalKontaktinformasjonConsumer {
 	private final WebClient webClient;
 
 	public DigitalKontaktinformasjonConsumer(DokdistkanalProperties dokdistkanalProperties,
-											 WebClient webClient) {
+											 @Qualifier("azureOauth2WebClient") WebClient webClient) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getDigdirKrrProxy().getUrl())

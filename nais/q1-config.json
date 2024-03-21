@@ -14,6 +14,7 @@
   "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api-q1.dev.intern.nav.no/graphql",
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q1/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
+  "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
   "APPDYNAMICS": "/apikey/appdynamics/dev",
   "AZURE_IAC_RULES": [
     {

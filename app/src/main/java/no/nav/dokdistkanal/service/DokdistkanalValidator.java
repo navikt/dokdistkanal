@@ -27,7 +27,7 @@ public class DokdistkanalValidator {
 
 	public static boolean erGyldigAltinnNotifikasjonMottaker(ValidateRecipientResponse validateRecipientResponse) {
 		return validateRecipientResponse.inboxAccessible() &&
-			   (validateRecipientResponse.canReceiveNotificationBySms() || validateRecipientResponse.canReceiveNotificationByEmail());
+				(validateRecipientResponse.canReceiveNotificationBySms() || validateRecipientResponse.canReceiveNotificationByEmail());
 	}
 
 	public static boolean erDokumentFraInfotrygd(String dokumentTypeId) {

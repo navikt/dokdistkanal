@@ -29,6 +29,8 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_SD
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_ER_IKKE_ARKIVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
@@ -56,6 +58,7 @@ public class BestemDistribusjonskanalService {
 
 	public static final String DEFAULT_DOKUMENTTYPE_ID = "U000001";
 	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
+
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
 	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
@@ -64,8 +67,11 @@ public class BestemDistribusjonskanalService {
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 
+	private final BrregEnhetsregisterService brregEnhetsregisterService;
+
 	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
 										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
+										   BrregEnhetsregisterService brregEnhetsregisterService,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 										   MeterRegistry registry) {
@@ -73,6 +79,7 @@ public class BestemDistribusjonskanalService {
 		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
+		this.brregEnhetsregisterService = brregEnhetsregisterService;
 		this.registry = registry;
 	}
 
@@ -135,9 +142,8 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
 
-		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-		return erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient) ?
-				createResponse(request, ORGANISASJON_MED_ALTINN_INFO) : createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
+
+		return erGyldigDpvtMottaker(request);
 	}
 
 	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
@@ -226,7 +232,30 @@ public class BestemDistribusjonskanalService {
 		return null;
 	}
 
-	private BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
+	private BestemDistribusjonskanalResponse erGyldigDpvtMottaker(BestemDistribusjonskanalRequest request) {
+
+		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
+
+		if (!erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
+			return createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
+		}
+
+		boolean erEnhetenKonkurs = brregEnhetsregisterService.erEnhetenKonkurs(request.getMottakerId());
+
+		if (erEnhetenKonkurs) {
+			return createResponse(request, ORGANISASJON_ER_KONKURS);
+		}
+
+		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(request.getMottakerId());
+
+		if (!harEnhetenGyldigRolletypeForDpvt) {
+			return createResponse(request, ORGANISASJON_MANGLER_NODVENDIG_ROLLER);
+		}
+
+		return createResponse(request, ORGANISASJON_MED_ALTINN_INFO);
+	}
+
+	public BestemDistribusjonskanalResponse createResponse(BestemDistribusjonskanalRequest request, BestemDistribusjonskanalRegel regel) {
 		var kanalKode = regel.distribusjonKanal.name();
 
 		Counter.builder("dok_request_counter")
@@ -240,4 +269,6 @@ public class BestemDistribusjonskanalService {
 
 		return new BestemDistribusjonskanalResponse(regel);
 	}
+
+
 }

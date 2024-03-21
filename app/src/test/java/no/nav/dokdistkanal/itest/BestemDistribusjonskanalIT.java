@@ -33,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -40,8 +42,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
  * Se https://confluence.adeo.no/pages/viewpage.action?pageId=294148459 for funksjonelle behandlingsregler
  */
 public class BestemDistribusjonskanalIT extends AbstractIT {
-
-	private static final String BESTEM_DISTRIBUSJONSKANAL_URL = "/rest/bestemDistribusjonskanal";
 
 	@BeforeEach
 	public void setUp() {
@@ -138,15 +138,20 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	/*
 	 * Her testes følgende regler:
 	 * 5: Er mottakerType ORGANISASJON og dokument produsert i infotrygd? Hvis ja -> PRINT
-	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn? Hvis ja -> DPVT
-	 * -: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn, ikke konkurs og har enhets grupperoller? Hvis ja -> DPVT
+	 * 6.1: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * 6.2: Er mottakerType ORGANISASJON, har varslingsinformasjon i Altinn og konkurs? Hvis ja -> PRINT
+	 * 6.3: Er mottakerType ORGANISASJON, har varslingsinformasjon i Altinn, ikke konkurs og registert person er døde eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel, String mottakerId, String dokumentTypeId) {
+	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
+									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath) {
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubAltinn();
+		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
 
 		var request = bestemDistribusjonskanalRequest();
 		request.setMottakerId(mottakerId);
@@ -174,9 +179,11 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044"),
-				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000"),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000")
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
+				Arguments.of(DPVT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
 		);
 	}
 
@@ -498,6 +505,38 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.isNotNull()
 				.satisfies(it -> {
 					assertThat(it.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
+					assertThat(it.getTitle()).isEqualTo("Funksjonell feil ved kall mot ekstern tjeneste");
+				});
+	}
+
+	@Test
+	void skalReturnereNotFoundFunksjonellExceptionVedKallTilEnhetsregistreretTjeneste() {
+
+		stubDokmet();
+		stubDigdirKrrProxy();
+		stubAltinn();
+		stubEnhetsregisteret(NOT_FOUND, null, MOTTAKER_ID);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, MOTTAKER_ID);
+
+		var request = bestemDistribusjonskanalRequest();
+		request.setMottakerId(MOTTAKER_ID);
+		request.setDokumenttypeId("1234");
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.is4xxClientError()
+				.expectBody(ProblemDetail.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.getStatus()).isEqualTo(NOT_FOUND.value());
 					assertThat(it.getTitle()).isEqualTo("Funksjonell feil ved kall mot ekstern tjeneste");
 				});
 	}

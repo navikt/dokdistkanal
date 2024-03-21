@@ -5,6 +5,7 @@ import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -32,7 +33,7 @@ public class PdlGraphQLConsumer {
 	private final WebClient webClient;
 
 	public PdlGraphQLConsumer(DokdistkanalProperties dokdistkanalProperties,
-							  WebClient webClient) {
+							  @Qualifier("azureOauth2WebClient") WebClient webClient) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())

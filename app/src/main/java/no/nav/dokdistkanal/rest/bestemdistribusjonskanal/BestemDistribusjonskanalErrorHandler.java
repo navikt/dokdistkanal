@@ -4,10 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterNotFoundException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
@@ -35,29 +40,28 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	@ExceptionHandler({DokmetFunctionalException.class,
 			AltinnServiceOwnerFunctionalException.class,
 			DigitalKontaktinformasjonFunctionalException.class,
+			EnhetsregisterFunctionalException.class,
 			PdlFunctionalException.class
 	})
 	ProblemDetail handleConsumerFunctionalException(Exception ex) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
-		problem.setTitle("Funksjonell feil ved kall mot ekstern tjeneste");
+		return mapProblemDetail("Funksjonell", INTERNAL_SERVER_ERROR, ex);
+	}
 
-		log.warn("Funksjonell feil ved kall mot ekstern tjeneste. Feilmelding={}", problem.getDetail(), ex);
-
-		return problem;
+	@ExceptionHandler(EnhetsregisterNotFoundException.class)
+	@ResponseStatus(value = NOT_FOUND)
+	ProblemDetail handleNotFoundException(Exception ex) {
+		return mapProblemDetail("Funksjonell", NOT_FOUND, ex);
 	}
 
 	@ExceptionHandler({DokmetTechnicalException.class,
 			AltinnServiceOwnerTechnicalException.class,
 			DigitalKontaktinformasjonTechnicalException.class,
-			PdlTechnicalException.class
+			PdlTechnicalException.class,
+			PdlTechnicalException.class,
+			EnhetsregisterTechnicalException.class
 	})
 	ProblemDetail handleConsumerTechnicalException(Exception ex) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
-		problem.setTitle("Teknisk feil ved kall mot ekstern tjeneste");
-
-		log.warn("Teknisk feil ved kall mot ekstern tjeneste. Feilmelding={}", problem.getDetail(), ex);
-
-		return problem;
+		return mapProblemDetail("Teknisk", INTERNAL_SERVER_ERROR, ex);
 	}
 
 	@Override
@@ -90,6 +94,13 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 		log.warn(ex.getMessage(), ex);
 
 		return ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
+	}
+
+	private ProblemDetail mapProblemDetail(String title, HttpStatusCode httpStatusCode, Exception ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(httpStatusCode, ex.getMessage());
+		problem.setTitle(format("%s feil ved kall mot ekstern tjeneste", title));
+		log.warn(problem.getDetail(), ex);
+		return problem;
 	}
 
 }

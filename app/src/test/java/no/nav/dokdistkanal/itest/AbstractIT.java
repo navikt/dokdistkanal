@@ -16,6 +16,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestTemplate;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.any;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -57,6 +58,13 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private static final String DIGDIR_KRR_PROXY_HAPPY_FILE_PATH = "dki/happy-responsebody.json";
 	private static final String MASKINPORTEN_HAPPY_FILE_PATH = "altinn/maskinporten_happy_response.json";
 	private static final String AZURE_TOKEN_HAPPY_FILE_PATH = "azure/token_response_dummy.json";
+
+	public static final String BESTEM_DISTRIBUSJONSKANAL_URL = "/rest/bestemDistribusjonskanal";
+	public static final String HENT_ENHET_OK_PATH = "enhetsregisteret/ikke_konkurs_enhetsregisteret.json";
+	public static final String GRUPPEROLLER_OK_PATH = "enhetsregisteret/enhets_grupperoller.json";
+	public static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
+	public static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
+	public static final String MOTTAKER_ID = "974761076";
 
 	@Value("${local.url}")
 	protected String LOCAL_ENDPOINT_URL;
@@ -110,6 +118,23 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		stubFor(get(urlEqualTo(ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON))
 				.willReturn(response
 						.withBodyFile(RESPONS_UTEN_VARSLINGSINFORMASJON)));
+	}
+
+	protected void stubEnhetsregisteret(HttpStatus status, String path, String orgNummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + orgNummer))
+				.willReturn(aResponse()
+						.withStatus(status.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(path)));
+	}
+
+	protected void stubEnhetsGruppeRoller(String path, String orgNummer) {
+		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + orgNummer + "/roller"))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(path))
+		);
 	}
 
 	protected void stubAzure() {

@@ -9,6 +9,8 @@ spec:
   env:
     - name: DOKUMENTTYPEINFO_URL
       value: {{ DOKUMENTTYPEINFO_URL }}
+    - name: DOKDISTKANAL_ENHETSREGISTER_URL
+      value: {{ DOKDISTKANAL_ENHETSREGISTER_URL }}
     - name: DOKDISTKANAL_ALTINN_URL
       value: {{ DOKDISTKANAL_ALTINN_URL }}
     - name: DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL
@@ -78,3 +80,4 @@ spec:
          namespace: {{namespace}}
          cluster: {{cluster}}
     {{/each}}
+
