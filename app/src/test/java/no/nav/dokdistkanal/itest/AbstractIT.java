@@ -64,7 +64,9 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	public static final String GRUPPEROLLER_OK_PATH = "enhetsregisteret/enhets_grupperoller.json";
 	public static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
 	public static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
-	public static final String MOTTAKER_ID = "974761076";
+	public static final String UNDERENHET_ORGNR = "916007922";
+	public static final String HOVEDENHET_ORGNR = "316007922";
+
 
 	@Value("${local.url}")
 	protected String LOCAL_ENDPOINT_URL;
@@ -122,6 +124,22 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 
 	protected void stubEnhetsregisteret(HttpStatus status, String path, String orgNummer) {
 		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + orgNummer))
+				.willReturn(aResponse()
+						.withStatus(status.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(path)));
+	}
+
+	protected void stubSecondEnhetsregisteret(String path, String orgNummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + orgNummer))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile(path)));
+	}
+
+	protected void stubUnderenhetsregisteret(HttpStatus status, String path, String orgNummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/underenheter/" + orgNummer))
 				.willReturn(aResponse()
 						.withStatus(status.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
