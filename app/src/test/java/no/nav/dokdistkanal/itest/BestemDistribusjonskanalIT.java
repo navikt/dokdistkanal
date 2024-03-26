@@ -29,6 +29,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -511,6 +512,40 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@Test
+	void skalReturnerePrintWhenOrgnrIsNeitherHovedOrUnderenheter() {
+
+		stubDokmet();
+		stubDigdirKrrProxy();
+		stubAltinn();
+		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR);
+		stubUnderenhetsregisteret(NOT_FOUND, "", UNDERENHET_ORGNR);
+
+		var request = bestemDistribusjonskanalRequest();
+		request.setMottakerId(UNDERENHET_ORGNR);
+		request.setDokumenttypeId("1234");
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.distribusjonskanal()).isEqualTo(PRINT);
+					assertThat(it.regel()).isEqualTo(MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.name());
+					assertThat(it.regelBegrunnelse()).isEqualTo(MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.begrunnelse);
+				});
+	}
+
+	@Test
 	void skalReturnereDPVTWhenOrgnrIsUnderenheterOgHarHovedenhetMedRolletype() {
 
 		stubDokmet();
@@ -544,6 +579,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 					assertThat(it.regelBegrunnelse()).isEqualTo(ORGANISASJON_MED_ALTINN_INFO.begrunnelse);
 				});
 	}
+
 
 	@Test
 	void skalReturnereUnauthorizedVedManglendeOIDCToken() {

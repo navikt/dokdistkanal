@@ -22,11 +22,9 @@ public class BrregEnhetsregisterService {
 		this.brregEnhetsregisterConsumer = brregEnhetsregisterConsumer;
 	}
 
-	public boolean erEnhetenKonkurs(String orgNummer) {
+	public HentEnhetResponse erEnhetenKonkurs(String orgNummer) {
 		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterConsumer.hentEnhet(orgNummer);
-		HentEnhetResponse hentEnhet = hentEnhetResponse != null ? hentEnhetResponse : brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(orgNummer);
-
-		return hentEnhet == null || hentEnhet.konkurs();
+		return hentEnhetResponse != null ? hentEnhetResponse : brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(orgNummer);
 	}
 
 	public boolean harEnhetenGyldigRolletypeForDpvt(String orgNummer) {
