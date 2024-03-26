@@ -521,7 +521,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubUnderenhetsregisteret(OK, "enhetsregisteret/underenhet_response.json", UNDERENHET_ORGNR);
 		stubSecondEnhetsregisteret("enhetsregisteret/ikke_konkurs_enhetsregisteret.json", HOVEDENHET_ORGNR);
 
-
 		var request = bestemDistribusjonskanalRequest();
 		request.setMottakerId(UNDERENHET_ORGNR);
 		request.setDokumenttypeId("1234");

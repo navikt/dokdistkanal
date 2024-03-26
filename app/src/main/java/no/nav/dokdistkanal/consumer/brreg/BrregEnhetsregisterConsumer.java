@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -77,8 +78,7 @@ public class BrregEnhetsregisterConsumer {
 				})
 				.block();
 
-		return hentEnhet(hentUnderenhetResponse.overordnetEnhet());
-
+		return isNull(hentUnderenhetResponse) ? null : hentEnhet(hentUnderenhetResponse.overordnetEnhet());
 	}
 
 	@NotNull
