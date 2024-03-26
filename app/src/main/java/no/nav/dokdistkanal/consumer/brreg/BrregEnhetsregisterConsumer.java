@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -31,13 +30,13 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
-	public HentEnhetResponse hentHovedenhet(String orgnr) {
+	public HentEnhetResponse hentHovedenhet(String organisasjonsnummer) {
 		return webClient.get()
-				.uri("/enheter/{orgnummer}", orgnr)
+				.uri("/enheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
 						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
-							log.warn("organisasjonsnummer={} finner ikke under hovedenheter", orgnr);
+							log.warn("organisasjonsnummer={} finner ikke under hovedenheter", organisasjonsnummer);
 							return Mono.empty();
 						}
 						return handleErrorResponse(clientResponse);
@@ -49,9 +48,9 @@ public class BrregEnhetsregisterConsumer {
 
 
 	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
-	public EnhetsRolleResponse hentEnhetsRollegrupper(String orgnummer) {
+	public EnhetsRolleResponse hentEnhetsRollegrupper(String organisasjonsnummer) {
 		return webClient.get()
-				.uri("/enheter/{orgnummer}/roller", orgnummer)
+				.uri("/enheter/{organisasjonsnummer}/roller", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
 						return handleErrorResponse(clientResponse);
@@ -63,13 +62,13 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
-	public HentEnhetResponse hentHovedenhetFraUnderenhet(String orgnr) {
+	public HentEnhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
 		HentUnderenhetResponse hentUnderenhetResponse = webClient.get()
-				.uri("/underenheter/{orgnr}", orgnr)
+				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
 						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
-							log.warn("organisasjonsnummer={} verken funnet i hoved eller underenheter", orgnr);
+							log.warn("organisasjonsnummer={} verken funnet i hoved eller underenheter", organisasjonsnummer);
 							return Mono.empty();
 						}
 						return handleErrorResponse(clientResponse);
@@ -81,12 +80,13 @@ public class BrregEnhetsregisterConsumer {
 		return isNull(hentUnderenhetResponse) ? null : hentHovedenhet(hentUnderenhetResponse.overordnetEnhet());
 	}
 
-	@NotNull
-	private static <T> Mono<T> handleErrorResponse(ClientResponse clientResponse) {
-		if (clientResponse.statusCode().is4xxClientError()) {
-			return Mono.error(new EnhetsregisterFunctionalException("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding=" + clientResponse.createError()));
-		} else {
-			return Mono.error(new EnhetsregisterTechnicalException("Kall mot Brønnøysundregistrene feilet teknisk med feilmelding=" + clientResponse.createError()));
-		}
+	public <T> Mono<T> handleErrorResponse(ClientResponse clientResponse) {
+		return clientResponse.createException().handle((err, sink) -> {
+			if (clientResponse.statusCode().is4xxClientError()) {
+				sink.error(new EnhetsregisterFunctionalException("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding=" + err.getMessage(), err));
+				return;
+			}
+			sink.error(new EnhetsregisterTechnicalException("Kall mot Brønnøysundregistrene feilet teknisk med feilmelding=" + err.getMessage(), err));
+		});
 	}
 }

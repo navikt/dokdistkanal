@@ -550,6 +550,38 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@Test
+	void skalReturnereInternalServerErrorWhenOrgnrThrowsBadRequestException() {
+
+		stubDokmet();
+		stubDigdirKrrProxy();
+		stubAltinn();
+		stubUnderenhetsregisteret(BAD_REQUEST, "", UNDERENHET_ORGNR);
+
+		var request = bestemDistribusjonskanalRequest();
+		request.setMottakerId(UNDERENHET_ORGNR);
+		request.setDokumenttypeId("1234");
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.is5xxServerError()
+				.expectBody(ProblemDetail.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
+					assertThat(response.getDetail()).contains("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding");
+
+				});
+	}
+
+	@Test
 	void skalReturnereDPVTWhenOrgnrIsUnderenheterOgHarHovedenhetMedRolletype() {
 
 		stubDokmet();
