@@ -23,8 +23,8 @@ public class BrregEnhetsregisterService {
 	}
 
 	public HentEnhetResponse erEnhetenKonkurs(String orgNummer) {
-		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterConsumer.hentEnhet(orgNummer);
-		return hentEnhetResponse != null ? hentEnhetResponse : brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(orgNummer);
+		HentEnhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(orgNummer);
+		return hentHovedenhetFraUnderenhet != null ? hentHovedenhetFraUnderenhet : brregEnhetsregisterConsumer.hentHovedenhet(orgNummer);
 	}
 
 	public boolean harEnhetenGyldigRolletypeForDpvt(String orgNummer) {

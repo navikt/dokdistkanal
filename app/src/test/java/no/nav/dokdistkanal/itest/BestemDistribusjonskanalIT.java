@@ -30,7 +30,10 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -153,6 +156,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDigdirKrrProxy();
 		stubAltinn();
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
+		stubUnderenhetsregisteret(NOT_FOUND, "enhetsregisteret/underenhet_response.json", mottakerId);
 		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
 
 		var request = bestemDistribusjonskanalRequest();
@@ -183,9 +187,9 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		return Stream.of(
 				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
 				Arguments.of(DPVT, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
+				Arguments.of(PRINT, ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
+				Arguments.of(PRINT, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
 		);
 	}
 

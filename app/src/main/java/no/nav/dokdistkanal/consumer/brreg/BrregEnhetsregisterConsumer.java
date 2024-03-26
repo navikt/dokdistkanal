@@ -31,7 +31,7 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
-	public HentEnhetResponse hentEnhet(String orgnr) {
+	public HentEnhetResponse hentHovedenhet(String orgnr) {
 		return webClient.get()
 				.uri("/enheter/{orgnummer}", orgnr)
 				.exchangeToMono(clientResponse -> {
@@ -78,7 +78,7 @@ public class BrregEnhetsregisterConsumer {
 				})
 				.block();
 
-		return isNull(hentUnderenhetResponse) ? null : hentEnhet(hentUnderenhetResponse.overordnetEnhet());
+		return isNull(hentUnderenhetResponse) ? null : hentHovedenhet(hentUnderenhetResponse.overordnetEnhet());
 	}
 
 	@NotNull
