@@ -49,10 +49,10 @@ public class AltinnServiceOwnerConsumer {
 	}
 
 	@Retryable(retryFor = DokdistkanalTechnicalException.class, backoff = @Backoff(delay = 200))
-	public ValidateRecipientResponse isServiceOwnerValidRecipient(String orgNummer) {
+	public ValidateRecipientResponse isServiceOwnerValidRecipient(String organisasjonsnummer) {
 		String altinnUrl = UriComponentsBuilder.fromUriString(dokdistkanalProperties.getAltinn().getUrl())
 				.path(SERVICEOWNER_PATH)
-				.queryParam("organizationNumber", orgNummer)
+				.queryParam("organizationNumber", organisasjonsnummer)
 				.build().toString();
 
 		var httpEntity = new HttpEntity<>(headers());

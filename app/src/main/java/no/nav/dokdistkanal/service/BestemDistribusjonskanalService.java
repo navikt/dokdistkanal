@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
+import no.nav.dokdistkanal.consumer.brreg.HentEnhetResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -240,9 +241,13 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 		}
 
-		boolean erEnhetenKonkurs = brregEnhetsregisterService.erEnhetenKonkurs(request.getMottakerId());
+		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterService.erEnhetenKonkurs(request.getMottakerId());
 
-		if (erEnhetenKonkurs) {
+		if (hentEnhetResponse == null) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		}
+
+		if (hentEnhetResponse.konkurs()) {
 			return createResponse(request, ORGANISASJON_ER_KONKURS);
 		}
 

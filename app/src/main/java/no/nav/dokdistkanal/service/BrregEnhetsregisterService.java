@@ -22,14 +22,14 @@ public class BrregEnhetsregisterService {
 		this.brregEnhetsregisterConsumer = brregEnhetsregisterConsumer;
 	}
 
-	public boolean erEnhetenKonkurs(String orgNummer) {
-		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterConsumer.hentEnhet(orgNummer);
-		return hentEnhetResponse == null || hentEnhetResponse.konkurs();
+	public HentEnhetResponse erEnhetenKonkurs(String organisasjonsnummer) {
+		HentEnhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(organisasjonsnummer);
+		return hentHovedenhetFraUnderenhet != null ? hentHovedenhetFraUnderenhet : brregEnhetsregisterConsumer.hentHovedenhet(organisasjonsnummer);
 	}
 
-	public boolean harEnhetenGyldigRolletypeForDpvt(String orgNummer) {
+	public boolean harEnhetenGyldigRolletypeForDpvt(String organisasjonsnummer) {
 
-		EnhetsRolleResponse response = brregEnhetsregisterConsumer.hentEnhetsRollegrupper(orgNummer);
+		EnhetsRolleResponse response = brregEnhetsregisterConsumer.hentEnhetsRollegrupper(organisasjonsnummer);
 
 		if (response == null || isEmpty(response.rollegrupper())) {
 			return false;
