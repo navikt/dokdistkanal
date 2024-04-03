@@ -122,32 +122,32 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withBodyFile(RESPONS_UTEN_VARSLINGSINFORMASJON)));
 	}
 
-	protected void stubEnhetsregisteret(HttpStatus status, String path, String orgNummer) {
-		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + orgNummer))
+	protected void stubEnhetsregisteret(HttpStatus status, String path, String organisasjonsnummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + organisasjonsnummer))
 				.willReturn(aResponse()
 						.withStatus(status.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path)));
 	}
 
-	protected void stubSecondEnhetsregisteret(String path, String orgNummer) {
-		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + orgNummer))
+	protected void stubSecondEnhetsregisteret(String path, String organisasjonsnummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/enheter/" + organisasjonsnummer))
 				.willReturn(aResponse()
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path)));
 	}
 
-	protected void stubUnderenhetsregisteret(HttpStatus status, String path, String orgNummer) {
-		stubFor(get(urlEqualTo("/enhetsregisteret/underenheter/" + orgNummer))
+	protected void stubUnderenhetsregisteret(HttpStatus status, String path, String organisasjonsnummer) {
+		stubFor(get(urlEqualTo("/enhetsregisteret/underenheter/" + organisasjonsnummer))
 				.willReturn(aResponse()
 						.withStatus(status.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path)));
 	}
 
-	protected void stubEnhetsGruppeRoller(String path, String orgNummer) {
-		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + orgNummer + "/roller"))
+	protected void stubEnhetsGruppeRoller(String path, String organisasjonsnummer) {
+		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + organisasjonsnummer + "/roller"))
 				.willReturn(aResponse()
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
