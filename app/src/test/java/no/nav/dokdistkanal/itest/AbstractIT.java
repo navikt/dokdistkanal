@@ -65,7 +65,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	public static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
 	public static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
 	public static final String UNDERENHET_ORGNR = "916007922";
-	public static final String HOVEDENHET_ORGNR = "316007922";
+	public static final String HOVEDENHET_ORGNR = "974761076";
 
 
 	@Value("${local.url}")

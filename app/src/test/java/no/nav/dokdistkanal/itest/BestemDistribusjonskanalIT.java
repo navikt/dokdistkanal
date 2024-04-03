@@ -33,6 +33,7 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -185,7 +186,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
+				Arguments.of(PRINT, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
 				Arguments.of(DPVT, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
 				Arguments.of(PRINT, ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
 				Arguments.of(PRINT, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
@@ -588,7 +589,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDigdirKrrProxy();
 		stubAltinn();
 		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
-		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, HOVEDENHET_ORGNR);
 		stubUnderenhetsregisteret(OK, "enhetsregisteret/underenhet_response.json", UNDERENHET_ORGNR);
 		stubSecondEnhetsregisteret("enhetsregisteret/ikke_konkurs_enhetsregisteret.json", HOVEDENHET_ORGNR);
 
