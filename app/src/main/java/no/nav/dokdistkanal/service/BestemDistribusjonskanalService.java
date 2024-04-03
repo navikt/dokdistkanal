@@ -251,7 +251,7 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, ORGANISASJON_ER_KONKURS);
 		}
 
-		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(request.getMottakerId());
+		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(hentEnhetResponse.organisasjonsnummer());
 
 		if (!harEnhetenGyldigRolletypeForDpvt) {
 			return createResponse(request, ORGANISASJON_MANGLER_NODVENDIG_ROLLER);
