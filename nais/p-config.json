@@ -46,6 +46,11 @@
       "app": "klage-fss-proxy",
       "namespace": "klage",
       "cluster": "prod-fss"
+    },
+    {
+      "app": "amt-distribusjon",
+      "namespace": "amt",
+      "cluster": "prod-gcp"
     }
   ]
 }

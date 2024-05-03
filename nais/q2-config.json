@@ -48,6 +48,11 @@
       "app": "brev-administrasjon-q2",
       "namespace": "isa",
       "cluster": "dev-gcp"
+    },
+    {
+      "app": "amt-distribusjon",
+      "namespace": "amt",
+      "cluster": "dev-gcp"
     }
   ]
 }
