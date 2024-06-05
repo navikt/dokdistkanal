@@ -2,7 +2,7 @@ package no.nav.dokdistkanal.service;
 
 import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsregisterConsumer;
 import no.nav.dokdistkanal.consumer.brreg.EnhetsRolleResponse;
-import no.nav.dokdistkanal.consumer.brreg.HentEnhetResponse;
+import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -22,8 +22,8 @@ public class BrregEnhetsregisterService {
 		this.brregEnhetsregisterConsumer = brregEnhetsregisterConsumer;
 	}
 
-	public HentEnhetResponse erEnhetenKonkurs(String organisasjonsnummer) {
-		HentEnhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(organisasjonsnummer);
+	public HovedenhetResponse hentHovedenhet(String organisasjonsnummer) {
+		HovedenhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(organisasjonsnummer);
 		return hentHovedenhetFraUnderenhet != null ? hentHovedenhetFraUnderenhet : brregEnhetsregisterConsumer.hentHovedenhet(organisasjonsnummer);
 	}
 

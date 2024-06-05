@@ -31,6 +31,7 @@ import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_SLETTET;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
@@ -142,12 +143,13 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	/*
-	 * Her testes følgende regler:
-	 * 5: Er mottakerType ORGANISASJON og dokument produsert i infotrygd? Hvis ja -> PRINT
-	 * 6: Er mottakerType ORGANISASJON og har varslingsinformasjon i Altinn, ikke konkurs og har enhets grupperoller? Hvis ja -> DPVT
-	 * 6.1: Er mottakerType ORGANISASJON og mangler varslingsinformasjon for DPV? Hvis ja -> PRINT
-	 * 6.2: Er mottakerType ORGANISASJON, har varslingsinformasjon i Altinn og konkurs? Hvis ja -> PRINT
-	 * 6.3: Er mottakerType ORGANISASJON, har varslingsinformasjon i Altinn, ikke konkurs og registert person er døde eller har ingen fødselsdato? Hvis ja -> PRINT
+	 * Her testes følgende regler for mottakertype ORGANISASJON:
+	 * 5: Er dokument produsert i Infotrygd? Hvis ja -> PRINT
+	 * 6: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, og har enhets grupperoller? Hvis ja -> DPVT
+	 * 6.1: Mangler org. varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * 6.2: Har org. varslingsinformasjon i Altinn, men er konkurs? Hvis ja -> PRINT
+	 * 6.3: Har org. varslingsinformasjon i Altinn, er ikke konkurs, men er slettet? Hvis ja -> PRINT
+	 * 6.4: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -189,7 +191,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(PRINT, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
 				Arguments.of(DPVT, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
 				Arguments.of(PRINT, ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
-				Arguments.of(PRINT, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null),
+				Arguments.of(PRINT, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null),
 				Arguments.of(PRINT, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
 		);
 	}
