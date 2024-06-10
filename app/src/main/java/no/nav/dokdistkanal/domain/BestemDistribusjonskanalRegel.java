@@ -22,6 +22,7 @@ public enum BestemDistribusjonskanalRegel {
 	ORGANISASJON_MED_ALTINN_INFO(DPVT, "Mottaker er organisasjon, har en gyldig altinn-serviceowner notifikasjonsmottaker og personer med nødvendig roller"),
 	ORGANISASJON_UTEN_ALTINN_INFO(PRINT, "Mottaker er organisasjon og mangler varslingsinformasjon for DPVT"),
 	ORGANISASJON_ER_KONKURS(PRINT, "Mottaker er organisasjon og er konkurs"),
+	ORGANISASJON_ER_SLETTET(PRINT, "Mottaker er organisasjon og er slettet"),
 	ORGANISASJON_MANGLER_NODVENDIG_ROLLER(PRINT, "Mottaker er organisasjon og mangler personer med nødvendig roller"),
 	PERSON_ER_IKKE_I_PDL(PRINT, "Finner ikke personen i PDL"),
 	PERSON_ER_DOED(PRINT, "Personen er død"),

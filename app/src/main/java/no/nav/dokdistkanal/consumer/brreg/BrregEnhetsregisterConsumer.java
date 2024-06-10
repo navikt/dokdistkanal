@@ -30,7 +30,7 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
-	public HentEnhetResponse hentHovedenhet(String organisasjonsnummer) {
+	public HovedenhetResponse hentHovedenhet(String organisasjonsnummer) {
 		return webClient.get()
 				.uri("/enheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
@@ -41,7 +41,7 @@ public class BrregEnhetsregisterConsumer {
 						}
 						return handleErrorResponse(clientResponse);
 					}
-					return clientResponse.bodyToMono(HentEnhetResponse.class);
+					return clientResponse.bodyToMono(HovedenhetResponse.class);
 				})
 				.block();
 	}
@@ -62,7 +62,7 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	@Retryable(retryFor = EnhetsregisterTechnicalException.class)
-	public HentEnhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
+	public HovedenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
 		HentUnderenhetResponse hentUnderenhetResponse = webClient.get()
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {

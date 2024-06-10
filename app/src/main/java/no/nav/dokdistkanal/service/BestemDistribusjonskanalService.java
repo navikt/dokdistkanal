@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
-import no.nav.dokdistkanal.consumer.brreg.HentEnhetResponse;
+import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
@@ -31,6 +31,7 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.DOKUMENT_
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_SLETTET;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
@@ -241,17 +242,21 @@ public class BestemDistribusjonskanalService {
 			return createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
 		}
 
-		HentEnhetResponse hentEnhetResponse = brregEnhetsregisterService.erEnhetenKonkurs(request.getMottakerId());
+		HovedenhetResponse hovedenhet = brregEnhetsregisterService.hentHovedenhet(request.getMottakerId());
 
-		if (hentEnhetResponse == null) {
+		if (hovedenhet == null) {
 			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
 		}
 
-		if (hentEnhetResponse.konkurs()) {
+		if (hovedenhet.konkurs()) {
 			return createResponse(request, ORGANISASJON_ER_KONKURS);
 		}
 
-		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(hentEnhetResponse.organisasjonsnummer());
+		if (hovedenhet.slettedato() != null) {
+			return createResponse(request, ORGANISASJON_ER_SLETTET);
+		}
+
+		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(hovedenhet.organisasjonsnummer());
 
 		if (!harEnhetenGyldigRolletypeForDpvt) {
 			return createResponse(request, ORGANISASJON_MANGLER_NODVENDIG_ROLLER);
