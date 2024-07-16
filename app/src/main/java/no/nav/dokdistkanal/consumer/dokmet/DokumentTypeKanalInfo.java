@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DokumentTypeInfoTo implements Serializable {
+public class DokumentTypeKanalInfo implements Serializable {
 	static final long serialVersionUID = 1L;
 	private String arkivsystem;
 	private String predefinertDistKanal;

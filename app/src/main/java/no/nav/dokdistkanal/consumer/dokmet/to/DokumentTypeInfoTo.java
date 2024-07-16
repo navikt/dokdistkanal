@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DokumentProduksjonsInfoToV4 {
-	private DistribusjonInfoTo distribusjonInfo;
+public class DokumentTypeInfoTo {
+	private String dokumentType;
+	private String arkivSystem;
+	private DokumentProduksjonsInfoTo dokumentProduksjonsInfo;
 }

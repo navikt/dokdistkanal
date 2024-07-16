@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dokmet.map.DokumenttypeInfoMapper;
-import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoToV4;
+import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoTo;
 import no.nav.dokdistkanal.exceptions.functional.DokdistkanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
@@ -18,12 +18,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DOKMET;
 import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.HENT_DOKUMENTTYPE_INFO_CACHE;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
 @Service
 @Slf4j
@@ -45,13 +43,12 @@ public class DokumentTypeInfoConsumer {
 
 	@Cacheable(value = HENT_DOKUMENTTYPE_INFO_CACHE)
 	@Retryable(retryFor = DokdistkanalTechnicalException.class, noRetryFor = DokdistkanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
-	public DokumentTypeInfoTo hentDokumenttypeInfo(final String dokumenttypeId) {
+	public DokumentTypeKanalInfo hentDokumenttypeInfo(final String dokumenttypeId) {
 
 		return webClient.get()
 				.uri(DOKUMENTTYPE_INFO_URI, dokumenttypeId)
-				.attributes(clientRegistrationId(CLIENT_REGISTRATION_DOKMET))
 				.retrieve()
-				.bodyToMono(DokumentTypeInfoToV4.class)
+				.bodyToMono(DokumentTypeInfoTo.class)
 				.mapNotNull(DokumenttypeInfoMapper::mapTo)
 				.doOnError(this::handleError)
 				.block();

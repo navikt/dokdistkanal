@@ -8,7 +8,7 @@ import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
-import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeKanalInfo;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
@@ -115,7 +115,7 @@ public class BestemDistribusjonskanalService {
 		return organisasjon(request);
 	}
 
-	private BestemDistribusjonskanalResponse validerIdNrOgBestemKanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
+	private BestemDistribusjonskanalResponse validerIdNrOgBestemKanal(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumenttypeInfo) {
 		if (!erIdentitetsnummer(request.getMottakerId())) {
 			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
 		}
@@ -123,7 +123,7 @@ public class BestemDistribusjonskanalService {
 		return person(request, dokumenttypeInfo);
 	}
 
-	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumenttypeInfo) {
+	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumenttypeInfo) {
 		if ("INGEN".equals(dokumenttypeInfo.getArkivsystem())) {
 			return createResponse(request, SKAL_IKKE_ARKIVERES);
 		}
@@ -148,7 +148,7 @@ public class BestemDistribusjonskanalService {
 		return erGyldigDpvtMottaker(request);
 	}
 
-	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeInfoTo dokumentTypeInfo) {
+	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumentTypeInfo) {
 
 		var personinfoResultat = evaluerPersoninfo(request);
 
@@ -205,7 +205,7 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse evaluerDigitalKontaktinfo(BestemDistribusjonskanalRequest request,
-																	   DokumentTypeInfoTo dokumentTypeInfo,
+																	   DokumentTypeKanalInfo dokumentTypeInfo,
 																	   DigitalKontaktinformasjonTo digitalKontaktinfo) {
 
 		if (digitalKontaktinfo == null) {
