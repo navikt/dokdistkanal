@@ -22,7 +22,6 @@ import java.util.List;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DIGDIR_KRR_PROXY;
-import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_DOKMET;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
 import static org.springframework.security.oauth2.core.AuthorizationGrantType.CLIENT_CREDENTIALS;
 import static org.springframework.security.oauth2.core.ClientAuthenticationMethod.CLIENT_SECRET_BASIC;
@@ -106,14 +105,6 @@ public class AzureOAuthEnabledWebClientConfig {
 						.clientAuthenticationMethod(CLIENT_SECRET_BASIC)
 						.authorizationGrantType(CLIENT_CREDENTIALS)
 						.scope(dokdistkanalProperties.getEndpoints().getPdl().getScope())
-						.build(),
-				ClientRegistration.withRegistrationId(CLIENT_REGISTRATION_DOKMET)
-						.tokenUri(azureProperties.openidConfigTokenEndpoint())
-						.clientId(azureProperties.appClientId())
-						.clientSecret(azureProperties.appClientSecret())
-						.clientAuthenticationMethod(CLIENT_SECRET_BASIC)
-						.authorizationGrantType(CLIENT_CREDENTIALS)
-						.scope(dokdistkanalProperties.getEndpoints().getDokmet().getScope())
 						.build()
 		);
 	}

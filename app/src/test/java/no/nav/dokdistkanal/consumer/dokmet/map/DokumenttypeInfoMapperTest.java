@@ -1,10 +1,10 @@
 package no.nav.dokdistkanal.consumer.dokmet.map;
 
-import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoTo;
+import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeKanalInfo;
 import no.nav.dokdistkanal.consumer.dokmet.to.DistribusjonInfoTo;
 import no.nav.dokdistkanal.consumer.dokmet.to.DistribusjonVarselTo;
-import no.nav.dokdistkanal.consumer.dokmet.to.DokumentProduksjonsInfoToV4;
-import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoToV4;
+import no.nav.dokdistkanal.consumer.dokmet.to.DokumentProduksjonsInfoTo;
+import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoTo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -22,9 +22,9 @@ class DokumenttypeInfoMapperTest {
 	@ValueSource(strings = {PREDEFINERT_DISTRIBUSJONSKANAL})
 	@NullSource
 	public void skalMappePredefinertDistribusjonskanal(String predefinertDistribusjonskanal) {
-		var input = DokumentTypeInfoToV4.builder()
+		var input = DokumentTypeInfoTo.builder()
 				.arkivSystem(ARKIVSYSTEM)
-				.dokumentProduksjonsInfo(DokumentProduksjonsInfoToV4.builder()
+				.dokumentProduksjonsInfo(DokumentProduksjonsInfoTo.builder()
 						.distribusjonInfo(predefinertDistribusjonskanal == null ? null :
 								DistribusjonInfoTo.builder()
 										.predefinertDistKanal(predefinertDistribusjonskanal)
@@ -32,7 +32,7 @@ class DokumenttypeInfoMapperTest {
 						.build())
 				.build();
 
-		DokumentTypeInfoTo result = DokumenttypeInfoMapper.mapTo(input);
+		DokumentTypeKanalInfo result = DokumenttypeInfoMapper.mapTo(input);
 
 		assertThat(result.getPredefinertDistKanal()).isEqualTo(predefinertDistribusjonskanal);
 	}
@@ -40,9 +40,9 @@ class DokumenttypeInfoMapperTest {
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
 	public void skalMappeVarslingSDP(boolean isVarslingSdp) {
-		var input = DokumentTypeInfoToV4.builder()
+		var input = DokumentTypeInfoTo.builder()
 				.arkivSystem(ARKIVSYSTEM)
-				.dokumentProduksjonsInfo(DokumentProduksjonsInfoToV4.builder()
+				.dokumentProduksjonsInfo(DokumentProduksjonsInfoTo.builder()
 						.distribusjonInfo(DistribusjonInfoTo.builder()
 								.predefinertDistKanal(PREDEFINERT_DISTRIBUSJONSKANAL)
 								.distribusjonVarsels(isVarslingSdp ? singletonList(DistribusjonVarselTo.builder()
@@ -52,7 +52,7 @@ class DokumenttypeInfoMapperTest {
 						.build())
 				.build();
 
-		DokumentTypeInfoTo result = DokumenttypeInfoMapper.mapTo(input);
+		DokumentTypeKanalInfo result = DokumenttypeInfoMapper.mapTo(input);
 
 		assertThat(result.getArkivsystem()).isEqualTo(ARKIVSYSTEM);
 		assertThat(result.getPredefinertDistKanal()).isEqualTo(PREDEFINERT_DISTRIBUSJONSKANAL);

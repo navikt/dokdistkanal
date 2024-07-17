@@ -15,17 +15,7 @@ public record AzureProperties (
 	@NotEmpty String appClientId,
 	@NotEmpty String appClientSecret
 ) {
-	public static final String SPRING_DEFAULT_PRINCIPAL = "anonymousUser";
 	public static final String CLIENT_REGISTRATION_DIGDIR_KRR_PROXY = "azure-digdir-krr-proxy";
 	public static final String CLIENT_REGISTRATION_PDL = "azure-pdl";
-	public static final String CLIENT_REGISTRATION_DOKMET = "azure-dokmet";
-
-	public static OAuth2AuthorizeRequest getOAuth2AuthorizeRequestForAzure(String clientRegistrationId) {
-		return OAuth2AuthorizeRequest
-				.withClientRegistrationId(clientRegistrationId)
-				.principal(SPRING_DEFAULT_PRINCIPAL)
-				.build();
-	}
-
 }
 
