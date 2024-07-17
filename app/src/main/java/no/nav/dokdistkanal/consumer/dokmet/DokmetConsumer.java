@@ -5,9 +5,7 @@ import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dokmet.map.DokumenttypeInfoMapper;
 import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoTo;
-import no.nav.dokdistkanal.exceptions.functional.DokdistkanalFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -18,21 +16,21 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import static java.lang.String.format;
-import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.HENT_DOKUMENTTYPE_INFO_CACHE;
+import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.DOKMET_CACHE;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Service
 @Slf4j
-public class DokumentTypeInfoConsumer {
+public class DokmetConsumer {
 
 	private static final String DOKUMENTTYPE_INFO_URI = "/rest/dokumenttypeinfo/{dokumenttypeId}";
 
 	private final WebClient webClient;
 
-	public DokumentTypeInfoConsumer(DokdistkanalProperties dokdistkanalProperties,
-									@Qualifier("azureOauth2WebClient") WebClient webClient) {
+	public DokmetConsumer(DokdistkanalProperties dokdistkanalProperties,
+						  @Qualifier("azureOauth2WebClient") WebClient webClient) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getDokmet().getUrl())
@@ -41,8 +39,8 @@ public class DokumentTypeInfoConsumer {
 				.build();
 	}
 
-	@Cacheable(value = HENT_DOKUMENTTYPE_INFO_CACHE)
-	@Retryable(retryFor = DokdistkanalTechnicalException.class, noRetryFor = DokdistkanalFunctionalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
+	@Cacheable(value = DOKMET_CACHE)
+	@Retryable(retryFor = DokmetTechnicalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DokumentTypeKanalInfo hentDokumenttypeInfo(final String dokumenttypeId) {
 
 		return webClient.get()

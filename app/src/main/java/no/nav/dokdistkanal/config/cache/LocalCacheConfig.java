@@ -10,26 +10,25 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
-import java.time.Duration;
 import java.util.Arrays;
 
+import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 @Configuration
 @EnableCaching
 @Profile({"local", "nais"})
 public class LocalCacheConfig {
-	public static final Duration DEFAULT_CACHE_EXPIRATION_TIME = Duration.ofMinutes(60);
 	public static final String MASKINPORTEN_CACHE = "maskinportenCache";
-	public static final String HENT_DOKUMENTTYPE_INFO_CACHE = "hentDokumenttypeInfoCache";
+	public static final String DOKMET_CACHE = "dokmetCache";
 
 	@Bean
 	@Primary
 	public CacheManager cacheManager() {
 		SimpleCacheManager cacheManager = new SimpleCacheManager();
 		cacheManager.setCaches(Arrays.asList(
-				new CaffeineCache(HENT_DOKUMENTTYPE_INFO_CACHE, Caffeine.newBuilder()
-						.expireAfterWrite(DEFAULT_CACHE_EXPIRATION_TIME)
+				new CaffeineCache(DOKMET_CACHE, Caffeine.newBuilder()
+						.expireAfterWrite(24, HOURS)
 						.build()),
 				new CaffeineCache(MASKINPORTEN_CACHE, Caffeine.newBuilder()
 						.expireAfterWrite(50, MINUTES)

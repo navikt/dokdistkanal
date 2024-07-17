@@ -7,7 +7,7 @@ import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsum
 import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.dki.DigitalKontaktinformasjonConsumer;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
-import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeInfoConsumer;
+import no.nav.dokdistkanal.consumer.dokmet.DokmetConsumer;
 import no.nav.dokdistkanal.consumer.dokmet.DokumentTypeKanalInfo;
 import no.nav.dokdistkanal.consumer.pdl.PdlGraphQLConsumer;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
@@ -63,7 +63,7 @@ public class BestemDistribusjonskanalService {
 
 	public static final String BESTEM_DISTRIBUSJONSKANAL = "bestemDistribusjonKanal";
 
-	private final DokumentTypeInfoConsumer dokumentTypeInfoConsumer;
+	private final DokmetConsumer dokmetConsumer;
 	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;
 	private final MeterRegistry registry;
 	private final PdlGraphQLConsumer pdlGraphQLConsumer;
@@ -71,13 +71,13 @@ public class BestemDistribusjonskanalService {
 
 	private final BrregEnhetsregisterService brregEnhetsregisterService;
 
-	public BestemDistribusjonskanalService(DokumentTypeInfoConsumer dokumentTypeInfoConsumer,
+	public BestemDistribusjonskanalService(DokmetConsumer dokmetConsumer,
 										   DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer,
 										   BrregEnhetsregisterService brregEnhetsregisterService,
 										   PdlGraphQLConsumer pdlGraphQLConsumer,
 										   AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 										   MeterRegistry registry) {
-		this.dokumentTypeInfoConsumer = dokumentTypeInfoConsumer;
+		this.dokmetConsumer = dokmetConsumer;
 		this.digitalKontaktinformasjonConsumer = digitalKontaktinformasjonConsumer;
 		this.pdlGraphQLConsumer = pdlGraphQLConsumer;
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
@@ -91,7 +91,7 @@ public class BestemDistribusjonskanalService {
 			request.setDokumenttypeId(DEFAULT_DOKUMENTTYPE_ID);
 		}
 
-		var dokumenttypeInfo = dokumentTypeInfoConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
+		var dokumenttypeInfo = dokmetConsumer.hentDokumenttypeInfo(request.getDokumenttypeId());
 
 		if (dokumenttypeInfo != null) {
 			var predefinertDistribusjonskanal = predefinertDistribusjonskanal(request, dokumenttypeInfo);
@@ -115,25 +115,25 @@ public class BestemDistribusjonskanalService {
 		return organisasjon(request);
 	}
 
-	private BestemDistribusjonskanalResponse validerIdNrOgBestemKanal(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumenttypeInfo) {
+	private BestemDistribusjonskanalResponse validerIdNrOgBestemKanal(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumentTypeKanalInfo) {
 		if (!erIdentitetsnummer(request.getMottakerId())) {
 			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
 		}
 
-		return person(request, dokumenttypeInfo);
+		return person(request, dokumentTypeKanalInfo);
 	}
 
-	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumenttypeInfo) {
-		if ("INGEN".equals(dokumenttypeInfo.getArkivsystem())) {
+	private BestemDistribusjonskanalResponse predefinertDistribusjonskanal(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumentTypeKanalInfo) {
+		if ("INGEN".equals(dokumentTypeKanalInfo.getArkivsystem())) {
 			return createResponse(request, SKAL_IKKE_ARKIVERES);
 		}
-		if (LOKAL_PRINT.toString().equals(dokumenttypeInfo.getPredefinertDistKanal())) {
+		if (LOKAL_PRINT.toString().equals(dokumentTypeKanalInfo.getPredefinertDistKanal())) {
 			return createResponse(request, PREDEFINERT_LOKAL_PRINT);
 		}
-		if (INGEN_DISTRIBUSJON.toString().equals(dokumenttypeInfo.getPredefinertDistKanal())) {
+		if (INGEN_DISTRIBUSJON.toString().equals(dokumentTypeKanalInfo.getPredefinertDistKanal())) {
 			return createResponse(request, PREDEFINERT_INGEN_DISTRIBUSJON);
 		}
-		if (TRYGDERETTEN.toString().equals(dokumenttypeInfo.getPredefinertDistKanal())) {
+		if (TRYGDERETTEN.toString().equals(dokumentTypeKanalInfo.getPredefinertDistKanal())) {
 			return createResponse(request, PREDEFINERT_TRYGDERETTEN);
 		}
 		return null;
@@ -148,7 +148,7 @@ public class BestemDistribusjonskanalService {
 		return erGyldigDpvtMottaker(request);
 	}
 
-	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumentTypeInfo) {
+	private BestemDistribusjonskanalResponse person(BestemDistribusjonskanalRequest request, DokumentTypeKanalInfo dokumentTypeKanalInfo) {
 
 		var personinfoResultat = evaluerPersoninfo(request);
 
@@ -157,7 +157,7 @@ public class BestemDistribusjonskanalService {
 		}
 
 		var digitalKontaktinfo = digitalKontaktinformasjonConsumer.hentSikkerDigitalPostadresse(request.getMottakerId(), true);
-		var digitalKontaktinfoResultat = evaluerDigitalKontaktinfo(request, dokumentTypeInfo, digitalKontaktinfo);
+		var digitalKontaktinfoResultat = evaluerDigitalKontaktinfo(request, dokumentTypeKanalInfo, digitalKontaktinfo);
 
 		if (digitalKontaktinfoResultat != null) {
 			return digitalKontaktinfoResultat;
@@ -205,7 +205,7 @@ public class BestemDistribusjonskanalService {
 	}
 
 	private BestemDistribusjonskanalResponse evaluerDigitalKontaktinfo(BestemDistribusjonskanalRequest request,
-																	   DokumentTypeKanalInfo dokumentTypeInfo,
+																	   DokumentTypeKanalInfo dokumentTypeKanalInfo,
 																	   DigitalKontaktinformasjonTo digitalKontaktinfo) {
 
 		if (digitalKontaktinfo == null) {
@@ -214,8 +214,8 @@ public class BestemDistribusjonskanalService {
 		if (digitalKontaktinfo.isReservasjon()) {
 			return createResponse(request, BRUKER_ER_RESERVERT);
 		}
-		if (dokumentTypeInfo != null &&
-				dokumentTypeInfo.isVarslingSdp() &&
+		if (dokumentTypeKanalInfo != null &&
+				dokumentTypeKanalInfo.isVarslingSdp() &&
 				!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 
 			return createResponse(request, BRUKER_SDP_MANGLER_VARSELINFO);
