@@ -53,6 +53,16 @@
       "app": "amt-distribusjon",
       "namespace": "amt",
       "cluster": "dev-gcp"
+    },
+    {
+      "app": "kabal-api",
+      "namespace": "klage",
+      "cluster": "dev-gcp"
+    },
+    {
+      "app": "klage-fss-proxy",
+      "namespace": "klage",
+      "cluster": "dev-fss"
     }
   ]
 }
