@@ -51,6 +51,11 @@
       "app": "amt-distribusjon",
       "namespace": "amt",
       "cluster": "prod-gcp"
+    },
+    {
+      "app": "brev-administrasjon",
+      "namespace": "isa",
+      "cluster": "prod-gcp"
     }
   ]
 }
