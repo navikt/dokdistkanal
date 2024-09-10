@@ -10,7 +10,6 @@ import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFuncti
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
