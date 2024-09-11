@@ -40,6 +40,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	private static final String CONSUMER_FUNKSJONELL_FEIL_MESSAGE = "Funksjonell feil ved kall mot ekstern tjeneste";
 	private static final String CONSUMER_TEKNISK_FEIL_MESSAGE = "Teknisk feil ved kall mot ekstern tjeneste";
 	private static final String UNAUTHORIZED_FEIL_MESSAGE = "OIDC token mangler eller er ugyldig";
+	private static final String UKJENT_TEKNISK_FEIL_MESSAGE = "Ukjent teknisk feil";
 
 	@ExceptionHandler({DokmetFunctionalException.class,
 			AltinnServiceOwnerFunctionalException.class,
@@ -67,7 +68,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 			EnhetsregisterTechnicalException.class
 	})
 	ProblemDetail handleConsumerTechnicalException(Exception ex) {
-		log.error("{}. {}", CONSUMER_TEKNISK_FEIL_MESSAGE, ex.getMessage(), ex);
+		log.error("{}. Feil={}", CONSUMER_TEKNISK_FEIL_MESSAGE, ex.getMessage(), ex);
 		return mapProblemDetail(CONSUMER_TEKNISK_FEIL_MESSAGE, INTERNAL_SERVER_ERROR, ex);
 	}
 
@@ -96,7 +97,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	ProblemDetail handleException(Exception ex) {
 		log.error(ex.getMessage(), ex);
 
-		return mapProblemDetail("Ukjent teknisk feil", INTERNAL_SERVER_ERROR, ex);
+		return mapProblemDetail(UKJENT_TEKNISK_FEIL_MESSAGE, INTERNAL_SERVER_ERROR, ex);
 	}
 
 	private ProblemDetail mapProblemDetail(String title, HttpStatusCode httpStatusCode, Exception ex) {
