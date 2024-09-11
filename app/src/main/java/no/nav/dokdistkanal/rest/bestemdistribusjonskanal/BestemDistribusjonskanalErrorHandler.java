@@ -37,6 +37,11 @@ import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 @ControllerAdvice(basePackages = "no.nav.dokdistkanal.rest.bestemdistribusjonskanal")
 public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptionHandler {
 
+	private static final String CONSUMER_FUNKSJONELL_FEIL_MESSAGE = "Funksjonell feil ved kall mot ekstern tjeneste";
+	private static final String CONSUMER_TEKNISK_FEIL_MESSAGE = "Teknisk feil ved kall mot ekstern tjeneste";
+	private static final String UNAUTHORIZED_FEIL_MESSAGE = "OIDC token mangler eller er ugyldig";
+	private static final String UKJENT_TEKNISK_FEIL_MESSAGE = "Ukjent teknisk feil";
+
 	@ExceptionHandler({DokmetFunctionalException.class,
 			AltinnServiceOwnerFunctionalException.class,
 			DigitalKontaktinformasjonFunctionalException.class,
@@ -44,13 +49,15 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 			PdlFunctionalException.class
 	})
 	ProblemDetail handleConsumerFunctionalException(Exception ex) {
-		return mapProblemDetail("Funksjonell", INTERNAL_SERVER_ERROR, ex);
+		log.warn("{}. Feil={}", CONSUMER_FUNKSJONELL_FEIL_MESSAGE, ex.getMessage(), ex);
+		return mapProblemDetail(CONSUMER_FUNKSJONELL_FEIL_MESSAGE, INTERNAL_SERVER_ERROR, ex);
 	}
 
 	@ExceptionHandler(EnhetsregisterNotFoundException.class)
 	@ResponseStatus(value = NOT_FOUND)
 	ProblemDetail handleNotFoundException(Exception ex) {
-		return mapProblemDetail("Funksjonell", NOT_FOUND, ex);
+		log.warn("{}. Feil={}", CONSUMER_FUNKSJONELL_FEIL_MESSAGE, ex.getMessage(), ex);
+		return mapProblemDetail(CONSUMER_FUNKSJONELL_FEIL_MESSAGE, NOT_FOUND, ex);
 	}
 
 	@ExceptionHandler({DokmetTechnicalException.class,
@@ -61,7 +68,8 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 			EnhetsregisterTechnicalException.class
 	})
 	ProblemDetail handleConsumerTechnicalException(Exception ex) {
-		return mapProblemDetail("Teknisk", INTERNAL_SERVER_ERROR, ex);
+		log.error("{}. Feil={}", CONSUMER_TEKNISK_FEIL_MESSAGE, ex.getMessage(), ex);
+		return mapProblemDetail(CONSUMER_TEKNISK_FEIL_MESSAGE, INTERNAL_SERVER_ERROR, ex);
 	}
 
 	@Override
@@ -80,26 +88,21 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 
 	@ExceptionHandler(JwtTokenUnauthorizedException.class)
 	ProblemDetail handleJwtTokenException(Exception ex) {
-		var feilmelding = format("Ugyldig OIDC token mangler eller er ugyldig. Feil=%s", ex.getCause().getMessage());
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(UNAUTHORIZED, feilmelding);
-		problem.setTitle("OIDC token mangler eller er ugyldig");
-
+		var feilmelding = UNAUTHORIZED_FEIL_MESSAGE + ". Feil=" + ex.getCause().getMessage();
 		log.warn(feilmelding, ex);
-
-		return problem;
+		return mapProblemDetail(UNAUTHORIZED_FEIL_MESSAGE, UNAUTHORIZED, ex);
 	}
 
 	@ExceptionHandler({Exception.class})
 	ProblemDetail handleException(Exception ex) {
-		log.warn(ex.getMessage(), ex);
+		log.error(ex.getMessage(), ex);
 
-		return ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, ex.getMessage());
+		return mapProblemDetail(UKJENT_TEKNISK_FEIL_MESSAGE, INTERNAL_SERVER_ERROR, ex);
 	}
 
 	private ProblemDetail mapProblemDetail(String title, HttpStatusCode httpStatusCode, Exception ex) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(httpStatusCode, ex.getMessage());
-		problem.setTitle(format("%s feil ved kall mot ekstern tjeneste", title));
-		log.warn(problem.getDetail(), ex);
+		problem.setTitle(title);
 		return problem;
 	}
 

@@ -10,7 +10,6 @@ import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFuncti
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -92,9 +91,6 @@ public class DigitalKontaktinformasjonConsumer {
 	private void handleError(Throwable error) {
 		if (!(error instanceof WebClientResponseException response)) {
 			String feilmelding = format("Kall mot digdir-krr-proxy feilet teknisk med feilmelding=%s", error.getMessage());
-
-			log.warn(feilmelding);
-
 			throw new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
 		}
 
@@ -103,8 +99,6 @@ public class DigitalKontaktinformasjonConsumer {
 				response.getStatusCode(),
 				response.getMessage(),
 				response.getResponseBodyAsString());
-
-		log.warn(feilmelding);
 
 		if (response.getStatusCode().is4xxClientError()) {
 			throw new DigitalKontaktinformasjonFunctionalException(feilmelding, error);

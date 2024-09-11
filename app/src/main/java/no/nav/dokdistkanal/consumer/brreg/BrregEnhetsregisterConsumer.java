@@ -68,7 +68,7 @@ public class BrregEnhetsregisterConsumer {
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
 						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
-							log.warn("organisasjonsnummer={} finner ikke i underenheter", organisasjonsnummer);
+							log.warn("Finner ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
 							return Mono.empty();
 						}
 						return handleErrorResponse(clientResponse);
