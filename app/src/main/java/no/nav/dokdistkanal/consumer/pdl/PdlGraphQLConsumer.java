@@ -74,8 +74,8 @@ public class PdlGraphQLConsumer {
 							.map(PDLHentPersonResponse.Doedsfall::getDoedsdato)
 							.filter(Objects::nonNull)
 							.findAny().orElse(null))
-					.foedselsdato(hentPerson.getFoedsel() == null ? null : hentPerson.getFoedsel().stream()
-							.map(PDLHentPersonResponse.Foedsel::getFoedselsdato)
+					.foedselsdato(hentPerson.getFoedselsdato() == null ? null : hentPerson.getFoedselsdato().stream()
+							.map(PDLHentPersonResponse.Foedselsdato::getFoedselsdato)
 							.filter(Objects::nonNull)
 							.findAny().orElse(null))
 					.build();
@@ -92,10 +92,9 @@ public class PdlGraphQLConsumer {
 				     doedsfall {
 				        doedsdato
 				     }
-				     foedsel {
-				        foedselsdato
+				     foedselsdato {
+				      	foedselsdato
 				     }
-				  }
 				}""").variables(variables).build();
 	}
 

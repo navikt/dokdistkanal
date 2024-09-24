@@ -2,9 +2,8 @@
   "data": {
     "hentPerson": {
       "doedsfall": [],
-      "foedsel": [
+      "foedselsdato": [
         {
-          "foedselsaar": 2023,
           "foedselsdato": "2023-01-06"
         }
       ]

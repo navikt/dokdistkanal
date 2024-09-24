@@ -2,9 +2,8 @@
   "data": {
     "hentPerson": {
       "doedsfall": [],
-      "foedsel": [
+      "foedselsdato": [
         {
-          "foedselsaar": 1978,
           "foedselsdato": null
         }
       ]
