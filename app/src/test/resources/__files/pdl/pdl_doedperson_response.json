@@ -6,8 +6,9 @@
           "doedsdato": "1978-01-06"
         }
       ],
-      "foedselsdato": [
+      "foedsel": [
         {
+          "foedselsaar": 1978,
           "foedselsdato": "1978-01-06"
         }
       ]

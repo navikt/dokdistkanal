@@ -21,12 +21,12 @@ public class PDLHentPersonResponse {
 
 	@Data
 	static class HentPerson {
-		private List<Foedselsdato> foedselsdato;
+		private List<Foedsel> foedsel;
 		private List<Doedsfall> doedsfall;
 	}
 
 	@Data
-	static class Foedselsdato {
+	static class Foedsel {
 		@ToString.Exclude
 		private LocalDate foedselsdato;
 		@ToString.Exclude
