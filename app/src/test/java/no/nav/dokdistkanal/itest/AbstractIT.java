@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.itest;
 
 import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
-import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -81,12 +80,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	@Autowired
 	public WebTestClient webTestClient;
 
-	@BeforeEach
-	public void setUp() {
-		clearCachene();
-	}
-
-	private void clearCachene() {
+	protected void clearCachene() {
 		cacheManager.getCacheNames().forEach(names -> cacheManager.getCache(names).clear());
 	}
 
