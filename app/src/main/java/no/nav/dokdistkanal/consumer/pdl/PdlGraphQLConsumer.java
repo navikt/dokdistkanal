@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
@@ -62,7 +63,9 @@ public class PdlGraphQLConsumer {
 
 	private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
 		if (response.getErrors() != null) {
-			log.info("Kunne ikke hente person fra Pdl. Response inneholdt feilmeldinger");
+			log.info("Kunne ikke hente person fra Pdl. Response inneholdt feilmeldinger: {}",
+					response.getErrors().stream().map(PDLHentPersonResponse.PdlError::getMessage)
+							.collect(Collectors.joining(",")));
 			return null;
 		}
 
