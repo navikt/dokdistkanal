@@ -24,7 +24,7 @@
 		<logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
 		<nimbus-jose-jwt.version>9.41.1</nimbus-jose-jwt.version>
 		<token-support.version>5.0.5</token-support.version>
-		<springdoc-openapi-starter-webmvc-ui.version>2.3.0</springdoc-openapi-starter-webmvc-ui.version>
+		<springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
 		<nocommons.version>0.16.0</nocommons.version>
 		<context-propagation.version>1.1.0</context-propagation.version>
 
