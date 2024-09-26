@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
@@ -62,6 +63,9 @@ public class PdlGraphQLConsumer {
 
 	private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
 		if (response.getErrors() != null) {
+			log.info("Kunne ikke hente person fra Pdl. Response inneholdt feilmeldinger: {}",
+					response.getErrors().stream().map(PDLHentPersonResponse.PdlError::getMessage)
+							.collect(Collectors.joining(",")));
 			return null;
 		}
 
@@ -74,8 +78,8 @@ public class PdlGraphQLConsumer {
 							.map(PDLHentPersonResponse.Doedsfall::getDoedsdato)
 							.filter(Objects::nonNull)
 							.findAny().orElse(null))
-					.foedselsdato(hentPerson.getFoedsel() == null ? null : hentPerson.getFoedsel().stream()
-							.map(PDLHentPersonResponse.Foedsel::getFoedselsdato)
+					.foedselsdato(hentPerson.getFoedselsdato() == null ? null : hentPerson.getFoedselsdato().stream()
+							.map(PDLHentPersonResponse.Foedselsdato::getFoedselsdato)
 							.filter(Objects::nonNull)
 							.findAny().orElse(null))
 					.build();
@@ -89,12 +93,12 @@ public class PdlGraphQLConsumer {
 		return PDLRequest.builder().query("""
 				query hentPerson($ident: ID!) {
 				  hentPerson(ident: $ident) {
-				     doedsfall {
-				        doedsdato
-				     }
-				     foedsel {
-				        foedselsdato
-				     }
+				    doedsfall {
+				      doedsdato
+				    }
+				    foedselsdato {
+				      foedselsdato
+				    }
 				  }
 				}""").variables(variables).build();
 	}
