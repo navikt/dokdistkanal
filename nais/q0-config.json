@@ -1,6 +1,6 @@
 {
   "APP_NAME": "dokdistkanal-q0",
-  "APPD_NAME": "dokdistkanal-q0",
+  "ENVIRONMENT": "q0",
   "INGRESSES": [
     "https://dokdistkanal-q0.dev.intern.nav.no"
   ],
@@ -14,7 +14,6 @@
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q0/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
   "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
-  "APPDYNAMICS": "/apikey/appdynamics/dev",
   "AZURE_IAC_RULES": [
     {
       "app": "dokprod-q0",
