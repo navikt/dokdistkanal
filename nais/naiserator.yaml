@@ -25,8 +25,8 @@ spec:
       value: {{ DOKDISTKANAL_ENDPOINTS_DOKMET_URL }}
     - name: DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE
       value: {{ DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE }}
-    - name: APPD_NAME
-      value: {{ APPD_NAME }}
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: "deployment.environment.name={{ ENVIRONMENT }}"
   image: {{ image }}
   ingresses:
     {{#each INGRESSES}}
@@ -56,9 +56,6 @@ spec:
       memory: 1024Mi
   vault:
     enabled: true
-    paths:
-      - kvPath: {{ APPDYNAMICS }}
-        mountPath: /var/run/secrets/nais.io/appdynamics
   azure:
     application:
       enabled: true
@@ -72,6 +69,12 @@ spec:
       consumes:
         - name: altinn:serviceowner/notifications.read
   webproxy: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+      destinations:
+        - id: "elastic-apm"
   accessPolicy:
     inbound:
       rules:

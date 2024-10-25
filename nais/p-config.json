@@ -1,6 +1,6 @@
 {
   "APP_NAME": "dokdistkanal",
-  "APPD_NAME": "dokdistkanal",
+  "ENVIRONMENT": "p",
   "INGRESSES": [
     "https://dokdistkanal.intern.nav.no",
     "https://dokdistkanal.prod-fss-pub.nais.io"
@@ -15,7 +15,6 @@
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://prod-fss.pdl.pdl-api/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://altinn.no/api",
   "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
-  "APPDYNAMICS": "/apikey/appdynamics/prod",
   "AZURE_IAC_RULES": [
     {
       "app": "dokdistfordeling",
