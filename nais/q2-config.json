@@ -62,6 +62,11 @@
       "app": "klage-fss-proxy",
       "namespace": "klage",
       "cluster": "dev-fss"
+    },
+    {
+      "app": "etterlatte-brev-api",
+      "namespace": "etterlatte",
+      "cluster": "dev-gcp"
     }
   ]
 }
