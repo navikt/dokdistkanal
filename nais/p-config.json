@@ -55,6 +55,11 @@
       "app": "brev-administrasjon",
       "namespace": "isa",
       "cluster": "prod-gcp"
+    },
+    {
+      "app": "etterlatte-brev-api",
+      "namespace": "etterlatte",
+      "cluster": "prod-gcp"
     }
   ]
 }
