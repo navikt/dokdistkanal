@@ -4,10 +4,9 @@
   "dokumentType": "U",
   "dokumentKategori": "B",
   "sensitivt": true,
+  "utledRegisterInfo": false,
   "tema": null,
-  "behandlingstema": null,
   "arkivSystem": "JOARK",
-  "artifaktId": null,
   "dokumentProduksjonsInfo": {
     "vedlegg": false,
     "eksternVedlegg": false,
@@ -20,21 +19,16 @@
       "predefinertDistKanal": "INGEN_DISTRIBUSJON",
       "portoklasse": "A",
       "sikkerhetsnivaa": 4,
+      "tosidigPrint": true,
+      "sentralPrintDokumentType": "NAV_STANDARD",
+      "konvoluttvinduType": "X",
       "distribusjonVarsels": [
         {
           "varseltypeId": "DittNAV_000002",
           "varselForDistribusjonKanal": "DITT_NAV",
           "changeStamp": {
             "opprettetAv": "srvdokkat",
-            "opprettetDato": [
-              2018,
-              1,
-              31,
-              15,
-              19,
-              55,
-              370000000
-            ],
+            "opprettetDato": "2024-11-14T11:22:29.253441",
             "endretAv": null,
             "endretDato": null
           }
@@ -44,15 +38,7 @@
           "varselForDistribusjonKanal": "SDP",
           "changeStamp": {
             "opprettetAv": "srvdokkat",
-            "opprettetDato": [
-              2018,
-              1,
-              31,
-              15,
-              19,
-              55,
-              368000000
-            ],
+            "opprettetDato": "2024-11-14T11:22:29.251014",
             "endretAv": null,
             "endretDato": null
           }
@@ -60,63 +46,22 @@
       ],
       "changeStamp": {
         "opprettetAv": "srvdokkat",
-        "opprettetDato": [
-          2018,
-          1,
-          31,
-          15,
-          19,
-          55,
-          366000000
-        ],
-        "endretAv": null,
-        "endretDato": null
+        "opprettetDato": "2024-11-14T11:22:29.248654",
+        "endretAv": "srvdokkat",
+        "endretDato": "2024-11-14T11:22:29.254741"
       }
     },
     "changeStamp": {
       "opprettetAv": "srvdokkat",
-      "opprettetDato": [
-        2016,
-        12,
-        12,
-        16,
-        35,
-        59,
-        110000000
-      ],
+      "opprettetDato": "2017-02-01T15:17:02.171",
       "endretAv": "srvdokkat",
-      "endretDato": [
-        2018,
-        1,
-        31,
-        15,
-        19,
-        55,
-        370000000
-      ]
+      "endretDato": "2024-11-14T11:22:29.254634"
     }
   },
-  "dokumentMottakInfo": null,
   "changeStamp": {
     "opprettetAv": "srvdokkat",
-    "opprettetDato": [
-      2016,
-      12,
-      12,
-      16,
-      35,
-      59,
-      110000000
-    ],
-    "endretAv": "srvdokkat",
-    "endretDato": [
-      2017,
-      1,
-      11,
-      11,
-      55,
-      48,
-      525000000
-    ]
+    "opprettetDato": "2017-02-01T15:17:02.171",
+    "endretAv": null,
+    "endretDato": null
   }
 }
