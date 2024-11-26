@@ -58,7 +58,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	@Test
 	void skalSettDokumenttypeIdHvisNullOgReturnereBestemmeDistribusjonskanal() {
-
 		stubDokmet();
 		stubPdl();
 		stubDigdirKrrProxy();

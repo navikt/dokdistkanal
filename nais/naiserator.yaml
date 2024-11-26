@@ -23,8 +23,6 @@ spec:
       value: {{ DOKDISTKANAL_ENDPOINTS_PDL_SCOPE }}
     - name: DOKDISTKANAL_ENDPOINTS_DOKMET_URL
       value: {{ DOKDISTKANAL_ENDPOINTS_DOKMET_URL }}
-    - name: DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE
-      value: {{ DOKDISTKANAL_ENDPOINTS_DOKMET_SCOPE }}
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: "deployment.environment.name={{ ENVIRONMENT }}"
   image: {{ image }}
