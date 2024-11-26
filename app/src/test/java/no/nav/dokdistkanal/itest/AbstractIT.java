@@ -44,7 +44,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @DirtiesContext
 public abstract class AbstractIT extends AbstractOauth2Test {
 
-	protected static final String DOKMET_URL = "/DOKUMENTTYPEINFO_V4(.*)";
+	protected static final String DOKMET_URL = "/rest/dokumenttypeinfo/.*";
 	private static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
 	private static final String MASKINPORTEN_URL = "/maskinporten";
 	private static final String AZURE_TOKEN_URL = "/azure_token";

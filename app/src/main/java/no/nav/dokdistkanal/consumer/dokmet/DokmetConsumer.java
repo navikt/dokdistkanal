@@ -25,8 +25,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 public class DokmetConsumer {
 
-	private static final String DOKUMENTTYPE_INFO_URI = "/rest/dokumenttypeinfo/{dokumenttypeId}";
-
 	private final WebClient webClient;
 
 	public DokmetConsumer(DokdistkanalProperties dokdistkanalProperties,
@@ -44,7 +42,7 @@ public class DokmetConsumer {
 	public DokumentTypeKanalInfo hentDokumenttypeInfo(final String dokumenttypeId) {
 
 		return webClient.get()
-				.uri(DOKUMENTTYPE_INFO_URI, dokumenttypeId)
+				.uri("/" + dokumenttypeId)
 				.retrieve()
 				.bodyToMono(DokumentTypeInfoTo.class)
 				.mapNotNull(DokumenttypeInfoMapper::mapTo)

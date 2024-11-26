@@ -19,7 +19,7 @@ public class DokdistkanalProperties {
 	public static class Endpoints {
 		@NotNull private AzureEndpoint digdirKrrProxy;
 		@NotNull private AzureEndpoint pdl;
-		@NotNull private AzureEndpoint dokmet;
+		@NotNull private Endpoint dokmet;
 	}
 
 	@Data
@@ -43,6 +43,13 @@ public class DokdistkanalProperties {
 	@Data
 	@Validated
 	public static final class EnhetsregisterEndpoint {
+		@NotEmpty
+		private String url;
+	}
+
+	@Data
+	@Validated
+	public static class Endpoint {
 		@NotEmpty
 		private String url;
 	}
