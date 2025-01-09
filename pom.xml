@@ -27,6 +27,7 @@
 		<springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
 		<nocommons.version>0.16.0</nocommons.version>
 		<context-propagation.version>1.1.1</context-propagation.version>
+		<resilience4j.version>2.3.0</resilience4j.version>
 
 		<!-- Test -->
 		<spring-cloud-contract-wiremock.version>4.1.4</spring-cloud-contract-wiremock.version>
@@ -66,6 +67,13 @@
 				<groupId>io.micrometer</groupId>
 				<artifactId>context-propagation</artifactId>
 				<version>${context-propagation.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-bom</artifactId>
+				<version>${resilience4j.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<!-- Test -->

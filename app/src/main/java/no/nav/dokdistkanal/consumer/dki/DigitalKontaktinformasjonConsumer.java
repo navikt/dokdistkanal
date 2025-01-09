@@ -1,5 +1,11 @@
 package no.nav.dokdistkanal.consumer.dki;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.github.resilience4j.reactor.retry.RetryOperator;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
@@ -8,10 +14,7 @@ import no.nav.dokdistkanal.consumer.dki.to.PostPersonerRequest;
 import no.nav.dokdistkanal.consumer.dki.to.PostPersonerResponse;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
-import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -32,20 +35,26 @@ public class DigitalKontaktinformasjonConsumer {
 
 	private static final String PERSON_IKKE_FUNNET_FEILKODE = "person_ikke_funnet";
 	private static final String SIKKER_DIGITAL_POSTADRESSE_URI = "/rest/v1/personer?inkluderSikkerDigitalPost={inkluderSikkerDigitalPost}";
+	private static final String RESILIENCE4J_INSTANCE = "digdir-krr-proxy";
 
 	private final WebClient webClient;
+	private final CircuitBreaker circuitBreaker;
+	private final Retry retry;
 
 	public DigitalKontaktinformasjonConsumer(DokdistkanalProperties dokdistkanalProperties,
-											 @Qualifier("azureOauth2WebClient") WebClient webClient) {
+											 @Qualifier("azureOauth2WebClient") WebClient webClient,
+											 CircuitBreakerRegistry circuitBreakerRegistry,
+											 RetryRegistry retryRegistry) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getDigdirKrrProxy().getUrl())
 				.defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
+		this.circuitBreaker = circuitBreakerRegistry.circuitBreaker(RESILIENCE4J_INSTANCE);
+		this.retry = retryRegistry.retry(RESILIENCE4J_INSTANCE);
 	}
 
-	@Retryable(retryFor = DokdistkanalTechnicalException.class, maxAttempts = 5, backoff = @Backoff(delay = 200))
 	public DigitalKontaktinformasjonTo hentSikkerDigitalPostadresse(final String personidentifikator, final boolean inkluderSikkerDigitalPost) {
 
 		final String fnrTrimmed = personidentifikator.trim();
@@ -57,6 +66,8 @@ public class DigitalKontaktinformasjonConsumer {
 				.retrieve()
 				.bodyToMono(PostPersonerResponse.class)
 				.doOnError(this::handleError)
+				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
+				.transformDeferred(RetryOperator.of(retry))
 				.block();
 
 		if (isValidRespons(response, fnrTrimmed)) {

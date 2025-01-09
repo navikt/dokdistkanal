@@ -1,12 +1,17 @@
 package no.nav.dokdistkanal.consumer.pdl;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.github.resilience4j.reactor.retry.RetryOperator;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -30,11 +35,16 @@ public class PdlGraphQLConsumer {
 	private static final String HEADER_PDL_BEHANDLINGSNUMMER = "behandlingsnummer";
 	// https://behandlingskatalog.nais.adeo.no/process/purpose/ARKIVPLEIE/756fd557-b95e-4b20-9de9-6179fb8317e6
 	private static final String ARKIVPLEIE_BEHANDLINGSNUMMER = "B315";
+	private static final String RESILIENCE4J_INSTANCE = "pdl";
 
 	private final WebClient webClient;
+	private final CircuitBreaker circuitBreaker;
+	private final Retry retry;
 
 	public PdlGraphQLConsumer(DokdistkanalProperties dokdistkanalProperties,
-							  @Qualifier("azureOauth2WebClient") WebClient webClient) {
+							  @Qualifier("azureOauth2WebClient") WebClient webClient,
+							  CircuitBreakerRegistry circuitBreakerRegistry,
+							  RetryRegistry retryRegistry) {
 		this.webClient = webClient
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
@@ -44,9 +54,10 @@ public class PdlGraphQLConsumer {
 				})
 				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
 				.build();
+		this.circuitBreaker = circuitBreakerRegistry.circuitBreaker(RESILIENCE4J_INSTANCE);
+		this.retry = retryRegistry.retry(RESILIENCE4J_INSTANCE);
 	}
 
-	@Retryable(retryFor = PdlTechnicalException.class)
 	public HentPersoninfo hentPerson(final String aktoerId) {
 
 		log.debug("Henter personinfo for aktørId={}", aktoerId);
@@ -58,6 +69,8 @@ public class PdlGraphQLConsumer {
 				.bodyToMono(PDLHentPersonResponse.class)
 				.mapNotNull(this::mapPersonInfo)
 				.doOnError(this::handleError)
+				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
+				.transformDeferred(RetryOperator.of(retry))
 				.block();
 	}
 
