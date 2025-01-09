@@ -1,5 +1,8 @@
 package no.nav.dokdistkanal.itest;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.retry.RetryRegistry;
 import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +48,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public abstract class AbstractIT extends AbstractOauth2Test {
 
 	protected static final String DOKMET_URL = "/rest/dokumenttypeinfo/.*";
-	private static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
+	protected static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
 	private static final String MASKINPORTEN_URL = "/maskinporten";
 	private static final String AZURE_TOKEN_URL = "/azure_token";
 	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient";
@@ -79,6 +82,16 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 
 	@Autowired
 	public WebTestClient webTestClient;
+
+	@Autowired
+	protected CircuitBreakerRegistry circuitBreakerRegistry;
+
+	@Autowired
+	protected RetryRegistry retryRegistry;
+
+	protected void resetCircuitBreakers() {
+		circuitBreakerRegistry.getAllCircuitBreakers().forEach(CircuitBreaker::reset);
+	}
 
 	protected void clearCachene() {
 		cacheManager.getCacheNames().forEach(names -> cacheManager.getCache(names).clear());
@@ -178,6 +191,13 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(bodyFilePath)));
+	}
+
+	protected void stubDigdirKrrProxy(HttpStatus httpStatus) {
+		stubFor(post(DIGDIR_KRR_PROXY_URL)
+				.willReturn(aResponse()
+						.withStatus(httpStatus.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)));
 	}
 
 	protected void stubDokmet(String bodyFilePath) {

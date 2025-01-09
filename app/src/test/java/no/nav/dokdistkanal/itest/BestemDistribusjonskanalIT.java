@@ -1,5 +1,7 @@
 package no.nav.dokdistkanal.itest;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.retry.Retry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
@@ -14,6 +16,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import reactor.core.publisher.Flux;
 
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -40,6 +43,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -54,6 +58,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubMaskinporten();
 		stubAzure();
 		stubAltinn();
+		resetCircuitBreakers();
 	}
 
 	@Test
@@ -151,7 +156,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubAltinn();
-		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
+ 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(NOT_FOUND, "enhetsregisteret/underenhet_response.json", mottakerId);
 		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
 
@@ -656,6 +661,53 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 					assertThat(it.getStatus()).isEqualTo(UNAUTHORIZED.value());
 					assertThat(it.getTitle()).isEqualTo("OIDC token mangler eller er ugyldig");
 				});
+	}
+
+	@Test
+	void skalReturnereServiceUnavailableVedGjentagendeTekniskFeilFraEksternTjeneste() {
+		stubDokmet();
+		stubPdl();
+		stubDigdirKrrProxy(INTERNAL_SERVER_ERROR);
+
+		var request = bestemDistribusjonskanalRequest();
+		request.setBrukerId(request.getMottakerId());
+
+		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("digdir-krr-proxy");
+		Retry retry = retryRegistry.retry("digdir-krr-proxy");
+
+		var retries = retry.getRetryConfig().getMaxAttempts();
+		var slidingWindowSize = circuitBreaker.getCircuitBreakerConfig().getSlidingWindowSize();
+
+		// CircuitBreaker trigger etter sliding-window-size / retry-max-attempts feilede requests
+		Flux.range(1, slidingWindowSize / retries)
+				.flatMap(i -> webTestClient.post()
+						.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+						.headers(headers())
+						.bodyValue(request)
+						.exchange()
+						.expectStatus()
+						.isEqualTo(INTERNAL_SERVER_ERROR)
+						.returnResult(ProblemDetail.class)
+						.getResponseBody()
+				)
+				.blockLast();
+
+		assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus().isEqualTo(SERVICE_UNAVAILABLE)
+				.expectBody(ProblemDetail.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.extracting(ProblemDetail::getDetail)
+				.isEqualTo("CircuitBreaker 'digdir-krr-proxy' is OPEN and does not permit further calls");
 	}
 
 	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest() {

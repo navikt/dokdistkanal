@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
@@ -30,6 +31,7 @@ import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
@@ -91,6 +93,12 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 		var feilmelding = UNAUTHORIZED_FEIL_MESSAGE + ". Feil=" + ex.getCause().getMessage();
 		log.warn(feilmelding, ex);
 		return mapProblemDetail(UNAUTHORIZED_FEIL_MESSAGE, UNAUTHORIZED, ex);
+	}
+
+	@ExceptionHandler({CallNotPermittedException.class})
+	ProblemDetail handleCallNotPermittedException(Exception ex) {
+		log.warn("{}. Feil={}", CONSUMER_TEKNISK_FEIL_MESSAGE, ex.getMessage(), ex);
+		return mapProblemDetail(CONSUMER_TEKNISK_FEIL_MESSAGE, SERVICE_UNAVAILABLE, ex);
 	}
 
 	@ExceptionHandler({Exception.class})
