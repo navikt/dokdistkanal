@@ -28,6 +28,11 @@
       "app": "bidrag-dokument-arkiv-feature",
       "namespace": "bidrag",
       "cluster": "dev-fss"
+    },
+    {
+      "app": "pensjon-pen-q0",
+      "namespace": "pensjon-q0",
+      "cluster": "dev-fss"
     }
   ]
 }
