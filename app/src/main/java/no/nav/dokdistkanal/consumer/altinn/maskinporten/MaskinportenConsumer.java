@@ -47,7 +47,7 @@ public class MaskinportenConsumer {
 								HttpClient httpClient) {
 		this.maskinportenProperties = maskinportenProperties;
 		this.restTemplate = restTemplateBuilder
-				.setConnectTimeout(Duration.ofSeconds(3L))
+				.connectTimeout(Duration.ofSeconds(3L))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 	}
