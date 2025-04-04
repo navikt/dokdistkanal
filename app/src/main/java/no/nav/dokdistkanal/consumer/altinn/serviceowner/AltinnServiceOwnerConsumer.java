@@ -43,7 +43,7 @@ public class AltinnServiceOwnerConsumer {
 		this.maskinportenConsumer = maskinportenConsumer;
 		this.dokdistkanalProperties = dokdistkanalProperties;
 		this.restTemplate = restTemplateBuilder
-				.setConnectTimeout(Duration.ofSeconds(3L))
+				.connectTimeout(Duration.ofSeconds(3L))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 	}

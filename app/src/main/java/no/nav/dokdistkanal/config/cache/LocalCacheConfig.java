@@ -14,6 +14,7 @@ import java.util.Arrays;
 
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 @Configuration
 @EnableCaching
@@ -31,7 +32,7 @@ public class LocalCacheConfig {
 						.expireAfterWrite(24, HOURS)
 						.build()),
 				new CaffeineCache(MASKINPORTEN_CACHE, Caffeine.newBuilder()
-						.expireAfterWrite(50, MINUTES)
+						.expireAfterWrite(100, SECONDS)
 						.build())
 		));
 		return cacheManager;
