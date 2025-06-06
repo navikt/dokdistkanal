@@ -50,8 +50,9 @@ spec:
     cpuThresholdPercentage: 50
   resources:
     limits:
-      cpu: 1000m
-      memory: 1024Mi
+      memory: 1000Mi
+    requests:
+      cpu: 20m
   vault:
     enabled: true
   azure:
@@ -68,6 +69,10 @@ spec:
         - name: altinn:serviceowner/notifications.read
   webproxy: true
   observability:
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
     autoInstrumentation:
       enabled: true
       runtime: java
