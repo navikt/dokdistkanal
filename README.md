@@ -1,15 +1,15 @@
 # Dokdistkanal
 Dokdistkanal blir benyttet av dokumentproduksjon og er ansvarlig for å bestemme distribusjonskanalen. 
 Følgende distribusjonskanaler kan bli returnert:
-- PRINT
-- LOKAL_PRINT
-- INGEN_DISTRIBUSJON
-- SDP
-- DITT_NAV
-- TRYGDERETTEN
-- DPV
+- `PRINT`
+- `LOKAL_PRINT`
+- `INGEN_DISTRIBUSJON`
+- `SDP`
+- `DITT_NAV`
+- `TRYGDERETTEN`
+- `DPVT`
 
-Mer informasjon om hvordan appen fungerer finner du på [Confluence-siden for dokdistkanal](https://confluence.adeo.no/display/BOA/DokdistKanal-+BestemDistribusjonskanal).
+Mer informasjon om hvordan appen fungerer finner du på [Confluence-siden for dokdistkanal](https://confluence.adeo.no/spaces/BOA/pages/294148459/bestemDistribusjonskanal).
 
 ## Tjenester
 Appen tilbyr en REST-tjeneste for henting av bestemt distribusjonskanal. Se [swagger-link for tjenesten](https://dokdistkanal.dev.intern.nav.no/swagger-ui/index.html) for detaljer, eller om du ønsker å prøve den ut.
