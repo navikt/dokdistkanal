@@ -68,7 +68,7 @@ public class PdlGraphQLConsumer {
 				.retrieve()
 				.bodyToMono(PDLHentPersonResponse.class)
 				.mapNotNull(this::mapPersonInfo)
-				.doOnError(this::handleError)
+				.onErrorMap(this::mapError)
 				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
@@ -117,13 +117,13 @@ public class PdlGraphQLConsumer {
 	}
 
 
-	private void handleError(Throwable error) {
+	private Throwable mapError(Throwable error) {
 		if (!(error instanceof WebClientResponseException response)) {
 			String feilmelding = format("Kall mot pdl feilet teknisk med feilmelding=%s", error.getMessage());
 
 			log.warn(feilmelding);
 
-			throw new PdlTechnicalException(feilmelding, error);
+			return new PdlTechnicalException(feilmelding, error);
 		}
 
 		String feilmelding = format("Kall mot pdl feilet %s med status=%s, feilmelding=%s, response=%s",
@@ -135,9 +135,9 @@ public class PdlGraphQLConsumer {
 		log.warn(feilmelding);
 
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new PdlFunctionalException(feilmelding, error);
+			return new PdlFunctionalException(feilmelding, error);
 		} else {
-			throw new PdlTechnicalException(feilmelding, error);
+			return new PdlTechnicalException(feilmelding, error);
 		}
 	}
 

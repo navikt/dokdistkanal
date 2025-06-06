@@ -57,19 +57,19 @@ public class DokmetConsumer {
 				.retrieve()
 				.bodyToMono(DokumentTypeInfoTo.class)
 				.mapNotNull(DokumenttypeInfoMapper::mapTo)
-				.doOnError(this::handleError)
+				.onErrorMap(this::mapError)
 				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
 	}
 
-	private void handleError(Throwable error) {
+	private Throwable mapError(Throwable error) {
 		if (!(error instanceof WebClientResponseException response)) {
 			String feilmelding = format("Kall mot dokmet feilet teknisk med feilmelding=%s", error.getMessage());
 
 			log.warn(feilmelding);
 
-			throw new DokmetTechnicalException(feilmelding, error);
+			return new DokmetTechnicalException(feilmelding, error);
 		}
 
 		String feilmelding = format("Kall mot dokmet feilet %s med status=%s, feilmelding=%s, response=%s",
@@ -81,9 +81,9 @@ public class DokmetConsumer {
 		log.warn(feilmelding);
 
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new DokmetFunctionalException(feilmelding, error);
+			return new DokmetFunctionalException(feilmelding, error);
 		} else {
-			throw new DokmetTechnicalException(feilmelding, error);
+			return new DokmetTechnicalException(feilmelding, error);
 		}
 	}
 
