@@ -65,7 +65,7 @@ public class DigitalKontaktinformasjonConsumer {
 				.bodyValue(new PostPersonerRequest(List.of(fnrTrimmed)))
 				.retrieve()
 				.bodyToMono(PostPersonerResponse.class)
-				.doOnError(this::handleError)
+				.onErrorMap(this::mapError)
 				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
@@ -99,10 +99,10 @@ public class DigitalKontaktinformasjonConsumer {
 		return feil != null && feil.contains(PERSON_IKKE_FUNNET_FEILKODE);
 	}
 
-	private void handleError(Throwable error) {
+	private Throwable mapError(Throwable error) {
 		if (!(error instanceof WebClientResponseException response)) {
 			String feilmelding = format("Kall mot digdir-krr-proxy feilet teknisk med feilmelding=%s", error.getMessage());
-			throw new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
+			return new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
 		}
 
 		String feilmelding = format("Kall mot digdir-krr-proxy feilet %s med status=%s, feilmelding=%s, response=%s",
@@ -112,9 +112,9 @@ public class DigitalKontaktinformasjonConsumer {
 				response.getResponseBodyAsString());
 
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new DigitalKontaktinformasjonFunctionalException(feilmelding, error);
+			return new DigitalKontaktinformasjonFunctionalException(feilmelding, error);
 		} else {
-			throw new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
+			return new DigitalKontaktinformasjonTechnicalException(feilmelding, error);
 		}
 	}
 
