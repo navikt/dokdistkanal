@@ -64,6 +64,11 @@
       "app": "pensjon-pen",
       "namespace": "pensjondeployer",
       "cluster": "prod-fss"
+    },
+    {
+      "app": "veilarbvedtaksstotte",
+      "namespace": "obo",
+      "cluster": "prod-gcp"
     }
   ]
 }
