@@ -6,6 +6,7 @@
   ],
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
+  "DOKDISTKANAL_SECRETS": "dokdistkanal-q0",
   "DOKDISTKANAL_ENDPOINTS_DOKMET_URL": "https://dokmet-q0.dev.intern.nav.no/rest/dokumenttypeinfo",
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.dev.nav.no",
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",

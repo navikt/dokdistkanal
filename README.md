@@ -26,9 +26,6 @@ Har du behov for tilgang?
 - Push endringene og lag en pull request.
 - Pull requesten vil bli gjennomgått og merget av noen i Team Dokumentløsninger.
 
-## Kjøre prosjektet lokalt
-For å kjøre opp applikasjonen lokalt, bruk profile `nais` og systemvariabler hentet fra vault: [System variabler](https://vault.adeo.no/ui/vault/secrets/secret/show/dokument/dokdistkanal) 
-
 ### NB!
 Testene MapDigitalKontaktinformasjonTest og DokDistKanalIT bruker testsertifikater utsendt fra DigiPost. 
 Disse sertifikatene har utløpsdato i februar 2023. Nytt sertifikat må genereres innen den tid, hvis ikke vil testene feile. 
