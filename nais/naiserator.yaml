@@ -53,8 +53,6 @@ spec:
       memory: 1000Mi
     requests:
       cpu: 20m
-  vault:
-    enabled: true
   azure:
     application:
       enabled: true
@@ -78,6 +76,8 @@ spec:
       runtime: java
       destinations:
         - id: "elastic-apm"
+  envFrom:
+    - secret: {{ DOKDISTKANAL_SECRETS }}
   accessPolicy:
     inbound:
       rules:
