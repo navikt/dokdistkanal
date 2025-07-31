@@ -20,6 +20,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 @EnableCaching
 @Profile({"local", "nais"})
 public class LocalCacheConfig {
+
 	public static final String MASKINPORTEN_CACHE = "maskinportenCache";
 	public static final String DOKMET_CACHE = "dokmetCache";
 
@@ -30,13 +31,14 @@ public class LocalCacheConfig {
 		cacheManager.setCaches(Arrays.asList(
 				new CaffeineCache(DOKMET_CACHE, Caffeine.newBuilder()
 						.expireAfterWrite(24, HOURS)
+						.recordStats()
 						.build()),
 				new CaffeineCache(MASKINPORTEN_CACHE, Caffeine.newBuilder()
 						.expireAfterWrite(100, SECONDS)
+						.recordStats()
 						.build())
 		));
 		return cacheManager;
-
 	}
 
 }
