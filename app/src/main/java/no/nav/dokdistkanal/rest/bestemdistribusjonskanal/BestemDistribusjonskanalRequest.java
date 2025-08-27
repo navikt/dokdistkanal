@@ -36,4 +36,7 @@ public class BestemDistribusjonskanalRequest {
 
 	@Schema(description = "Dokumentenes samlede filstørrelse i megabytes", example = "20", defaultValue = "0")
 	Integer forsendelseStoerrelse;
+
+	@Schema(description = "Type metadata som følger forsendelsen", example = "DPO_AVTALEMELDING")
+	String forsendelseMetadataType;
 }

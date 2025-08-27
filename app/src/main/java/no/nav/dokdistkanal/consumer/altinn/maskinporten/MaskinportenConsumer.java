@@ -53,11 +53,11 @@ public class MaskinportenConsumer {
 	}
 
 	@Cacheable(MASKINPORTEN_CACHE)
-	public String getMaskinportenToken() {
+	public String getMaskinportenToken(String scope) {
 
 		LinkedMultiValueMap<String, String> attrMap = new LinkedMultiValueMap<>();
 		attrMap.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
-		attrMap.add("assertion", generateJWT());
+		attrMap.add("assertion", generateJWT(scope));
 
 		HttpEntity<LinkedMultiValueMap<String, String>> httpEntity = new HttpEntity<>(attrMap, headers());
 
@@ -75,11 +75,11 @@ public class MaskinportenConsumer {
 		}
 	}
 
-	private String generateJWT() {
+	private String generateJWT(String scope) {
 		JWTClaimsSet claims = new JWTClaimsSet.Builder()
 				.audience(maskinportenProperties.getIssuer())
 				.issuer(maskinportenProperties.getClientId())
-				.claim("scope", getCurrentScopes())
+				.claim("scope", getCurrentScopes(scope))
 				.claim("consumer", Consumer.builder()
 						.authority(ISO_6523_ACTORID_UPIS.getValue())
 						.id(NAV_ORGNUMMER)
@@ -93,10 +93,12 @@ public class MaskinportenConsumer {
 				.serialize();
 	}
 
-	private String getCurrentScopes() {
+	private String getCurrentScopes(String scope) {
 		ArrayList<String> scopeList = new ArrayList<>();
 		scopeList.add(maskinportenProperties.getScopes());
-		return scopeList.stream().reduce((a, b) -> a + " " + b).orElse("");
+		return scopeList.stream()
+				.filter(s -> s.equals(scope))
+				.reduce((a, b) -> a + " " + b).orElse("");
 	}
 
 	private HttpHeaders headers() {

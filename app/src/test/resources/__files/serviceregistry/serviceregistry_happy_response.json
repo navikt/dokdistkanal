@@ -1,0 +1,40 @@
+{
+  "infoRecord": {
+    "identifier": "974761084",
+    "organizationName": "TRYGDERETTEN"
+  },
+  "serviceRecords": [
+    {
+      "organisationNumber": "974761084",
+      "pemCertificate": "-----BEGIN CERTIFICATE-----\nMIIEITCCAwmgAwIBAgIJAMYBbRK/uw1+MA0GCSqGSIb3DQEBCwUAMIGmMQswCQYD\nVQQGEwJOTzEOMAwGA1UECAwFVmlrZW4xDzANBgNVBAcMBkRyYW1tZTEZMBcGA1UE\nCgwQU2VzYW0gU3Rhc2pvbiBBUzEUMBIGA1UECwwLQmlsbGV0dGx1a2ExFzAVBgNV\nBAMMDkJqYXJuZSBCZXRqZW50MSwwKgYJKoZIhvcNAQkBFh1iamFybmViZXRqZW50\nQHNlc2Ftc3Rhc2pvbi5ubzAeFw0yMDAxMjMxNDQ4MDNaFw0zMDAxMjAxNDQ4MDNa\nMIGmMQswCQYDVQQGEwJOTzEOMAwGA1UECAwFVmlrZW4xDzANBgNVBAcMBkRyYW1t\nZTEZMBcGA1UECgwQU2VzYW0gU3Rhc2pvbiBBUzEUMBIGA1UECwwLQmlsbGV0dGx1\na2ExFzAVBgNVBAMMDkJqYXJuZSBCZXRqZW50MSwwKgYJKoZIhvcNAQkBFh1iamFy\nbmViZXRqZW50QHNlc2Ftc3Rhc2pvbi5ubzCCASIwDQYJKoZIhvcNAQEBBQADggEP\nADCCAQoCggEBAO7OibhNstGKRYW6lUaRpzMczgUKNWEvjkxDBy/+I/vAJ8aOt9x4\npydoVc7v+G+2OmRRvftAXXbZZVfZmpj1Um8fWuSt0hHuIWT2L1E4l6wEiwf5ETAe\nAvRyMls6pqEXUim343qNzXNf2orFLw1O2uQ6S6nlmOhL2OWMpD5RrDGWZJ7Wn3EF\nEHHa/ihCcvdTJ5700siSFVLSLvlxoBVfS2i2/moJMzZzfj56BvHKrFE/fAR+vCwV\nIJJGg5oLqV+osQm0BFQ0NWt2kNsylwNBYUaveAjV7z05g15u9oPIiMsD5yZXSDwn\no9iulH8ZMQ4HYemJdM0BQapbGIJXCkCwQdMCAwEAAaNQME4wHQYDVR0OBBYEFBa1\nmCvg42IFclM/Rzse2PT7bE83MB8GA1UdIwQYMBaAFBa1mCvg42IFclM/Rzse2PT7\nbE83MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAMyMhK7U7sDmBLGY\nYf03BNey0OxTREIN1VxG34rQjHpF7yiJi1QadF+lEB/y547ALbvW32yg23musNur\n7ohZKcXMBwCH9RHIFYkIxtqqAuKSZGaPnAwQbbH7/xrcUNiUM/Cr/klifmfZwl/J\n7nLz0F2wvRV3kSH1Amwe9c2ag0nR+TtwciG4ZiMyI+oxEqmYvv7cXJbItkaQEs39\n5VVPgD/k7FTurtnlqJJN252vgmh9sOhF0/zIkQYmP9Sj1AGkhEMjJpBYLncBuC9J\npzyhlSq816ObLkE8qOqwAHtfydojCvj5xsipDM8FttWti1JYlmCiURcl/MDYfmv/\nD23vI20=\n-----END CERTIFICATE-----",
+      "process": "urn:no:difi:profile:avtalt:avtalt:ver1.0",
+      "documentTypes": [
+        "urn:no:difi:arkivmelding:xsd::arkivmelding",
+        "urn:no:difi:avtalt:xsd::avtalt"
+
+      ],
+      "service": {
+        "identifier": "DPO",
+        "endpointUrl": "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternal.svc",
+        "serviceCode": "4255",
+        "serviceEditionCode": "8",
+        "securityLevel": 3
+      }
+    },
+    {
+      "organisationNumber": "974761084",
+      "pemCertificate": "-----BEGIN CERTIFICATE-----\nMIIEITCCAwmgAwIBAgIJAMYBbRK/uw1+MA0GCSqGSIb3DQEBCwUAMIGmMQswCQYD\nVQQGEwJOTzEOMAwGA1UECAwFVmlrZW4xDzANBgNVBAcMBkRyYW1tZTEZMBcGA1UE\nCgwQU2VzYW0gU3Rhc2pvbiBBUzEUMBIGA1UECwwLQmlsbGV0dGx1a2ExFzAVBgNV\nBAMMDkJqYXJuZSBCZXRqZW50MSwwKgYJKoZIhvcNAQkBFh1iamFybmViZXRqZW50\nQHNlc2Ftc3Rhc2pvbi5ubzAeFw0yMDAxMjMxNDQ4MDNaFw0zMDAxMjAxNDQ4MDNa\nMIGmMQswCQYDVQQGEwJOTzEOMAwGA1UECAwFVmlrZW4xDzANBgNVBAcMBkRyYW1t\nZTEZMBcGA1UECgwQU2VzYW0gU3Rhc2pvbiBBUzEUMBIGA1UECwwLQmlsbGV0dGx1\na2ExFzAVBgNVBAMMDkJqYXJuZSBCZXRqZW50MSwwKgYJKoZIhvcNAQkBFh1iamFy\nbmViZXRqZW50QHNlc2Ftc3Rhc2pvbi5ubzCCASIwDQYJKoZIhvcNAQEBBQADggEP\nADCCAQoCggEBAO7OibhNstGKRYW6lUaRpzMczgUKNWEvjkxDBy/+I/vAJ8aOt9x4\npydoVc7v+G+2OmRRvftAXXbZZVfZmpj1Um8fWuSt0hHuIWT2L1E4l6wEiwf5ETAe\nAvRyMls6pqEXUim343qNzXNf2orFLw1O2uQ6S6nlmOhL2OWMpD5RrDGWZJ7Wn3EF\nEHHa/ihCcvdTJ5700siSFVLSLvlxoBVfS2i2/moJMzZzfj56BvHKrFE/fAR+vCwV\nIJJGg5oLqV+osQm0BFQ0NWt2kNsylwNBYUaveAjV7z05g15u9oPIiMsD5yZXSDwn\no9iulH8ZMQ4HYemJdM0BQapbGIJXCkCwQdMCAwEAAaNQME4wHQYDVR0OBBYEFBa1\nmCvg42IFclM/Rzse2PT7bE83MB8GA1UdIwQYMBaAFBa1mCvg42IFclM/Rzse2PT7\nbE83MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAMyMhK7U7sDmBLGY\nYf03BNey0OxTREIN1VxG34rQjHpF7yiJi1QadF+lEB/y547ALbvW32yg23musNur\n7ohZKcXMBwCH9RHIFYkIxtqqAuKSZGaPnAwQbbH7/xrcUNiUM/Cr/klifmfZwl/J\n7nLz0F2wvRV3kSH1Amwe9c2ag0nR+TtwciG4ZiMyI+oxEqmYvv7cXJbItkaQEs39\n5VVPgD/k7FTurtnlqJJN252vgmh9sOhF0/zIkQYmP9Sj1AGkhEMjJpBYLncBuC9J\npzyhlSq816ObLkE8qOqwAHtfydojCvj5xsipDM8FttWti1JYlmCiURcl/MDYfmv/\nD23vI20=\n-----END CERTIFICATE-----",
+      "process": "urn:no:difi:profile:arkivmelding:administrasjon:ver1.0",
+      "documentTypes": [
+        "urn:no:difi:arkivmelding:xsd::arkivmelding"
+      ],
+      "service": {
+        "identifier": "DPO",
+        "endpointUrl": "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternal.svc",
+        "serviceCode": "4192",
+        "serviceEditionCode": "270815",
+        "securityLevel": null
+      }
+    }
+  ]
+}

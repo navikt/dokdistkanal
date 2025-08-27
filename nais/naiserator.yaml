@@ -65,6 +65,7 @@ spec:
     scopes:
       consumes:
         - name: altinn:serviceowner/notifications.read
+        - name: move/dpo.read
   webproxy: true
   observability:
     logging:

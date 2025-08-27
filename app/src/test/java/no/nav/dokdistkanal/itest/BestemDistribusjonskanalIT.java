@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPO;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
@@ -36,7 +37,9 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISAS
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
+import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_SERVICE_REGISTRY_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
+import static no.nav.dokdistkanal.service.OrganisasjonDistribusjonKanalService.DPO_AVTALEMELDING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -57,7 +60,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		clearCachene();
 		stubMaskinporten();
 		stubAzure();
-		stubAltinn();
 		resetCircuitBreakers();
 	}
 
@@ -143,24 +145,27 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	/*
 	 * Her testes følgende regler for mottakertype ORGANISASJON:
 	 * 5: Er dokument produsert i Infotrygd? Hvis ja -> PRINT
-	 * 6: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, og har enhets grupperoller? Hvis ja -> DPVT
-	 * 6.1: Mangler org. varslingsinformasjon for DPV? Hvis ja -> PRINT
-	 * 6.2: Har org. varslingsinformasjon i Altinn, men er konkurs? Hvis ja -> PRINT
-	 * 6.3: Har org. varslingsinformasjon i Altinn, er ikke konkurs, men er slettet? Hvis ja -> PRINT
-	 * 6.4: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
+	 * 6: Har requesten forsendelseMetadataType DPO_AVTALEMELDING,  har mottaker info fra service registry? Hvis ja -> DPO
+	 * 7: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, og har enhets grupperoller? Hvis ja -> DPVT
+	 * 7.1: Mangler org. varslingsinformasjon for DPV? Hvis ja -> PRINT
+	 * 7.2: Har org. varslingsinformasjon i Altinn, men er konkurs? Hvis ja -> PRINT
+	 * 7.3: Har org. varslingsinformasjon i Altinn, er ikke konkurs, men er slettet? Hvis ja -> PRINT
+	 * 7.4: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
+	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus, BestemDistribusjonskanalRegel regel,
 									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath) {
+
 		stubDokmet();
 		stubDigdirKrrProxy();
+		stubGetServiceRegistry(registryStatus);
 		stubAltinn();
- 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
+		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(NOT_FOUND, "enhetsregisteret/underenhet_response.json", mottakerId);
 		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = bestemDistribusjonskanalRequestMedMetadataType(forsendelseMetadataType);
 		request.setMottakerId(mottakerId);
 		request.setDokumenttypeId(dokumentTypeId);
 
@@ -186,12 +191,14 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
-				Arguments.of(DPVT, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(PRINT, ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
-				Arguments.of(PRINT, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null),
-				Arguments.of(PRINT, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null),
-				Arguments.of(PRINT, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
+				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, null),
+				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH)
 		);
 	}
 
@@ -717,7 +724,20 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"PEN",
 				"dokumentType",
 				true,
-				10
+				10,
+				null
+		);
+	}
+
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequestMedMetadataType(String forsendelseMetadataType) {
+		return new BestemDistribusjonskanalRequest(
+				"12345678901",
+				"12345678902",
+				"PEN",
+				"dokumentType",
+				true,
+				10,
+				forsendelseMetadataType
 		);
 	}
 
@@ -728,7 +748,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"PEN",
 				null,
 				true,
-				10
+				10,
+				null
 		);
 	}
 
@@ -739,7 +760,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"PEN",
 				"dokumentType",
 				true,
-				filstoerrelse
+				filstoerrelse,
+				null
 		);
 	}
 

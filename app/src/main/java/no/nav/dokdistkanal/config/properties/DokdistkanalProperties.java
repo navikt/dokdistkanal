@@ -13,6 +13,7 @@ public class DokdistkanalProperties {
 
 	private final Altinn altinn = new Altinn();
 	private final Endpoints endpoints = new Endpoints();
+	private final Endpoint serviceRegistry = new Endpoint();
 	private final EnhetsregisterEndpoint enhetsregister = new EnhetsregisterEndpoint();
 
 	@Data

@@ -14,6 +14,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 @EnableConfigurationProperties({
 		AzureProperties.class,
@@ -30,6 +32,13 @@ public class ApplicationConfig {
 				.useSystemProperties()
 				.setConnectionManager(connectionManager)
 				.build();
+	}
+
+	@Bean
+	ClientHttpRequestFactory clientHttpRequestFactory(HttpClient httpClient) {
+		HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		httpComponentsClientHttpRequestFactory.setConnectTimeout(5_000);
+		return httpComponentsClientHttpRequestFactory;
 	}
 
 	@Bean

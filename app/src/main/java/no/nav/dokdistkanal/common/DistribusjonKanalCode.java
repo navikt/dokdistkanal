@@ -12,7 +12,8 @@ public enum DistribusjonKanalCode {
 	LOKAL_PRINT(UtsendingkanalCode.L),
 	INGEN_DISTRIBUSJON(UtsendingkanalCode.INGEN_DISTRIBUSJON),
 	TRYGDERETTEN(UtsendingkanalCode.TRYGDERETTEN),
-	DPVT(UtsendingkanalCode.DPVT);
+	DPVT(UtsendingkanalCode.DPVT),
+	DPO(UtsendingkanalCode.DPO);
 
 	private final UtsendingkanalCode utsendingskanalCode;
 }
