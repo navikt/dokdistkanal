@@ -15,6 +15,7 @@ import org.springframework.web.client.RestClient;
 
 import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
+import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.ServiceIdentifier.DPO;
 
 @Slf4j
 @Component
@@ -22,8 +23,6 @@ public class ServiceRegistryConsumer {
 
 	public static final String TEKNISK_FEIL_ERROR_MESSAGE = "Klarte ikke hente mottakerInfo fra service registry. Teknisk feil: ";
 	public static final String FUNKSJONELL_FEIL_ERROR_MESSAGE = "Klarte ikke hente mottakerInfo fra service registry. Funksjonell feil: ";
-
-	public static final String DPO_SCOPE = "move/dpo.read";
 
 	private final RestClient restClient;
 	private final ObjectMapper objectMapper;
@@ -53,7 +52,7 @@ public class ServiceRegistryConsumer {
 						.build(orgnummer))
 				.headers(httpHeaders -> {
 					httpHeaders.set(NAV_CALLID, MDC.get(CALL_ID));
-					httpHeaders.setBearerAuth(maskinportenConsumer.getMaskinportenToken(DPO_SCOPE));
+					httpHeaders.setBearerAuth(maskinportenConsumer.getMaskinportenToken(DPO));
 				})
 				.exchange((req, res) -> {
 					if (res.getStatusCode().isError()) {

@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Duration;
 
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
+import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.ServiceIdentifier.DPV;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -31,7 +32,6 @@ public class AltinnServiceOwnerConsumer {
 
 	private static final String SERVICEOWNER_PATH = "/serviceowner/notifications/validaterecipient";
 	private static final String ALTINN_API_KEY = "ApiKey";
-	private static final String ALTINN_SCOPE = "altinn:serviceowner/notifications.read";
 
 	private final MaskinportenConsumer maskinportenConsumer;
 	private final DokdistkanalProperties dokdistkanalProperties;
@@ -74,7 +74,7 @@ public class AltinnServiceOwnerConsumer {
 	private HttpHeaders headers() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(ACCEPT, HAL_JSON_VALUE);
-		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken(ALTINN_SCOPE));
+		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken(DPV));
 		headers.set(ALTINN_API_KEY, dokdistkanalProperties.getAltinn().getApiKey());
 		return headers;
 	}

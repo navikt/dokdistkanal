@@ -2,7 +2,10 @@ package no.nav.dokdistkanal.consumer.altinn.maskinporten;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.dokdistkanal.certificate.AppCertificate;
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
+import no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
 import org.apache.hc.client5.http.classic.HttpClient;
@@ -29,7 +32,8 @@ import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.MASKINPORTEN_CAC
 import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
 import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
-import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWT;
+import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWTFromJwk;
+import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateJWTFromCertificate;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 @Slf4j
@@ -41,11 +45,17 @@ public class MaskinportenConsumer {
 
 	private final RestTemplate restTemplate;
 	private final MaskinportenProperties maskinportenProperties;
+	private final AppCertificate appCertificate;
+	private final DokdistkanalProperties.Dpo dpoProperties;
 
 	public MaskinportenConsumer(RestTemplateBuilder restTemplateBuilder,
 								MaskinportenProperties maskinportenProperties,
+								AppCertificate appCertificate,
+								DokdistkanalProperties dokdistkanalProperties,
 								HttpClient httpClient) {
 		this.maskinportenProperties = maskinportenProperties;
+		this.appCertificate = appCertificate;
+		this.dpoProperties = dokdistkanalProperties.getDpo();
 		this.restTemplate = restTemplateBuilder
 				.connectTimeout(Duration.ofSeconds(3L))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
@@ -53,11 +63,11 @@ public class MaskinportenConsumer {
 	}
 
 	@Cacheable(MASKINPORTEN_CACHE)
-	public String getMaskinportenToken(String scope) {
+	public String getMaskinportenToken(IdentifierResource.ServiceIdentifier serviceIdentifier) {
 
 		LinkedMultiValueMap<String, String> attrMap = new LinkedMultiValueMap<>();
 		attrMap.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
-		attrMap.add("assertion", generateJWT(scope));
+		attrMap.add("assertion", signedJwtClaim(serviceIdentifier));
 
 		HttpEntity<LinkedMultiValueMap<String, String>> httpEntity = new HttpEntity<>(attrMap, headers());
 
@@ -75,10 +85,29 @@ public class MaskinportenConsumer {
 		}
 	}
 
-	private String generateJWT(String scope) {
-		JWTClaimsSet claims = new JWTClaimsSet.Builder()
+	private String signedJwtClaim(IdentifierResource.ServiceIdentifier serviceIdentifier) {
+		return switch (serviceIdentifier) {
+			case DPO -> generateDpoJWT(dpoProperties.getScope(), dpoProperties.getClientId());
+			case DPV -> generateDpvJWT(maskinportenProperties.getScopes(), maskinportenProperties.getClientId());
+		};
+	}
+
+	private String generateDpvJWT(String scope, String clientId) {
+		JWTClaimsSet claims = opprettClaim(scope, clientId);
+
+		return createSignedJWTFromJwk(maskinportenProperties.getClientJwk(), claims);
+	}
+
+	private String generateDpoJWT(String scope, String clientId) {
+		JWTClaimsSet claims = opprettClaim(scope, clientId);
+
+		return generateJWTFromCertificate(appCertificate, claims);
+	}
+
+	private JWTClaimsSet opprettClaim(String scope, String clientId) {
+		return new JWTClaimsSet.Builder()
 				.audience(maskinportenProperties.getIssuer())
-				.issuer(maskinportenProperties.getClientId())
+				.issuer(clientId)
 				.claim("scope", getCurrentScopes(scope))
 				.claim("consumer", Consumer.builder()
 						.authority(ISO_6523_ACTORID_UPIS.getValue())
@@ -88,9 +117,6 @@ public class MaskinportenConsumer {
 				.issueTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant()))
 				.expirationTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant().plusSeconds(30)))
 				.build();
-
-		return createSignedJWT(maskinportenProperties.getClientJwk(), claims)
-				.serialize();
 	}
 
 	private String getCurrentScopes(String scope) {

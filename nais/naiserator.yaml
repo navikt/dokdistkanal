@@ -23,6 +23,8 @@ spec:
       value: {{ DOKDISTKANAL_ENDPOINTS_PDL_SCOPE }}
     - name: DOKDISTKANAL_ENDPOINTS_DOKMET_URL
       value: {{ DOKDISTKANAL_ENDPOINTS_DOKMET_URL }}
+    - name: DOKDISTKANAL_SERVICE_REGISTRY_URL
+      value: {{ DOKDISTKANAL_SERVICE_REGISTRY_URL }}
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: "deployment.environment.name={{ ENVIRONMENT }}"
   image: {{ image }}
@@ -65,7 +67,6 @@ spec:
     scopes:
       consumes:
         - name: altinn:serviceowner/notifications.read
-        - name: move/dpo.read
   webproxy: true
   observability:
     logging:
@@ -87,4 +88,8 @@ spec:
          namespace: {{namespace}}
          cluster: {{cluster}}
     {{/each}}
-
+  vault:
+    enabled: true
+    paths:
+      - kvPath: {{ NAV_VIRKSOMHETSSERTIFIKAT_VAULT }}
+        mountPath: "/secrets/virksomhetssertifikat"

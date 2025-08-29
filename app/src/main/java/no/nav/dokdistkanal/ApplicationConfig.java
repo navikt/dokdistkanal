@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal;
 
 import no.nav.dokdistkanal.azure.AzureProperties;
+import no.nav.dokdistkanal.certificate.KeyStoreProperties;
 import no.nav.dokdistkanal.config.RestWebMvcConfig;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
@@ -20,7 +21,8 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 @EnableConfigurationProperties({
 		AzureProperties.class,
 		DokdistkanalProperties.class,
-		MaskinportenProperties.class
+		MaskinportenProperties.class,
+		KeyStoreProperties.class
 })
 @Import(RestWebMvcConfig.class)
 @Configuration
