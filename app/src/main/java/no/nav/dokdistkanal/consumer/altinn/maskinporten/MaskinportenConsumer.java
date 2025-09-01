@@ -121,9 +121,8 @@ public class MaskinportenConsumer {
 
 	private String getCurrentScopes(String scope) {
 		ArrayList<String> scopeList = new ArrayList<>();
-		scopeList.add(maskinportenProperties.getScopes());
+		scopeList.add(scope);
 		return scopeList.stream()
-				.filter(s -> s.equals(scope))
 				.reduce((a, b) -> a + " " + b).orElse("");
 	}
 
