@@ -110,7 +110,9 @@ public class BestemDistribusjonskanalValidationTest {
 				"12345678910",
 				"FAR",
 				"DOK",
-				false, 26
+				false,
+				26,
+				3
 		);
 	}
 }

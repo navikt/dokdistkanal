@@ -21,6 +21,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJO
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_ANTALL_VEDLEGG_FORSENDELSE;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE;
@@ -87,6 +88,7 @@ public class BestemDistribusjonskanalService {
 
 	public BestemDistribusjonskanalResponse bestemDistribusjonskanal(BestemDistribusjonskanalRequest request) {
 
+		// et eller annet sted dypt inni her må man gjøre en antalldokument > 201 -> ikke dpi
 		if (isBlank(request.getDokumenttypeId())) {
 			request.setDokumenttypeId(DEFAULT_DOKUMENTTYPE_ID);
 		}
@@ -222,7 +224,7 @@ public class BestemDistribusjonskanalService {
 		}
 
 		if (digitalKontaktinfo.verifyAddressAndCertificate()) {
-			if (request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES) {
+			if (requestStoerrelseOgAntallVedleggGyldigForSDP(request)) {
 				return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
 			}
 			log.info("Forsendelse er større enn {}MB og kan ikke distribueres til DPI. forsendelseStoerrelse={}MB",
@@ -280,5 +282,8 @@ public class BestemDistribusjonskanalService {
 		return new BestemDistribusjonskanalResponse(regel);
 	}
 
-
+	private static boolean requestStoerrelseOgAntallVedleggGyldigForSDP(BestemDistribusjonskanalRequest request) {
+		return (request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES) &&
+				(request.getAntallDokumenter() == null || request.getAntallDokumenter() <= DPI_MAX_ANTALL_VEDLEGG_FORSENDELSE);
+	}
 }

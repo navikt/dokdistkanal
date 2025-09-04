@@ -36,4 +36,7 @@ public class BestemDistribusjonskanalRequest {
 
 	@Schema(description = "Dokumentenes samlede filstørrelse i megabytes", example = "20", defaultValue = "0")
 	Integer forsendelseStoerrelse;
+
+	@Schema(description = "Antall dokumenter i forsendelsen totalt", example = "99", defaultValue = "0")
+	Integer antallDokumenter;
 }
