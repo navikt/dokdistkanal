@@ -3,6 +3,7 @@ package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,9 +35,11 @@ public class BestemDistribusjonskanalRequest {
 	@Schema(description = "Om dokumentet er arkivert i Joark eller ikke")
 	boolean erArkivert;
 
+	@PositiveOrZero
 	@Schema(description = "Dokumentenes samlede filstørrelse i megabytes", example = "20", defaultValue = "0")
 	Integer forsendelseStoerrelse;
 
+	@PositiveOrZero
 	@Schema(description = "Antall dokumenter i forsendelsen totalt", example = "99", defaultValue = "0")
 	Integer antallDokumenter;
 }
