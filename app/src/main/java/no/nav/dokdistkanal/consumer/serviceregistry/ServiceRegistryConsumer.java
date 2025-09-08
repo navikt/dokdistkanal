@@ -8,7 +8,7 @@ import no.nav.dokdistkanal.exceptions.technical.ServiceRegistryTechnicalExceptio
 import org.slf4j.MDC;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
-import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -31,15 +31,13 @@ public class ServiceRegistryConsumer {
 	public ServiceRegistryConsumer(RestClient.Builder restClientBuilder,
 								   DokdistkanalProperties dokdistkanalProperties,
 								   MaskinportenConsumer maskinportenConsumer,
-								   ClientHttpRequestFactory clientHttpRequestFactory,
+								   JdkClientHttpRequestFactory jdkClientHttpRequestFactory,
 								   ObjectMapper objectMapper) {
 		this.maskinportenConsumer = maskinportenConsumer;
 		this.restClient = restClientBuilder
 				.baseUrl(dokdistkanalProperties.getServiceRegistry().getUrl())
-				.defaultHeaders(httpHeaders -> {
-					httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-				})
-				.requestFactory(clientHttpRequestFactory)
+				.defaultHeaders(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_JSON))
+				.requestFactory(jdkClientHttpRequestFactory)
 				.build();
 		this.objectMapper = objectMapper;
 	}

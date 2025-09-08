@@ -12,11 +12,13 @@ import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.core5.http.io.SocketConfig;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
+
+import java.time.Duration;
 
 @EnableConfigurationProperties({
 		AzureProperties.class,
@@ -37,10 +39,11 @@ public class ApplicationConfig {
 	}
 
 	@Bean
-	ClientHttpRequestFactory clientHttpRequestFactory(HttpClient httpClient) {
-		HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-		httpComponentsClientHttpRequestFactory.setConnectTimeout(5_000);
-		return httpComponentsClientHttpRequestFactory;
+	JdkClientHttpRequestFactory jdkClientHttpRequestFactory() {
+		return ClientHttpRequestFactoryBuilder.jdk()
+				.withCustomizer(jdkClientHttpRequestFactory ->
+						jdkClientHttpRequestFactory.setReadTimeout(Duration.ofSeconds(20)))
+				.build();
 	}
 
 	@Bean

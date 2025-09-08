@@ -1,6 +1,7 @@
 package no.nav.dokdistkanal.certificate;
 
 import no.nav.dokdistkanal.exceptions.technical.KeystoreProviderException;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;
@@ -9,7 +10,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class KeystoreProvider {
 
@@ -17,16 +19,12 @@ public class KeystoreProvider {
 		try {
 			String type = properties.type();
 			char[] password = properties.password().toCharArray();
-			Resource path = properties.path();
+			Resource path = new FileSystemResource(properties.key());
 
 			KeyStore keyStore = KeyStore.getInstance(type);
 
-			if (isPathEmpty(path)) {
-				keyStore.load(null, password);
-			} else {
-				try (var inputStream = path.getInputStream()) {
-					keyStore.load(isBase64Empty(path) ? Base64.getDecoder().wrap(inputStream) : inputStream, password);
-				}
+			try (var inputStream = path.getInputStream()) {
+				keyStore.load(isBase64Empty(path) ? Base64.getDecoder().wrap(inputStream) : inputStream, password);
 			}
 
 			return keyStore;
@@ -37,11 +35,11 @@ public class KeystoreProvider {
 		}
 	}
 
-	private static boolean isPathEmpty(Resource path) {
-		return path == null || "none".equalsIgnoreCase(path.getFilename());
+	private static boolean isBase64Empty(Resource path) {
+		return requireNonNull(path.getFilename()).endsWith(".b64");
 	}
 
-	private static boolean isBase64Empty(Resource path) {
-		return Objects.requireNonNull(path.getFilename()).endsWith(".b64");
+	private KeystoreProvider() {
+		//noop
 	}
 }

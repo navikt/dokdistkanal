@@ -1,18 +1,18 @@
 package no.nav.dokdistkanal.certificate;
 
+import lombok.Data;
 import no.nav.dokdistkanal.exceptions.technical.KeystoreProviderException;
-import org.springframework.stereotype.Component;
 
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.UnrecoverableEntryException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.X509Certificate;
 
 import static java.lang.String.format;
 
-@Component
+@Data
 public class AppCertificate {
 
 	private static final String ERR_MISSING_PRIVATE_KEY_OR_PASS = "Feil ved tilgang til PrivateKey med alias \"%s\": tilgang nektet eller feil passord";
@@ -22,6 +22,8 @@ public class AppCertificate {
 
 	private final KeyStoreProperties properties;
 	private final KeyStore keyStore;
+	private final X509Certificate x509Certificate;
+	private final PrivateKey privateKey;
 
 	public AppCertificate(KeyStoreProperties properties) {
 		this.properties = properties;
@@ -30,6 +32,8 @@ public class AppCertificate {
 		} catch (KeystoreProviderException e) {
 			throw new IllegalStateException(e);
 		}
+		this.x509Certificate = loadX509Certificate();
+		this.privateKey = loadPrivateKey();
 	}
 
 	public PrivateKey loadPrivateKey() {
@@ -37,21 +41,20 @@ public class AppCertificate {
 		try {
 			char[] password = properties.password().toCharArray();
 
-			PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, password);
-			if (privateKey == null) {
+			PrivateKey key = (PrivateKey) keyStore.getKey(alias, password);
+			if (key == null) {
 				throw new IllegalStateException(format(ERR_MISSING_PRIVATE_KEY, alias));
 			}
-			return privateKey;
+			return key;
 		} catch (KeyStoreException | NoSuchAlgorithmException e) {
 			throw new IllegalStateException(ERR_GENERAL, e);
-		} catch (UnrecoverableEntryException e) {
+		} catch (UnrecoverableKeyException e) {
 			throw new IllegalStateException(format(ERR_MISSING_PRIVATE_KEY_OR_PASS, alias), e);
 		}
 	}
 
-	public X509Certificate getX509Certificate() {
+	public X509Certificate loadX509Certificate() {
 		String alias = properties.alias();
-
 		try {
 			X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
 			if (certificate == null) {

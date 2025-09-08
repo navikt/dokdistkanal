@@ -28,14 +28,13 @@ public class DpoServiceRegistryService {
 		log.info("Henter mottakerinfo fra service registry for mottakerId={} og processIdentifier={}",
 				mottakerId, AVTALTMELDING_PROCESS_IDENTIFIER);
 
-		return erGyldigServiceRegistry(identifierResource);
+		return erGyldigDpoServiceRegistry(identifierResource);
 	}
 
-	public boolean erGyldigServiceRegistry(IdentifierResource identifierResource) {
+	public boolean erGyldigDpoServiceRegistry(IdentifierResource identifierResource) {
 		return identifierResource.serviceRecords().stream()
 				.anyMatch(serviceRecord -> serviceRecord.service() != null &&
 						serviceRecord.documentTypes().contains(AVTALTMELDING_DOCUMENT_IDENTIFICATOR) &&
-						serviceRecord.process().equals(AVTALTMELDING_PROCESS_IDENTIFIER) &&
 						serviceRecord.service().identifier() == DPO);
 	}
 

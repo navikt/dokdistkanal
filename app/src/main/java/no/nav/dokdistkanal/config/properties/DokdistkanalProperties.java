@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.config.properties;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -25,11 +24,11 @@ public class DokdistkanalProperties {
 
 	@Data
 	public static class Endpoints {
-		@NotNull
+		@Valid
 		private AzureEndpoint digdirKrrProxy;
-		@NotNull
+		@Valid
 		private AzureEndpoint pdl;
-		@NotNull
+		@Valid
 		private Endpoint dokmet;
 	}
 

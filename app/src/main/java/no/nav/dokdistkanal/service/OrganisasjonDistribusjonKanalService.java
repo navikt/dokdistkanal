@@ -51,14 +51,16 @@ public class OrganisasjonDistribusjonKanalService {
 			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
 
-		//Sjekk om organisasjonen har mottakerinfo i Service Registry
-		if (isNotBlank(request.getForsendelseMetadataType()) && DPO_AVTALEMELDING.equals(request.getForsendelseMetadataType())) {
-			if (dpoServiceRegistryService.containsAvtaltMeldingServiceRecord(request.getMottakerId())) {
-				return createResponse(request, ORGANISASJON_MED_SERVICE_REGISTRY_INFO);
-			}
+		if (erGyldigDpoMottaker(request)) {
+			return createResponse(request, ORGANISASJON_MED_SERVICE_REGISTRY_INFO);
 		}
 
 		return erGyldigDpvtMottaker(request);
+	}
+
+	private boolean erGyldigDpoMottaker(BestemDistribusjonskanalRequest request) {
+		return (isNotBlank(request.getForsendelseMetadataType()) && DPO_AVTALEMELDING.equals(request.getForsendelseMetadataType()))
+				&& (dpoServiceRegistryService.containsAvtaltMeldingServiceRecord(request.getMottakerId()));
 	}
 
 	private BestemDistribusjonskanalResponse erGyldigDpvtMottaker(BestemDistribusjonskanalRequest request) {

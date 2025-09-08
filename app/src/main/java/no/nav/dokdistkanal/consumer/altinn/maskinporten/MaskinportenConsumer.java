@@ -3,6 +3,7 @@ package no.nav.dokdistkanal.consumer.altinn.maskinporten;
 import com.nimbusds.jwt.JWTClaimsSet;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.certificate.AppCertificate;
+import no.nav.dokdistkanal.certificate.KeyStoreProperties;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource;
@@ -33,7 +34,7 @@ import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
 import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWTFromJwk;
-import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateJWTFromCertificate;
+import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateSignedJWTFromCertificate;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 @Slf4j
@@ -50,11 +51,11 @@ public class MaskinportenConsumer {
 
 	public MaskinportenConsumer(RestTemplateBuilder restTemplateBuilder,
 								MaskinportenProperties maskinportenProperties,
-								AppCertificate appCertificate,
+								KeyStoreProperties keyStoreProperties,
 								DokdistkanalProperties dokdistkanalProperties,
 								HttpClient httpClient) {
 		this.maskinportenProperties = maskinportenProperties;
-		this.appCertificate = appCertificate;
+		this.appCertificate = new AppCertificate(keyStoreProperties);
 		this.dpoProperties = dokdistkanalProperties.getDpo();
 		this.restTemplate = restTemplateBuilder
 				.connectTimeout(Duration.ofSeconds(3L))
@@ -101,7 +102,7 @@ public class MaskinportenConsumer {
 	private String generateDpoJWT(String scope, String clientId) {
 		JWTClaimsSet claims = opprettClaim(scope, clientId);
 
-		return generateJWTFromCertificate(appCertificate, claims);
+		return generateSignedJWTFromCertificate(appCertificate, claims);
 	}
 
 	private JWTClaimsSet opprettClaim(String scope, String clientId) {
