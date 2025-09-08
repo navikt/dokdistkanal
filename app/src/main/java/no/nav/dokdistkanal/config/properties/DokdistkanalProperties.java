@@ -61,7 +61,7 @@ public class DokdistkanalProperties {
 		private String clientId;
 		@NotEmpty
 		private String scope;
-
+		boolean enabled;
 	}
 
 	@Data

@@ -1,5 +1,6 @@
 package no.nav.dokdistkanal.service;
 
+import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
 import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.serviceregistry.DpoServiceRegistryService;
@@ -29,13 +30,16 @@ public class OrganisasjonDistribusjonKanalService {
 	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 	private final BrregEnhetsregisterService brregEnhetsregisterService;
 	private final DpoServiceRegistryService dpoServiceRegistryService;
+	private final DokdistkanalProperties.Dpo dpoProperties;
 
 	public OrganisasjonDistribusjonKanalService(AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
 												BrregEnhetsregisterService brregEnhetsregisterService,
-												DpoServiceRegistryService dpoServiceRegistryService) {
+												DpoServiceRegistryService dpoServiceRegistryService,
+												DokdistkanalProperties dokdistkanalProperties) {
 		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
 		this.brregEnhetsregisterService = brregEnhetsregisterService;
 		this.dpoServiceRegistryService = dpoServiceRegistryService;
+		this.dpoProperties = dokdistkanalProperties.getDpo();
 	}
 
 	public BestemDistribusjonskanalResponse validerOrgNrOgBestemKanal(BestemDistribusjonskanalRequest request) {
@@ -51,7 +55,7 @@ public class OrganisasjonDistribusjonKanalService {
 			return createResponse(request, ORGANISASJON_MED_INFOTRYGD_DOKUMENT);
 		}
 
-		if (erGyldigDpoMottaker(request)) {
+		if (dpoProperties.isEnabled() && erGyldigDpoMottaker(request)) {
 			return createResponse(request, ORGANISASJON_MED_SERVICE_REGISTRY_INFO);
 		}
 
