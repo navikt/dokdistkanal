@@ -10,7 +10,8 @@ public final class DomainConstants {
 	public static final TimeZone DEFAULT_TIME_ZONE = TimeZone.getTimeZone("Europe/Oslo");
 	public static final ZoneId DEFAULT_ZONE_ID = DEFAULT_TIME_ZONE.toZoneId();
 	public static final String HAL_JSON_VALUE = "application/hal+json";
-	public static final Integer DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES = 45;
+	public static final int DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES = 45;
+	public static final int DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE = 201;
 
 	private DomainConstants() {
 	}

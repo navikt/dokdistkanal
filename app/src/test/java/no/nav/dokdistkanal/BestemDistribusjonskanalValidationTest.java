@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BestemDistribusjonskanalValidationTest {
@@ -110,7 +111,37 @@ public class BestemDistribusjonskanalValidationTest {
 				"12345678910",
 				"FAR",
 				"DOK",
-				false, 26
+				false,
+				26,
+				3
+		);
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void skalFeilvalidereUgyldigAntallDokumenterVerdi(Integer antallDokumenter, List<String> feilmeldinger) {
+		var request = getBestemDistribusjonskanalRequest();
+		request.setAntallDokumenter(antallDokumenter);
+
+		var violations = validator.validate(request);
+
+		assertThat(violations)
+				.hasSize(feilmeldinger.size());
+		if (!feilmeldinger.isEmpty()) {
+			assertThat(violations)
+				.allSatisfy(violation -> {
+					assertThat(violation.getMessage()).isIn(feilmeldinger);
+					assertThat(violation.getPropertyPath().toString()).isEqualTo("antallDokumenter");
+				});
+		}
+	}
+
+	static Stream<Arguments> skalFeilvalidereUgyldigAntallDokumenterVerdi() {
+		return Stream.of(
+				Arguments.of(null, emptyList()),
+				Arguments.of(0, emptyList()),
+				Arguments.of(10_000, emptyList()),
+				Arguments.of(-1, List.of("must be greater than or equal to 0"))
 		);
 	}
 }

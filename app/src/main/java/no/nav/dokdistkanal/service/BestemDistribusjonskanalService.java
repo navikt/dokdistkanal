@@ -21,6 +21,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJO
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_EPOST_ELLER_MOBILNUMMER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE;
@@ -222,11 +223,15 @@ public class BestemDistribusjonskanalService {
 		}
 
 		if (digitalKontaktinfo.verifyAddressAndCertificate()) {
-			if (request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES) {
+			if (requestStoerrelseGyldigForSDP(request) && requestAntallDokumenterGyldigForSDP(request)) {
 				return createResponse(request, BRUKER_HAR_GYLDIG_SDP_ADRESSE);
+			} else if (!requestStoerrelseGyldigForSDP(request)) {
+				log.info("Forsendelse er større enn {}MB og kan ikke distribueres til DPI. forsendelseStoerrelse={}MB",
+						DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES, request.getForsendelseStoerrelse());
+			} else {
+				log.info("Forsendelse består av flere dokumenter enn {} og kan ikke distribueres til DPI. antallDokumenter={}",
+						DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE, request.getAntallDokumenter());
 			}
-			log.info("Forsendelse er større enn {}MB og kan ikke distribueres til DPI. forsendelseStoerrelse={}MB",
-					DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES, request.getForsendelseStoerrelse());
 		}
 		if (!digitalKontaktinfo.harEpostEllerMobilnummer()) {
 			return createResponse(request, BRUKER_MANGLER_EPOST_OG_TELEFON);
@@ -280,5 +285,11 @@ public class BestemDistribusjonskanalService {
 		return new BestemDistribusjonskanalResponse(regel);
 	}
 
+	private static boolean requestStoerrelseGyldigForSDP(BestemDistribusjonskanalRequest request) {
+		return request.getForsendelseStoerrelse() == null || request.getForsendelseStoerrelse() < DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
+	}
 
+	private static boolean requestAntallDokumenterGyldigForSDP(BestemDistribusjonskanalRequest request) {
+		return request.getAntallDokumenter() == null || request.getAntallDokumenter() <= DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE;
+	}
 }
