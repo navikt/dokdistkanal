@@ -29,6 +29,7 @@ import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.PRINT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.SDP;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.TRYGDERETTEN;
+import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE;
 import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
@@ -60,6 +61,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		clearCachene();
 		stubMaskinporten();
 		stubAzure();
+		stubAltinn();
 		resetCircuitBreakers();
 	}
 
@@ -95,7 +97,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(gyldigBestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
 				.isOk();
@@ -116,7 +118,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(gyldigBestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
 				.isOk()
@@ -255,7 +257,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForPersonMedDigitalKontaktinfo(DistribusjonKanalCode distribusjonKanal, BestemDistribusjonskanalRegel regel,
-													 String stubFile, Integer forsendelseStoerrelse) {
+													 String stubFile, Integer forsendelseStoerrelse, Integer antallDokumenter) {
 		stubPdl();
 		stubDigdirKrrProxy(stubFile);
 
@@ -268,7 +270,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequestMedFilstoerrelse(forsendelseStoerrelse))
+				.bodyValue(bestemDistribusjonskanalRequest(forsendelseStoerrelse, antallDokumenter))
 				.exchange()
 				.expectStatus()
 				.isOk()
@@ -287,13 +289,15 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForPersonMedDigitalKontaktinfo() {
 		return Stream.of(
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "dki/response_person_ikke_funnet.json", 10),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "dki/response_bruker_er_reservert.json", 10),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "dki/response_bruker_mangler_kontaktinfo.json", 5),
-				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES - 1),
-				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", null),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES),
-				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "dki/response_bruker_mangler_kontaktinfo.json", 10)
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.FINNER_IKKE_DIGITAL_KONTAKTINFORMASJON, "dki/response_person_ikke_funnet.json", 10, null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_ER_RESERVERT, "dki/response_bruker_er_reservert.json", 10, null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_SDP_MANGLER_VARSELINFO, "dki/response_bruker_mangler_kontaktinfo.json", 5, null),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES - 1, null),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", null, null),
+				Arguments.of(SDP, BestemDistribusjonskanalRegel.BRUKER_HAR_GYLDIG_SDP_ADRESSE, "dki/happy-responsebody.json", null, DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "dki/happy-responsebody.json", null, DPI_MAX_ANTALL_DOKUMENTER_FORSENDELSE + 1),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_OG_MOTTAKER_ER_FORSKJELLIG, "dki/happy-responsebody.json", DPI_MAX_FORSENDELSE_STOERRELSE_I_MEGABYTES, null),
+				Arguments.of(PRINT, BestemDistribusjonskanalRegel.BRUKER_MANGLER_EPOST_OG_TELEFON, "dki/response_bruker_mangler_kontaktinfo.json", 10, null)
 		);
 	}
 
@@ -310,7 +314,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubPdl();
 		stubDigdirKrrProxy("dki/ugyldig-sertifikat-responsebody.json");
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setDokumenttypeId(dokumentTypeId);
 
 		var response = webTestClient.post()
@@ -344,7 +348,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubPdl();
 		stubDigdirKrrProxy("dki/ugyldig-sertifikat-responsebody.json");
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setBrukerId(request.getMottakerId());
 		request.setTema(tema);
 
@@ -378,7 +382,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubPdl();
 		stubDigdirKrrProxy("dki/ugyldig-sertifikat-responsebody.json");
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setBrukerId(request.getMottakerId());
 
 		var response = webTestClient.post()
@@ -410,7 +414,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	void skalReturnerePrintDersomMottakerHverkenErPersonEllerOrganisasjon(String mottakerId) {
 		stubDokmet();
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setMottakerId(mottakerId);
 
 		var response = webTestClient.post()
@@ -483,7 +487,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(gyldigBestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
 				.is5xxServerError()
@@ -508,7 +512,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.headers(headers())
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(gyldigBestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
 				.is5xxServerError()
@@ -534,7 +538,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR);
 		stubUnderenhetsregisteret(NOT_FOUND, "", UNDERENHET_ORGNR);
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setMottakerId(UNDERENHET_ORGNR);
 		request.setDokumenttypeId("1234");
 
@@ -566,7 +570,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubAltinn();
 		stubUnderenhetsregisteret(BAD_REQUEST, "", UNDERENHET_ORGNR);
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setMottakerId(UNDERENHET_ORGNR);
 		request.setDokumenttypeId("1234");
 
@@ -601,7 +605,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubUnderenhetsregisteret(OK, "enhetsregisteret/underenhet_response.json", UNDERENHET_ORGNR);
 		stubSecondEnhetsregisteret("enhetsregisteret/ikke_konkurs_enhetsregisteret.json", HOVEDENHET_ORGNR);
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setMottakerId(UNDERENHET_ORGNR);
 		request.setDokumenttypeId("1234");
 
@@ -631,7 +635,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(gyldigBestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
 				.isUnauthorized()
@@ -654,7 +658,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
 				.header(AUTHORIZATION, "Bearer " + ugyldigToken)
-				.bodyValue(bestemDistribusjonskanalRequest())
+				.bodyValue(gyldigBestemDistribusjonskanalRequest())
 				.exchange()
 				.expectStatus()
 				.isUnauthorized()
@@ -676,7 +680,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubPdl();
 		stubDigdirKrrProxy(INTERNAL_SERVER_ERROR);
 
-		var request = bestemDistribusjonskanalRequest();
+		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setBrukerId(request.getMottakerId());
 
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("digdir-krr-proxy");
@@ -717,6 +721,10 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.isEqualTo("CircuitBreaker 'digdir-krr-proxy' is OPEN and does not permit further calls");
 	}
 
+	private BestemDistribusjonskanalRequest gyldigBestemDistribusjonskanalRequest() {
+		return bestemDistribusjonskanalRequest(10, 3);
+	}
+
 	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest() {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",
@@ -725,6 +733,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"dokumentType",
 				true,
 				10,
+				3,
 				null
 		);
 	}
@@ -737,6 +746,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"dokumentType",
 				true,
 				10,
+				3,
 				forsendelseMetadataType
 		);
 	}
@@ -749,11 +759,12 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				null,
 				true,
 				10,
+				3,
 				null
 		);
 	}
 
-	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequestMedFilstoerrelse(Integer filstoerrelse) {
+	private BestemDistribusjonskanalRequest bestemDistribusjonskanalRequest(Integer filstoerrelse, Integer antallDokumenter) {
 		return new BestemDistribusjonskanalRequest(
 				"12345678901",
 				"12345678902",
@@ -761,6 +772,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				"dokumentType",
 				true,
 				filstoerrelse,
+				antallDokumenter,
 				null
 		);
 	}
