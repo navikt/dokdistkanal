@@ -23,6 +23,12 @@ spec:
       value: {{ DOKDISTKANAL_ENDPOINTS_PDL_SCOPE }}
     - name: DOKDISTKANAL_ENDPOINTS_DOKMET_URL
       value: {{ DOKDISTKANAL_ENDPOINTS_DOKMET_URL }}
+    - name: DOKDISTKANAL_SERVICE_REGISTRY_URL
+      value: {{ DOKDISTKANAL_SERVICE_REGISTRY_URL }}
+    - name: NAV_VIRKSOMHETSSERTIFIKAT_CREDENTIALS
+      value: {{ NAV_VIRKSOMHETSSERTIFIKAT_CREDENTIALS }}
+    - name: NAV_VIRKSOMHETSSERTIFIKAT_KEY
+      value: {{ NAV_VIRKSOMHETSSERTIFIKAT_KEY }}
     - name: OTEL_RESOURCE_ATTRIBUTES
       value: "deployment.environment.name={{ ENVIRONMENT }}"
   image: {{ image }}
@@ -86,4 +92,8 @@ spec:
          namespace: {{namespace}}
          cluster: {{cluster}}
     {{/each}}
-
+  vault:
+    enabled: true
+    paths:
+      - kvPath: {{ NAV_VIRKSOMHETSSERTIFIKAT_VAULT }}
+        mountPath: "/secrets/virksomhetssertifikat"

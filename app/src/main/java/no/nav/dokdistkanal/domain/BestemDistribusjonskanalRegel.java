@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DITT_NAV;
+import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPO;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.DPVT;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.INGEN_DISTRIBUSJON;
 import static no.nav.dokdistkanal.common.DistribusjonKanalCode.LOKAL_PRINT;
@@ -24,6 +25,8 @@ public enum BestemDistribusjonskanalRegel {
 	ORGANISASJON_ER_KONKURS(PRINT, "Mottaker er organisasjon og er konkurs"),
 	ORGANISASJON_ER_SLETTET(PRINT, "Mottaker er organisasjon og er slettet"),
 	ORGANISASJON_MANGLER_NODVENDIG_ROLLER(PRINT, "Mottaker er organisasjon og mangler personer med nødvendig roller"),
+	ORGANISASJON_MED_SERVICE_REGISTRY_INFO(DPO, "Mottaker er organisasjon og har gyldig mottakerinfo i Service Registry"),
+	ORGANISASJON_MANGLER_MOTTAKER_INFO_I_SERVICE_REGISTRY(PRINT, "Mottaker er organisasjon og mangler gyldig mottaker info i Service Registry"),
 	PERSON_ER_IKKE_I_PDL(PRINT, "Finner ikke personen i PDL"),
 	PERSON_ER_DOED(PRINT, "Personen er død"),
 	PERSON_HAR_UKJENT_ALDER(PRINT, "Personen har ukjent alder"),

@@ -22,6 +22,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.time.Duration;
 
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
+import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.ServiceIdentifier.DPV;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -73,7 +74,7 @@ public class AltinnServiceOwnerConsumer {
 	private HttpHeaders headers() {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set(ACCEPT, HAL_JSON_VALUE);
-		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken());
+		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken(DPV));
 		headers.set(ALTINN_API_KEY, dokdistkanalProperties.getAltinn().getApiKey());
 		return headers;
 	}

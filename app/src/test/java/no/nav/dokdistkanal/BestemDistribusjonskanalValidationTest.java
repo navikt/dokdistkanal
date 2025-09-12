@@ -65,7 +65,7 @@ public class BestemDistribusjonskanalValidationTest {
 				.allSatisfy(violation -> {
 					assertThat(violation.getMessage()).isIn(feilmeldinger);
 					assertThat(violation.getPropertyPath().toString()).isEqualTo("brukerId");
-		});
+				});
 	}
 
 	static Stream<Arguments> skalFeilvalidereUgyldigBrukerId() {
@@ -113,7 +113,8 @@ public class BestemDistribusjonskanalValidationTest {
 				"DOK",
 				false,
 				26,
-				3
+				3,
+				"DPO_AVTALEMELDING"
 		);
 	}
 
@@ -129,10 +130,10 @@ public class BestemDistribusjonskanalValidationTest {
 				.hasSize(feilmeldinger.size());
 		if (!feilmeldinger.isEmpty()) {
 			assertThat(violations)
-				.allSatisfy(violation -> {
-					assertThat(violation.getMessage()).isIn(feilmeldinger);
-					assertThat(violation.getPropertyPath().toString()).isEqualTo("antallDokumenter");
-				});
+					.allSatisfy(violation -> {
+						assertThat(violation.getMessage()).isIn(feilmeldinger);
+						assertThat(violation.getPropertyPath().toString()).isEqualTo("antallDokumenter");
+					});
 		}
 	}
 

@@ -42,4 +42,7 @@ public class BestemDistribusjonskanalRequest {
 	@PositiveOrZero
 	@Schema(description = "Antall dokumenter i forsendelsen totalt", example = "99", defaultValue = "0")
 	Integer antallDokumenter;
+
+	@Schema(description = "Type metadata som følger forsendelsen", example = "DPO_AVTALEMELDING")
+	String forsendelseMetadataType;
 }
