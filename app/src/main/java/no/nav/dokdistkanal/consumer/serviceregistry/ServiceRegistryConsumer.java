@@ -22,7 +22,6 @@ import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.Se
 public class ServiceRegistryConsumer {
 
 	public static final String TEKNISK_FEIL_ERROR_MESSAGE = "Klarte ikke hente mottakerInfo fra service registry. Teknisk feil: ";
-	public static final String FUNKSJONELL_FEIL_ERROR_MESSAGE = "Klarte ikke hente mottakerInfo fra service registry. Funksjonell feil: ";
 
 	private final RestClient restClient;
 	private final ObjectMapper objectMapper;
@@ -56,10 +55,9 @@ public class ServiceRegistryConsumer {
 					if (res.getStatusCode().isError()) {
 						ProblemDetail problemDetail = objectMapper.readValue(res.getBody(), ProblemDetail.class);
 						if (res.getStatusCode().is5xxServerError()) {
-							log.error(TEKNISK_FEIL_ERROR_MESSAGE + "{}", problemDetail.getDetail());
+							log.error(TEKNISK_FEIL_ERROR_MESSAGE + " status={} og feilmelding={}", res.getStatusCode(), problemDetail.getDetail());
 							throw new ServiceRegistryTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + problemDetail);
 						}
-						log.error(FUNKSJONELL_FEIL_ERROR_MESSAGE + "{}", problemDetail.getDetail());
 						return null;
 					}
 					return res.bodyTo(IdentifierResource.class);
