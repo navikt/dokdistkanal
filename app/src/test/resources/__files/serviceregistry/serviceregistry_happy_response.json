@@ -1,0 +1,38 @@
+{
+  "infoRecord": {
+    "identifier": "974761084",
+    "organizationName": "TRYGDERETTEN"
+  },
+  "serviceRecords": [
+    {
+      "organisationNumber": "974761084",
+      "process": "urn:no:difi:profile:avtalt:avtalt:ver1.0",
+      "documentTypes": [
+        "urn:no:difi:arkivmelding:xsd::arkivmelding",
+        "urn:no:difi:avtalt:xsd::avtalt"
+
+      ],
+      "service": {
+        "identifier": "DPO",
+        "endpointUrl": "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternal.svc",
+        "serviceCode": "4255",
+        "serviceEditionCode": "8",
+        "securityLevel": 3
+      }
+    },
+    {
+      "organisationNumber": "974761084",
+      "process": "urn:no:difi:profile:arkivmelding:administrasjon:ver1.0",
+      "documentTypes": [
+        "urn:no:difi:arkivmelding:xsd::arkivmelding"
+      ],
+      "service": {
+        "identifier": "DPO",
+        "endpointUrl": "https://tt02.altinn.no/ServiceEngineExternal/CorrespondenceAgencyExternal.svc",
+        "serviceCode": "4192",
+        "serviceEditionCode": "270815",
+        "securityLevel": null
+      }
+    }
+  ]
+}

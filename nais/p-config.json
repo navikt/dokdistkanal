@@ -15,6 +15,10 @@
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://prod-fss.pdl.pdl-api/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://altinn.no/api",
   "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
+  "DOKDISTKANAL_SERVICE_REGISTRY_URL": "https://meldingsutveksling.difi.no/serviceregistry",
+  "NAV_VIRKSOMHETSSERTIFIKAT_VAULT": "/secret/virksomhetssertifikat/prod/sdp",
+  "NAV_VIRKSOMHETSSERTIFIKAT_CREDENTIALS": "/secrets/virksomhetssertifikat/credentials_2023.json",
+  "NAV_VIRKSOMHETSSERTIFIKAT_KEY": "/secrets/virksomhetssertifikat/274258896775237957919470-2023-10-11.p12.b64",
   "AZURE_IAC_RULES": [
     {
       "app": "dokdistfordeling",

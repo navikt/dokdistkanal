@@ -7,5 +7,6 @@ public enum UtsendingkanalCode {
 	L,
 	INGEN_DISTRIBUSJON,
 	TRYGDERETTEN,
-	DPVT
+	DPVT,
+	DPO
 }

@@ -1,7 +1,7 @@
 package no.nav.dokdistkanal.config.properties;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -11,15 +11,25 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class DokdistkanalProperties {
 
+	@Valid
 	private final Altinn altinn = new Altinn();
+	@Valid
 	private final Endpoints endpoints = new Endpoints();
+	@Valid
+	private final Endpoint serviceRegistry = new Endpoint();
+	@Valid
+	private final Dpo dpo = new Dpo();
+	@Valid
 	private final EnhetsregisterEndpoint enhetsregister = new EnhetsregisterEndpoint();
 
 	@Data
 	public static class Endpoints {
-		@NotNull private AzureEndpoint digdirKrrProxy;
-		@NotNull private AzureEndpoint pdl;
-		@NotNull private Endpoint dokmet;
+		@Valid
+		private AzureEndpoint digdirKrrProxy;
+		@Valid
+		private AzureEndpoint pdl;
+		@Valid
+		private Endpoint dokmet;
 	}
 
 	@Data
@@ -32,7 +42,6 @@ public class DokdistkanalProperties {
 	}
 
 	@Data
-	@Validated
 	public static final class Altinn {
 		@NotEmpty
 		private String url;
@@ -41,14 +50,21 @@ public class DokdistkanalProperties {
 	}
 
 	@Data
-	@Validated
 	public static final class EnhetsregisterEndpoint {
 		@NotEmpty
 		private String url;
 	}
 
 	@Data
-	@Validated
+	public static final class Dpo {
+		@NotEmpty
+		private String clientId;
+		@NotEmpty
+		private String scope;
+		boolean enabled;
+	}
+
+	@Data
 	public static class Endpoint {
 		@NotEmpty
 		private String url;

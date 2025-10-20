@@ -214,4 +214,12 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withStatus(httpStatus.value())));
 	}
 
+	public static void stubGetServiceRegistry(HttpStatus status) {
+		stubFor(get(urlMatching("/serviceregistry/identifier/974761076/process/urn:no:difi:profile:avtalt:avtalt:ver1.0"))
+				.willReturn(aResponse()
+						.withStatus(status.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBodyFile("serviceregistry/serviceregistry_happy_response.json")));
+	}
+
 }
