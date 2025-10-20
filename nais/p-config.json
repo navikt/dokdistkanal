@@ -74,6 +74,11 @@
       "app": "veilarbvedtaksstotte",
       "namespace": "obo",
       "cluster": "prod-gcp"
+    },
+    {
+      "app": "brev",
+      "namespace": "aap",
+      "cluster": "prod-gcp"
     }
   ]
 }
