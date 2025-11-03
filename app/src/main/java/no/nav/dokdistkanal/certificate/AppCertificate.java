@@ -1,8 +1,13 @@
 package no.nav.dokdistkanal.certificate;
 
-import lombok.Data;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import no.nav.dokdistkanal.exceptions.technical.KeystoreProviderException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -12,7 +17,7 @@ import java.security.cert.X509Certificate;
 
 import static java.lang.String.format;
 
-@Data
+@Getter
 public class AppCertificate {
 
 	private static final String ERR_MISSING_PRIVATE_KEY_OR_PASS = "Feil ved tilgang til PrivateKey med alias \"%s\": tilgang nektet eller feil passord";
@@ -27,19 +32,34 @@ public class AppCertificate {
 
 	public AppCertificate(KeyStoreProperties properties) {
 		this.properties = properties;
+		KeyStoreCredentials keyStoreCredentials = loadKeyStoreCredentialsJson(properties.credentials());
 		try {
-			this.keyStore = KeystoreProvider.loadKeyStoreData(properties);
+			this.keyStore = KeystoreProvider.loadKeyStoreData(properties, keyStoreCredentials);
 		} catch (KeystoreProviderException e) {
 			throw new IllegalStateException(e);
 		}
-		this.x509Certificate = loadX509Certificate();
-		this.privateKey = loadPrivateKey();
+		this.x509Certificate = loadX509Certificate(keyStoreCredentials);
+		this.privateKey = loadPrivateKey(keyStoreCredentials);
 	}
 
-	public PrivateKey loadPrivateKey() {
-		String alias = properties.alias();
+	private static KeyStoreCredentials loadKeyStoreCredentialsJson(String credentials) {
+		Path credentialsJsonPath = Paths.get(credentials);
+		if (!Files.exists(credentialsJsonPath)) {
+			throw new IllegalArgumentException("credentials med path=" + credentials + " finnes ikke");
+		}
+		ObjectMapper objectMapper = new ObjectMapper();
 		try {
-			char[] password = properties.password().toCharArray();
+			return objectMapper.readValue(credentialsJsonPath.toFile(), KeyStoreCredentials.class);
+		} catch (IOException e) {
+			// Rethrower ikke exception for å ikke risikere at innhold dumpes til loggen
+			throw new IllegalArgumentException("Klarte ikke lese credentials json");
+		}
+	}
+
+	private PrivateKey loadPrivateKey(KeyStoreCredentials keyStoreCredentials) {
+		String alias = keyStoreCredentials.alias();
+		try {
+			char[] password = keyStoreCredentials.password().toCharArray();
 
 			PrivateKey key = (PrivateKey) keyStore.getKey(alias, password);
 			if (key == null) {
@@ -53,8 +73,8 @@ public class AppCertificate {
 		}
 	}
 
-	public X509Certificate loadX509Certificate() {
-		String alias = properties.alias();
+	private X509Certificate loadX509Certificate(KeyStoreCredentials keyStoreCredentials) {
+		String alias = keyStoreCredentials.alias();
 		try {
 			X509Certificate certificate = (X509Certificate) keyStore.getCertificate(alias);
 			if (certificate == null) {
