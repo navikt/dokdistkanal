@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class KeystoreProviderTest {
 
+	public static final String CREDENTIALS = "src/test/resources/secrets/credentials.json";
 	public static final String SELF_SIGNED_PKCS12 = "src/test/resources/secrets/cert.p12";
 	public static final String SELF_SIGNED_PKCS12_BASE64 = "src/test/resources/secrets/cert.p12.b64";
 	public static final String PKCS_12 = "PKCS12";
@@ -17,22 +18,26 @@ class KeystoreProviderTest {
 	@Test
 	void shouldLoadPKCS12KeyStore() {
 		KeyStoreProperties properties = testVirksomhetssertifikatProperties();
-		KeyStore keyStore = KeystoreProvider.loadKeyStoreData(properties);
+		KeyStore keyStore = KeystoreProvider.loadKeyStoreData(properties, keyStoreCredentials());
 		assertNotNull(keyStore);
 	}
 
 	@Test
 	void shouldLoadBase64KeyStore() {
 		KeyStoreProperties properties = testVirksomhetssertifikatBase64Properties();
-		KeyStore keyStore = KeystoreProvider.loadKeyStoreData(properties);
+		KeyStore keyStore = KeystoreProvider.loadKeyStoreData(properties, keyStoreCredentials());
 		assertNotNull(keyStore);
 	}
 
-	public static KeyStoreProperties testVirksomhetssertifikatProperties() {
-		return new KeyStoreProperties(PKCS_12, SELF_SIGNED_PKCS12_ALIAS, SELF_SIGNED_PKCS12_PASSWORD, SELF_SIGNED_PKCS12);
+	static KeyStoreProperties testVirksomhetssertifikatProperties() {
+		return new KeyStoreProperties(CREDENTIALS, SELF_SIGNED_PKCS12);
 	}
 
-	public static KeyStoreProperties testVirksomhetssertifikatBase64Properties() {
-		return new KeyStoreProperties(PKCS_12, SELF_SIGNED_PKCS12_ALIAS, SELF_SIGNED_PKCS12_PASSWORD, SELF_SIGNED_PKCS12_BASE64);
+	static KeyStoreProperties testVirksomhetssertifikatBase64Properties() {
+		return new KeyStoreProperties(CREDENTIALS, SELF_SIGNED_PKCS12_BASE64);
+	}
+
+	static KeyStoreCredentials keyStoreCredentials() {
+		return new KeyStoreCredentials(SELF_SIGNED_PKCS12_ALIAS, SELF_SIGNED_PKCS12_PASSWORD, PKCS_12);
 	}
 }

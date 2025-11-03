@@ -6,7 +6,15 @@ metadata:
   labels:
     team: teamdokumenthandtering
 spec:
+  envFrom:
+    - secret: {{ DOKDISTKANAL_SECRETS }}
   env:
+    - name: JAVA_TRUSTSTORE_OPTIONS
+      value: "-Djavax.net.ssl.trustStore=$(NAV_TRUSTSTORE_PATH)
+              -Djavax.net.ssl.trustStorePassword=$(NAV_TRUSTSTORE_PASSWORD)"
+    - name: JDK_JAVA_OPTIONS
+      value: "-XX:MaxRAMPercentage=75
+              $(JAVA_PROXY_OPTIONS) $(JAVA_TRUSTSTORE_OPTIONS)"
     - name: DOKUMENTTYPEINFO_URL
       value: {{ DOKUMENTTYPEINFO_URL }}
     - name: DOKDISTKANAL_ENHETSREGISTER_URL
@@ -82,8 +90,6 @@ spec:
       runtime: java
       destinations:
         - id: "elastic-apm"
-  envFrom:
-    - secret: {{ DOKDISTKANAL_SECRETS }}
   accessPolicy:
     inbound:
       rules:

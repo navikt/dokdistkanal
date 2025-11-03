@@ -15,10 +15,10 @@ import static java.util.Objects.requireNonNull;
 
 public class KeystoreProvider {
 
-	public static KeyStore loadKeyStoreData(KeyStoreProperties properties) {
+	static KeyStore loadKeyStoreData(KeyStoreProperties properties, KeyStoreCredentials keyStoreCredentials) {
 		try {
-			String type = properties.type();
-			char[] password = properties.password().toCharArray();
+			String type = keyStoreCredentials.type();
+			char[] password = keyStoreCredentials.password().toCharArray();
 			Resource path = new FileSystemResource(properties.key());
 
 			KeyStore keyStore = KeyStore.getInstance(type);
