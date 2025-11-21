@@ -13,7 +13,7 @@
   "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q0/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
-  "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
+  "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.ppe.brreg.no/enhetsregisteret/api/",
   "DOKDISTKANAL_SERVICE_REGISTRY_URL": "https://qa-meldingsutveksling.difi.no/serviceregistry",
   "NAV_VIRKSOMHETSSERTIFIKAT_VAULT": "/secret/virksomhetssertifikat/preprod/shared",
   "NAV_VIRKSOMHETSSERTIFIKAT_CREDENTIALS": "/secrets/virksomhetssertifikat/credentials_2024-03.json",
