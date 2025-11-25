@@ -58,6 +58,8 @@ public class ServiceRegistryConsumer {
 							log.error(TEKNISK_FEIL_ERROR_MESSAGE + " status={} og feilmelding={}", res.getStatusCode(), problemDetail.getDetail());
 							throw new ServiceRegistryTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + problemDetail);
 						}
+						log.warn("Kall mot service registry feilet funksjonelt med status={} og feilmelding={}",
+								res.getStatusCode(), problemDetail.getDetail());
 						return null;
 					}
 					return res.bodyTo(IdentifierResource.class);
