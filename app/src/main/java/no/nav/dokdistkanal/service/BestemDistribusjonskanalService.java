@@ -47,7 +47,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class BestemDistribusjonskanalService {
 
 	public static final String DEFAULT_DOKUMENTTYPE_ID = "U000001";
-	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS");
+	public static final Set<String> TEMA_MED_BEGRENSET_INNSYN = Set.of("FAR", "KTR", "KTA", "ARP", "ARS", "BBF");
 
 	private final DokmetConsumer dokmetConsumer;
 	private final DigitalKontaktinformasjonConsumer digitalKontaktinformasjonConsumer;

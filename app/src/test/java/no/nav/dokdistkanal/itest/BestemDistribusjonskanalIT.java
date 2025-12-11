@@ -342,7 +342,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 18: Har dokmentet tema med begrenset innsyn? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
-	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP", "ARS"})
+	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP", "ARS", "BBF"})
 	void skalReturnerePrintForTemaMedBegrensetInnsyn(String tema) {
 		stubDokmet();
 		stubPdl();
