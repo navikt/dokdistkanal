@@ -2,15 +2,16 @@
   "APP_NAME": "dokdistkanal-q0",
   "ENVIRONMENT": "q0",
   "INGRESSES": [
-    "https://dokdistkanal-q0.dev.intern.nav.no"
+    "https://dokdistkanal-q0.dev.intern.nav.no",
+    "https://dokdistkanal-q0.intern.dev.nav.no"
   ],
   "MIN_REPLICAS": 1,
   "MAX_REPLICAS": 2,
   "DOKDISTKANAL_SECRETS": "dokdistkanal-q0",
-  "DOKDISTKANAL_ENDPOINTS_DOKMET_URL": "https://dokmet-q0.dev.intern.nav.no/rest/dokumenttypeinfo",
+  "DOKDISTKANAL_ENDPOINTS_DOKMET_URL": "http://dokmet-q0.teamdokumenthandtering.svc.nais.local/rest/dokumenttypeinfo",
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL": "https://digdir-krr-proxy.intern.dev.nav.no",
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE": "api://dev-gcp.team-rocket.digdir-krr-proxy/.default",
-  "DOKDISTKANAL_ENDPOINTS_PDL_URL": "https://pdl-api-q0.dev.intern.nav.no/graphql",
+  "DOKDISTKANAL_ENDPOINTS_PDL_URL": "http://pdl-api-q0.pdl.svc.nais.local/graphql",
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://dev-fss.pdl.pdl-api-q0/.default",
   "DOKDISTKANAL_ALTINN_URL": "https://tt02.altinn.no/api",
   "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.ppe.brreg.no/enhetsregisteret/api/",
