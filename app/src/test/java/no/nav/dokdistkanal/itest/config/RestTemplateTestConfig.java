@@ -1,6 +1,6 @@
 package no.nav.dokdistkanal.itest.config;
 
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,7 +20,7 @@ public class RestTemplateTestConfig {
 		return restTemplateBuilder
 				.requestFactory(HttpComponentsClientHttpRequestFactory.class)
 				.readTimeout(Duration.ofMillis(TIMEOUT))
-				.connectTimeout(Duration.ofMillis(TIMEOUT)).build();
+				.build();
 	}
 
 }

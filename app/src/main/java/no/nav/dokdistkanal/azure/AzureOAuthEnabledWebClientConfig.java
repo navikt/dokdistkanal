@@ -4,6 +4,8 @@ import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.codec.json.JacksonJsonDecoder;
+import org.springframework.http.codec.json.JacksonJsonEncoder;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.ClientCredentialsReactiveOAuth2AuthorizedClientProvider;
 import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
@@ -14,8 +16,10 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.util.List;
@@ -30,16 +34,17 @@ import static org.springframework.security.oauth2.core.ClientAuthenticationMetho
 public class AzureOAuthEnabledWebClientConfig {
 
 	@Bean
-	WebClient webClient() {
+	WebClient webClient(JsonMapper jsonMapper) {
 		HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(20))
 				.proxyWithSystemProperties();
 		return WebClient.builder()
+				.exchangeStrategies(jacksonStrategies(jsonMapper))
 				.clientConnector(new ReactorClientHttpConnector(httpClient))
 				.build();
 	}
 
 	@Bean
-	WebClient azureOauth2WebClient(ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
+	WebClient azureOauth2WebClient(JsonMapper jsonMapper, ReactiveOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager) {
 		ServerOAuth2AuthorizedClientExchangeFilterFunction oAuth2AuthorizedClientExchangeFilterFunction = new ServerOAuth2AuthorizedClientExchangeFilterFunction(oAuth2AuthorizedClientManager);
 
 		var nettyHttpClient = HttpClient.create()
@@ -47,8 +52,18 @@ public class AzureOAuthEnabledWebClientConfig {
 		var clientHttpConnector = new ReactorClientHttpConnector(nettyHttpClient);
 
 		return WebClient.builder()
+				.exchangeStrategies(jacksonStrategies(jsonMapper))
 				.clientConnector(clientHttpConnector)
 				.filter(oAuth2AuthorizedClientExchangeFilterFunction)
+				.build();
+	}
+
+	private ExchangeStrategies jacksonStrategies(JsonMapper jsonMapper) {
+		return ExchangeStrategies.builder()
+				.codecs(configurer -> {
+					configurer.defaultCodecs().jacksonJsonDecoder(new JacksonJsonDecoder(jsonMapper));
+					configurer.defaultCodecs().jacksonJsonEncoder(new JacksonJsonEncoder(jsonMapper));
+				})
 				.build();
 	}
 
