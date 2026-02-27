@@ -4,7 +4,6 @@ import io.micrometer.context.ContextRegistry;
 import org.slf4j.MDC;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import reactor.core.publisher.Hooks;
 
 import static no.nav.dokdistkanal.constants.MDCConstants.ALL_KEYS;
 
@@ -16,7 +15,6 @@ public class ApplicationReadyListener implements ApplicationListener<Application
 	}
 
 	private static void registerReactorContextPropagation() {
-		Hooks.enableAutomaticContextPropagation();
 		ALL_KEYS.forEach(ApplicationReadyListener::registerMDCKey);
 	}
 
