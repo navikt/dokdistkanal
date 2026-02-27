@@ -6,11 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcObservationAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.resilience.annotation.EnableResilientMethods;
 
 @Import(ApplicationConfig.class)
-@SpringBootApplication(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class, ServletWebSecurityAutoConfiguration.class})
+@SpringBootApplication(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class, ServletWebSecurityAutoConfiguration.class, WebMvcObservationAutoConfiguration.class})
 @EnableJwtTokenValidation(ignore = {"org.springframework", "org.springdoc"})
 @EnableResilientMethods
 public class Application {
