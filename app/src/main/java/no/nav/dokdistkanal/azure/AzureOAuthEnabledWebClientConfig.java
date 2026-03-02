@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.azure;
 
-import io.micrometer.observation.ObservationRegistry;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +38,6 @@ public class AzureOAuthEnabledWebClientConfig {
 		HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(20))
 				.proxyWithSystemProperties();
 		return WebClient.builder()
-				.observationRegistry(ObservationRegistry.NOOP)
 				.exchangeStrategies(jacksonStrategies(jsonMapper))
 				.clientConnector(new ReactorClientHttpConnector(httpClient))
 				.build();
@@ -54,7 +52,6 @@ public class AzureOAuthEnabledWebClientConfig {
 		var clientHttpConnector = new ReactorClientHttpConnector(nettyHttpClient);
 
 		return WebClient.builder()
-				.observationRegistry(ObservationRegistry.NOOP)
 				.exchangeStrategies(jacksonStrategies(jsonMapper))
 				.clientConnector(clientHttpConnector)
 				.filter(oAuth2AuthorizedClientExchangeFilterFunction)
