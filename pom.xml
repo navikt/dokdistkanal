@@ -22,11 +22,10 @@
 		<java.version>25</java.version>
 
 		<logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
-		<nimbus-jose-jwt.version>10.7</nimbus-jose-jwt.version>
+		<nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
 		<token-support.version>6.0.3</token-support.version>
 		<springdoc-openapi-starter-webmvc-ui.version>3.0.1</springdoc-openapi-starter-webmvc-ui.version>
 		<nocommons.version>0.16.0</nocommons.version>
-		<context-propagation.version>1.2.1</context-propagation.version>
 		<resilience4j.version>2.3.0</resilience4j.version>
 		<dok-common.version>1.7.1</dok-common.version>
 
@@ -63,11 +62,6 @@
 				<groupId>no.bekk.bekkopen</groupId>
 				<artifactId>nocommons</artifactId>
 				<version>${nocommons.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.micrometer</groupId>
-				<artifactId>context-propagation</artifactId>
-				<version>${context-propagation.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.github.resilience4j</groupId>
