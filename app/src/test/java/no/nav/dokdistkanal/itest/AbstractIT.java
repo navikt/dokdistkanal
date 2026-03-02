@@ -7,15 +7,16 @@ import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.client.AutoConfigureWebClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcObservationAutoConfiguration;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.cache.CacheManager;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestTemplate;
+import org.wiremock.spring.EnableWireMock;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
@@ -37,10 +38,10 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 		classes = {ApplicationTestConfig.class},
 		webEnvironment = RANDOM_PORT
 )
-@AutoConfigureWireMock(port = 0)
+@EnableWireMock
 @ActiveProfiles("itest")
-@EnableAutoConfiguration
-@AutoConfigureWebClient
+@EnableAutoConfiguration(exclude = {WebMvcObservationAutoConfiguration.class})
+@AutoConfigureWebTestClient
 //Er noe krøll med stubs og concurrency tror jeg, "permidlertidig" fix. Mistenker at Wiremock holder connections til
 //HttpClient åpen litt for lenge, men usikker på om det finnes en god løsning.
 //Kan også løses med Thread.sleep(50) før eller etter hver test.

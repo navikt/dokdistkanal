@@ -1,10 +1,10 @@
 package no.nav.dokdistkanal.certificate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import no.nav.dokdistkanal.exceptions.technical.KeystoreProviderException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,10 +47,10 @@ public class AppCertificate {
 		if (!Files.exists(credentialsJsonPath)) {
 			throw new IllegalArgumentException("credentials med path=" + credentials + " finnes ikke");
 		}
-		ObjectMapper objectMapper = new ObjectMapper();
+		JsonMapper jsonMapper = JsonMapper.builder().build();
 		try {
-			return objectMapper.readValue(credentialsJsonPath.toFile(), KeyStoreCredentials.class);
-		} catch (IOException e) {
+			return jsonMapper.readValue(credentialsJsonPath.toFile(), KeyStoreCredentials.class);
+		} catch (JacksonException e) {
 			// Rethrower ikke exception for å ikke risikere at innhold dumpes til loggen
 			throw new IllegalArgumentException("Klarte ikke lese credentials json");
 		}

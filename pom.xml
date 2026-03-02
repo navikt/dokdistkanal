@@ -15,23 +15,22 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.10</version>
+		<version>4.0.3</version>
 	</parent>
 
 	<properties>
 		<java.version>25</java.version>
 
-		<logstash-logback-encoder.version>8.1</logstash-logback-encoder.version>
-		<nimbus-jose-jwt.version>10.7</nimbus-jose-jwt.version>
-		<token-support.version>5.0.40</token-support.version>
-		<springdoc-openapi-starter-webmvc-ui.version>2.8.14</springdoc-openapi-starter-webmvc-ui.version>
+		<logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+		<nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
+		<token-support.version>6.0.3</token-support.version>
+		<springdoc-openapi-starter-webmvc-ui.version>3.0.1</springdoc-openapi-starter-webmvc-ui.version>
 		<nocommons.version>0.16.0</nocommons.version>
-		<context-propagation.version>1.2.1</context-propagation.version>
 		<resilience4j.version>2.3.0</resilience4j.version>
 		<dok-common.version>1.7.1</dok-common.version>
 
 		<!-- Test -->
-		<spring-cloud-contract-wiremock.version>4.3.0</spring-cloud-contract-wiremock.version>
+		<wiremock-spring-boot.version>4.1.0</wiremock-spring-boot.version>
 
 		<!-- Plugins -->
 		<maven-toolchains-plugin.version>3.2.0</maven-toolchains-plugin.version>
@@ -65,11 +64,6 @@
 				<version>${nocommons.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>io.micrometer</groupId>
-				<artifactId>context-propagation</artifactId>
-				<version>${context-propagation.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>io.github.resilience4j</groupId>
 				<artifactId>resilience4j-bom</artifactId>
 				<version>${resilience4j.version}</version>
@@ -84,9 +78,9 @@
 
 			<!-- Test -->
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-contract-wiremock</artifactId>
-				<version>${spring-cloud-contract-wiremock.version}</version>
+				<groupId>org.wiremock.integrations</groupId>
+				<artifactId>wiremock-spring-boot</artifactId>
+				<version>${wiremock-spring-boot.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>

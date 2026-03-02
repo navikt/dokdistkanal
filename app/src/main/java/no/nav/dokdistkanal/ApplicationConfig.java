@@ -6,6 +6,7 @@ import no.nav.dokdistkanal.config.RestWebMvcConfig;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
 import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
@@ -50,9 +51,11 @@ public class ApplicationConfig {
 	HttpClientConnectionManager httpClientConnectionManager() {
 		PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
 		var readTimeout = SocketConfig.custom().setSoTimeout(Timeout.ofSeconds(20)).build();
+		var connectionConfig = ConnectionConfig.custom().setConnectTimeout(Timeout.ofSeconds(3)).build();
 		connectionManager.setMaxTotal(400);
 		connectionManager.setDefaultMaxPerRoute(100);
 		connectionManager.setDefaultSocketConfig(readTimeout);
+		connectionManager.setDefaultConnectionConfig(connectionConfig);
 		return connectionManager;
 	}
 }

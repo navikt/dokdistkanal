@@ -10,7 +10,7 @@ import no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,7 +23,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -58,7 +57,6 @@ public class MaskinportenConsumer {
 		this.appCertificate = new AppCertificate(keyStoreProperties);
 		this.dpoProperties = dokdistkanalProperties.getDpo();
 		this.restTemplate = restTemplateBuilder
-				.connectTimeout(Duration.ofSeconds(3L))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 	}

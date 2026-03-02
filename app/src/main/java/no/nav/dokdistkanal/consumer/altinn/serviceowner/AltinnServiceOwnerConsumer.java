@@ -6,20 +6,17 @@ import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalExc
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import org.apache.hc.client5.http.classic.HttpClient;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.time.Duration;
 
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.ServiceIdentifier.DPV;
@@ -44,12 +41,11 @@ public class AltinnServiceOwnerConsumer {
 		this.maskinportenConsumer = maskinportenConsumer;
 		this.dokdistkanalProperties = dokdistkanalProperties;
 		this.restTemplate = restTemplateBuilder
-				.connectTimeout(Duration.ofSeconds(3L))
 				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
 				.build();
 	}
 
-	@Retryable(retryFor = DokdistkanalTechnicalException.class, backoff = @Backoff(delay = 200))
+	@Retryable(includes = DokdistkanalTechnicalException.class, delay = 200)
 	public ValidateRecipientResponse isServiceOwnerValidRecipient(String organisasjonsnummer) {
 		String altinnUrl = UriComponentsBuilder.fromUriString(dokdistkanalProperties.getAltinn().getUrl())
 				.path(SERVICEOWNER_PATH)
