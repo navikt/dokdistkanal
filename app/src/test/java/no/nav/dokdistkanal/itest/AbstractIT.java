@@ -7,9 +7,6 @@ import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
-import org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration;
-import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcObservationAutoConfiguration;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
@@ -43,7 +40,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 )
 @EnableWireMock
 @ActiveProfiles("itest")
-@EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class, ServletWebSecurityAutoConfiguration.class, WebMvcObservationAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = {WebMvcObservationAutoConfiguration.class})
 @AutoConfigureWebTestClient
 //Er noe krøll med stubs og concurrency tror jeg, "permidlertidig" fix. Mistenker at Wiremock holder connections til
 //HttpClient åpen litt for lenge, men usikker på om det finnes en god løsning.
