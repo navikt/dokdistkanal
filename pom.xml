@@ -25,7 +25,7 @@
 		<nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
 		<token-support.version>6.0.3</token-support.version>
 		<springdoc-openapi-starter-webmvc-ui.version>3.0.2</springdoc-openapi-starter-webmvc-ui.version>
-		<nocommons.version>0.16.0</nocommons.version>
+		<nocommons.version>0.17.0</nocommons.version>
 		<resilience4j.version>2.3.0</resilience4j.version>
 		<dok-common.version>1.7.1</dok-common.version>
 
