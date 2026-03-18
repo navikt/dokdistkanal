@@ -6,25 +6,20 @@ import no.nav.dokdistkanal.certificate.AppCertificate;
 import no.nav.dokdistkanal.certificate.KeyStoreProperties;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
-import no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.Date.from;
@@ -32,9 +27,7 @@ import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.MASKINPORTEN_CAC
 import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
 import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
-import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWTFromJwk;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateSignedJWTFromCertificate;
-import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 @Slf4j
 @Component
@@ -43,71 +36,56 @@ public class MaskinportenConsumer {
 	public static final String FUNKSJONELL_FEIL_ERROR_MESSAGE = "Klarte ikke hente AccessToken fra maskinporten. Funksjonell feil: ";
 	public static final String TEKNISK_FEIL_ERROR_MESSAGE = "Klarte ikke hente AccessToken fra maskinporten. Teknisk feil: ";
 
-	private final RestTemplate restTemplate;
+	private final RestClient restClient;
 	private final MaskinportenProperties maskinportenProperties;
 	private final AppCertificate appCertificate;
 	private final DokdistkanalProperties.Dpo dpoProperties;
 
-	public MaskinportenConsumer(RestTemplateBuilder restTemplateBuilder,
+	public MaskinportenConsumer(RestClient.Builder restClientBuilder,
 								MaskinportenProperties maskinportenProperties,
 								KeyStoreProperties keyStoreProperties,
-								DokdistkanalProperties dokdistkanalProperties,
-								HttpClient httpClient) {
+								DokdistkanalProperties dokdistkanalProperties) {
 		this.maskinportenProperties = maskinportenProperties;
 		this.appCertificate = new AppCertificate(keyStoreProperties);
 		this.dpoProperties = dokdistkanalProperties.getDpo();
-		this.restTemplate = restTemplateBuilder
-				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
+		this.restClient = restClientBuilder
+				.baseUrl(maskinportenProperties.getTokenEndpoint())
+				.defaultStatusHandler(HttpStatusCode::isError, (_, res) -> handleError(res))
 				.build();
 	}
 
 	@Cacheable(MASKINPORTEN_CACHE)
-	public String getMaskinportenToken(IdentifierResource.ServiceIdentifier serviceIdentifier) {
+	public String getMaskinportenToken() {
+		LinkedMultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+		body.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+		body.add("assertion", signedJwtClaim());
 
-		LinkedMultiValueMap<String, String> attrMap = new LinkedMultiValueMap<>();
-		attrMap.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
-		attrMap.add("assertion", signedJwtClaim(serviceIdentifier));
+		return Optional.ofNullable(restClient.post()
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+				.body(body)
+				.retrieve()
+				.body(OidcTokenResponse.class))
+				.map(OidcTokenResponse::getAccessToken)
+				.orElseThrow(() -> new MaskinportenTechnicalException("Tomt token-svar fra Maskinporten", null));
+	}
 
-		HttpEntity<LinkedMultiValueMap<String, String>> httpEntity = new HttpEntity<>(attrMap, headers());
-
-		try {
-			ResponseEntity<OidcTokenResponse> tokenResponse = restTemplate.exchange(maskinportenProperties.getTokenEndpoint(), HttpMethod.POST, httpEntity, OidcTokenResponse.class);
-			return tokenResponse.getBody().getAccessToken();
-		} catch (HttpClientErrorException err) {
-			final String errorMessage = FUNKSJONELL_FEIL_ERROR_MESSAGE + err.getResponseBodyAsString();
-			log.warn(errorMessage, errorMessage);
-			throw new MaskinportenFunctionalException(errorMessage, err);
-		} catch (HttpServerErrorException err) {
-			final String errorMessage = TEKNISK_FEIL_ERROR_MESSAGE + err.getMessage();
-			log.error(errorMessage, err);
-			throw new MaskinportenTechnicalException(errorMessage, err);
+	private void handleError(ClientHttpResponse response) throws IOException {
+		String errorBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+		if (response.getStatusCode().is4xxClientError()) {
+			String feilmelding = FUNKSJONELL_FEIL_ERROR_MESSAGE + errorBody;
+			log.warn(feilmelding);
+			throw new MaskinportenFunctionalException(feilmelding, null);
 		}
+		String feilmelding = TEKNISK_FEIL_ERROR_MESSAGE + errorBody;
+		log.error(feilmelding);
+		throw new MaskinportenTechnicalException(feilmelding, null);
 	}
 
-	private String signedJwtClaim(IdentifierResource.ServiceIdentifier serviceIdentifier) {
-		return switch (serviceIdentifier) {
-			case DPO -> generateDpoJWT(dpoProperties.getScope(), dpoProperties.getClientId());
-			case DPV -> generateDpvJWT(maskinportenProperties.getScopes(), maskinportenProperties.getClientId());
-		};
-	}
-
-	private String generateDpvJWT(String scope, String clientId) {
-		JWTClaimsSet claims = opprettClaim(scope, clientId);
-
-		return createSignedJWTFromJwk(maskinportenProperties.getClientJwk(), claims);
-	}
-
-	private String generateDpoJWT(String scope, String clientId) {
-		JWTClaimsSet claims = opprettClaim(scope, clientId);
-
-		return generateSignedJWTFromCertificate(appCertificate, claims);
-	}
-
-	private JWTClaimsSet opprettClaim(String scope, String clientId) {
-		return new JWTClaimsSet.Builder()
+	private String signedJwtClaim() {
+		JWTClaimsSet claims = new JWTClaimsSet.Builder()
 				.audience(maskinportenProperties.getIssuer())
-				.issuer(clientId)
-				.claim("scope", getCurrentScopes(scope))
+				.issuer(dpoProperties.getClientId())
+				.claim("scope", dpoProperties.getScope())
 				.claim("consumer", Consumer.builder()
 						.authority(ISO_6523_ACTORID_UPIS.getValue())
 						.id(NAV_ORGNUMMER)
@@ -116,18 +94,6 @@ public class MaskinportenConsumer {
 				.issueTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant()))
 				.expirationTime(from(OffsetDateTime.now(DEFAULT_ZONE_ID).toInstant().plusSeconds(30)))
 				.build();
-	}
-
-	private String getCurrentScopes(String scope) {
-		ArrayList<String> scopeList = new ArrayList<>();
-		scopeList.add(scope);
-		return scopeList.stream()
-				.reduce((a, b) -> a + " " + b).orElse("");
-	}
-
-	private HttpHeaders headers() {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(APPLICATION_FORM_URLENCODED);
-		return headers;
+		return generateSignedJWTFromCertificate(appCertificate, claims);
 	}
 }

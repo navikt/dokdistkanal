@@ -1,80 +1,71 @@
 package no.nav.dokdistkanal.consumer.pdl;
 
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
-import io.github.resilience4j.reactor.retry.RetryOperator;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryRegistry;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.common.NavHeadersExchangeFilterFunction;
+import no.nav.dokdistkanal.consumer.nais.NaisTexasRequestInterceptor;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.client.RestClient;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-import static no.nav.dokdistkanal.azure.AzureProperties.CLIENT_REGISTRATION_PDL;
-import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALL_ID;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction.clientRegistrationId;
 
 @Slf4j
 @Component
 public class PdlGraphQLConsumer {
 
-	// https://pdldocs-navno.msappproxy.net/ekstern/index.html#_dokumenter_hjemmel
 	private static final String HEADER_PDL_BEHANDLINGSNUMMER = "behandlingsnummer";
-	// https://behandlingskatalog.nais.adeo.no/process/purpose/ARKIVPLEIE/756fd557-b95e-4b20-9de9-6179fb8317e6
 	private static final String ARKIVPLEIE_BEHANDLINGSNUMMER = "B315";
-	private static final String RESILIENCE4J_INSTANCE = "pdl";
 
-	private final WebClient webClient;
-	private final CircuitBreaker circuitBreaker;
-	private final Retry retry;
+	private final RestClient restClient;
+	private final String targetScope;
 
 	public PdlGraphQLConsumer(DokdistkanalProperties dokdistkanalProperties,
-							  @Qualifier("azureOauth2WebClient") WebClient webClient,
-							  CircuitBreakerRegistry circuitBreakerRegistry,
-							  RetryRegistry retryRegistry) {
-		this.webClient = webClient
+							  RestClient restClientTexas) {
+		this.restClient = restClientTexas
 				.mutate()
 				.baseUrl(dokdistkanalProperties.getEndpoints().getPdl().getUrl())
 				.defaultHeaders(httpHeaders -> {
 					httpHeaders.set(CONTENT_TYPE, APPLICATION_JSON_VALUE);
 					httpHeaders.set(HEADER_PDL_BEHANDLINGSNUMMER, ARKIVPLEIE_BEHANDLINGSNUMMER);
 				})
-				.filter(new NavHeadersExchangeFilterFunction(NAV_CALL_ID))
+				.defaultStatusHandler(HttpStatusCode::isError, (_, res) -> handleError(res))
 				.build();
-		this.circuitBreaker = circuitBreakerRegistry.circuitBreaker(RESILIENCE4J_INSTANCE);
-		this.retry = retryRegistry.retry(RESILIENCE4J_INSTANCE);
+		this.targetScope = dokdistkanalProperties.getEndpoints().getPdl().getScope();
 	}
 
+	@CircuitBreaker(name = "pdl")
+	@Retryable(includes = DokdistkanalTechnicalException.class)
 	public HentPersoninfo hentPerson(final String aktoerId) {
 
 		log.debug("Henter personinfo for aktørId={}", aktoerId);
 
-		return webClient.post()
-				.attributes(clientRegistrationId(CLIENT_REGISTRATION_PDL))
-				.bodyValue(mapRequest(aktoerId))
+		PDLHentPersonResponse response = restClient.post()
+				.attribute(NaisTexasRequestInterceptor.TARGET_SCOPE, targetScope)
+				.body(mapRequest(aktoerId))
 				.retrieve()
-				.bodyToMono(PDLHentPersonResponse.class)
-				.mapNotNull(this::mapPersonInfo)
-				.onErrorMap(this::mapError)
-				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
-				.transformDeferred(RetryOperator.of(retry))
-				.block();
+				.body(PDLHentPersonResponse.class);
+
+		return mapPersonInfo(response);
 	}
 
 	private HentPersoninfo mapPersonInfo(PDLHentPersonResponse response) {
+		if (response == null) {
+			return null;
+		}
+
 		if (response.getErrors() != null) {
 			log.info("Kunne ikke hente person fra Pdl. Response inneholdt feilmeldinger: {}",
 					response.getErrors().stream().map(PDLHentPersonResponse.PdlError::getMessage)
@@ -116,29 +107,15 @@ public class PdlGraphQLConsumer {
 				}""").variables(variables).build();
 	}
 
-
-	private Throwable mapError(Throwable error) {
-		if (!(error instanceof WebClientResponseException response)) {
-			String feilmelding = format("Kall mot pdl feilet teknisk med feilmelding=%s", error.getMessage());
-
-			log.warn(feilmelding);
-
-			return new PdlTechnicalException(feilmelding, error);
-		}
-
-		String feilmelding = format("Kall mot pdl feilet %s med status=%s, feilmelding=%s, response=%s",
-				response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
-				response.getStatusCode(),
-				response.getMessage(),
-				response.getResponseBodyAsString());
-
+	private void handleError(ClientHttpResponse response) throws IOException {
+		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+		String feilmelding = "Kall mot pdl feilet %s med status=%s, body=%s"
+				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+						response.getStatusCode(), body);
 		log.warn(feilmelding);
-
 		if (response.getStatusCode().is4xxClientError()) {
-			return new PdlFunctionalException(feilmelding, error);
-		} else {
-			return new PdlTechnicalException(feilmelding, error);
+			throw new PdlFunctionalException(feilmelding);
 		}
+		throw new PdlTechnicalException(feilmelding, null);
 	}
-
 }

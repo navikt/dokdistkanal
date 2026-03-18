@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.itest;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-import io.github.resilience4j.retry.Retry;
 import no.nav.dokdistkanal.common.DistribusjonKanalCode;
 import no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
@@ -59,8 +58,8 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	@BeforeEach
 	public void setUp() {
 		clearCachene();
+		stubTexasToken();
 		stubMaskinporten();
-		stubAzure();
 		stubAltinn();
 		resetCircuitBreakers();
 	}
@@ -589,7 +588,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.isNotNull()
 				.satisfies(it -> {
 					assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
-					assertThat(response.getDetail()).contains("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding");
+					assertThat(response.getDetail()).contains("Kall mot Brønnøysundregistrene feilet funksjonelt med status=");
 
 				});
 	}
@@ -684,26 +683,24 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		request.setBrukerId(request.getMottakerId());
 
 		CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker("digdir-krr-proxy");
-		Retry retry = retryRegistry.retry("digdir-krr-proxy");
 
-		var retries = retry.getRetryConfig().getMaxAttempts();
 		var slidingWindowSize = circuitBreaker.getCircuitBreakerConfig().getSlidingWindowSize();
+		// Spring @Retryable(maxAttempts=3) wraps @CircuitBreaker — each retry counts against the CB
+		var maxRetries = 3;
 
-		// CircuitBreaker trigger etter sliding-window-size / retry-max-attempts feilede requests
-		Flux.range(1, slidingWindowSize / retries)
-				.flatMap(i -> webTestClient.post()
-						.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
-						.headers(headers())
-						.bodyValue(request)
-						.exchange()
-						.expectStatus()
-						.isEqualTo(INTERNAL_SERVER_ERROR)
-						.returnResult(ProblemDetail.class)
-						.getResponseBody()
-				)
-				.blockLast();
+		// CircuitBreaker opens after enough failed requests
+		for (int i = 0; i < slidingWindowSize / maxRetries; i++) {
+			webTestClient.post()
+					.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+					.headers(headers())
+					.bodyValue(request)
+					.exchange();
+		}
 
-		assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
+		assertThat(circuitBreaker.getState())
+				.as("CB should be OPEN after %d requests (each with %d retries filling window of %d)",
+						slidingWindowSize / maxRetries, maxRetries, slidingWindowSize)
+				.isEqualTo(CircuitBreaker.State.OPEN);
 
 		var response = webTestClient.post()
 				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)

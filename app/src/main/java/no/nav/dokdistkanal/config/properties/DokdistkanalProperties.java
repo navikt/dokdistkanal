@@ -47,6 +47,8 @@ public class DokdistkanalProperties {
 		private String url;
 		@NotEmpty
 		private String apiKey;
+		@NotEmpty
+		private String maskinportenScope;
 	}
 
 	@Data
