@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.consumer.altinn.maskinporten;
 
 import com.nimbusds.jwt.JWTClaimsSet;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.certificate.AppCertificate;
 import no.nav.dokdistkanal.certificate.KeyStoreProperties;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
@@ -29,7 +28,6 @@ import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateSignedJWTFromCertificate;
 
-@Slf4j
 @Component
 public class MaskinportenConsumer {
 
@@ -66,19 +64,15 @@ public class MaskinportenConsumer {
 				.retrieve()
 				.body(OidcTokenResponse.class))
 				.map(OidcTokenResponse::getAccessToken)
-				.orElseThrow(() -> new MaskinportenTechnicalException("Tomt token-svar fra Maskinporten", null));
+				.orElseThrow(() -> new MaskinportenTechnicalException("Tomt token-svar fra Maskinporten"));
 	}
 
 	private void handleError(ClientHttpResponse response) throws IOException {
 		String errorBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
 		if (response.getStatusCode().is4xxClientError()) {
-			String feilmelding = FUNKSJONELL_FEIL_ERROR_MESSAGE + errorBody;
-			log.warn(feilmelding);
-			throw new MaskinportenFunctionalException(feilmelding, null);
+			throw new MaskinportenFunctionalException(FUNKSJONELL_FEIL_ERROR_MESSAGE + errorBody);
 		}
-		String feilmelding = TEKNISK_FEIL_ERROR_MESSAGE + errorBody;
-		log.error(feilmelding);
-		throw new MaskinportenTechnicalException(feilmelding, null);
+		throw new MaskinportenTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + errorBody);
 	}
 
 	private String signedJwtClaim() {

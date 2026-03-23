@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.consumer.serviceregistry;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
@@ -15,11 +14,8 @@ import org.springframework.web.client.RestClient;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-@Slf4j
 @Component
 public class ServiceRegistryConsumer {
-
-	public static final String TEKNISK_FEIL_ERROR_MESSAGE = "Klarte ikke hente mottakerInfo fra service registry. Teknisk feil: ";
 
 	private final RestClient restClient;
 	private final MaskinportenConsumer maskinportenConsumer;
@@ -42,7 +38,7 @@ public class ServiceRegistryConsumer {
 						.path("/identifier/{orgnummer}/process/" + processIdentifier)
 						.build(orgnummer))
 				.headers(httpHeaders -> httpHeaders.setBearerAuth(maskinportenConsumer.getMaskinportenToken()))
-				.exchange((req, res) -> {
+				.exchange((_, res) -> {
 					if (res.getStatusCode().isError()) {
 						if (res.getStatusCode().is4xxClientError()) {
 							return null;
@@ -55,9 +51,7 @@ public class ServiceRegistryConsumer {
 
 	private void handleError(ClientHttpResponse response) throws IOException {
 		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-		String feilmelding = "Kall mot service-registry feilet teknisk med status=%s, body=%s"
-				.formatted(response.getStatusCode(), body);
-		log.error(feilmelding);
-		throw new ServiceRegistryTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + body);
+		throw new ServiceRegistryTechnicalException(
+				"Kall mot service-registry feilet teknisk med status=%s, body=%s".formatted(response.getStatusCode(), body));
 	}
 }

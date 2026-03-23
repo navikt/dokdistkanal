@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.consumer.dokmet;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dokmet.map.DokumenttypeInfoMapper;
 import no.nav.dokdistkanal.consumer.dokmet.to.DokumentTypeInfoTo;
@@ -23,7 +22,6 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Service
-@Slf4j
 public class DokmetConsumer {
 
 	private final RestClient restClient;
@@ -55,10 +53,9 @@ public class DokmetConsumer {
 		String feilmelding = "Kall mot dokmet feilet %s med status=%s, body=%s"
 				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
 						response.getStatusCode(), body);
-		log.warn(feilmelding);
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new DokmetFunctionalException(feilmelding, null);
+			throw new DokmetFunctionalException(feilmelding);
 		}
-		throw new DokmetTechnicalException(feilmelding, null);
+		throw new DokmetTechnicalException(feilmelding);
 	}
 }

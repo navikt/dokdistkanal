@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.consumer.dki;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.consumer.nais.NaisTexasRequestInterceptor;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinformasjonTo;
 import no.nav.dokdistkanal.consumer.dki.to.PostPersonerRequest;
@@ -21,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static no.nav.dokdistkanal.consumer.dki.to.DigitalKontaktinfoMapper.mapDigitalKontaktinformasjon;
+import static no.nav.dokdistkanal.consumer.nais.NaisTexasRequestInterceptor.TARGET_SCOPE;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -53,7 +53,7 @@ public class DigitalKontaktinformasjonConsumer {
 
 		PostPersonerResponse response = restClient.post()
 				.uri(SIKKER_DIGITAL_POSTADRESSE_URI, inkluderSikkerDigitalPost)
-				.attribute(NaisTexasRequestInterceptor.TARGET_SCOPE, targetScope)
+				.attribute(TARGET_SCOPE, targetScope)
 				.body(new PostPersonerRequest(List.of(fnrTrimmed)))
 				.retrieve()
 				.body(PostPersonerResponse.class);
@@ -92,10 +92,9 @@ public class DigitalKontaktinformasjonConsumer {
 		String feilmelding = "Kall mot digdir-krr-proxy feilet %s med status=%s, body=%s"
 				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
 						response.getStatusCode(), body);
-		log.warn(feilmelding);
 		if (response.getStatusCode().is4xxClientError()) {
 			throw new DigitalKontaktinformasjonFunctionalException(feilmelding);
 		}
-		throw new DigitalKontaktinformasjonTechnicalException(feilmelding, null);
+		throw new DigitalKontaktinformasjonTechnicalException(feilmelding);
 	}
 }

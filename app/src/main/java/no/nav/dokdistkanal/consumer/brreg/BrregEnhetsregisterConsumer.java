@@ -24,6 +24,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Component
 public class BrregEnhetsregisterConsumer {
 
+	private static final String CIRCUIT_BREAKER_NAME = "brreg-enhetsregister";
+
 	private final RestClient restClient;
 
 	public BrregEnhetsregisterConsumer(RestClient restClientTexas,
@@ -35,12 +37,12 @@ public class BrregEnhetsregisterConsumer {
 				.build();
 	}
 
-	@CircuitBreaker(name = "brreg-enhetsregister")
+	@CircuitBreaker(name = CIRCUIT_BREAKER_NAME)
 	@Retryable(includes = DokdistkanalTechnicalException.class)
 	public HovedenhetResponse hentHovedenhet(String organisasjonsnummer) {
 		return restClient.get()
 				.uri("/enheter/{organisasjonsnummer}", organisasjonsnummer)
-				.exchange((req, res) -> {
+				.exchange((_, res) -> {
 					if (res.getStatusCode().isError()) {
 						if (NOT_FOUND.isSameCodeAs(res.getStatusCode())) {
 							log.warn("organisasjonsnummer={} verken funnet i hoved eller underenheter", organisasjonsnummer);
@@ -52,12 +54,12 @@ public class BrregEnhetsregisterConsumer {
 				});
 	}
 
-	@CircuitBreaker(name = "brreg-enhetsregister")
+	@CircuitBreaker(name = CIRCUIT_BREAKER_NAME)
 	@Retryable(includes = DokdistkanalTechnicalException.class)
 	public EnhetsRolleResponse hentEnhetsRollegrupper(String organisasjonsnummer) {
 		return restClient.get()
 				.uri("/enheter/{organisasjonsnummer}/roller", organisasjonsnummer)
-				.exchange((req, res) -> {
+				.exchange((_, res) -> {
 					if (res.getStatusCode().isError()) {
 						handleError(res);
 					}
@@ -65,12 +67,12 @@ public class BrregEnhetsregisterConsumer {
 				});
 	}
 
-	@CircuitBreaker(name = "brreg-enhetsregister")
+	@CircuitBreaker(name = CIRCUIT_BREAKER_NAME)
 	@Retryable(includes = DokdistkanalTechnicalException.class)
 	public HovedenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
 		HentUnderenhetResponse hentUnderenhetResponse = restClient.get()
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
-				.exchange((req, res) -> {
+				.exchange((_, res) -> {
 					if (res.getStatusCode().isError()) {
 						if (NOT_FOUND.isSameCodeAs(res.getStatusCode())) {
 							log.warn("Finner ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
@@ -88,9 +90,9 @@ public class BrregEnhetsregisterConsumer {
 		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
 		if (response.getStatusCode().is4xxClientError()) {
 			throw new EnhetsregisterFunctionalException(
-					"Kall mot Brønnøysundregistrene feilet funksjonelt med status=%s, body=%s".formatted(response.getStatusCode(), body), null);
+					"Kall mot Brønnøysundregistrene feilet funksjonelt med status=%s, body=%s".formatted(response.getStatusCode(), body));
 		}
 		throw new EnhetsregisterTechnicalException(
-				"Kall mot Brønnøysundregistrene feilet teknisk med status=%s, body=%s".formatted(response.getStatusCode(), body), null);
+				"Kall mot Brønnøysundregistrene feilet teknisk med status=%s, body=%s".formatted(response.getStatusCode(), body));
 	}
 }

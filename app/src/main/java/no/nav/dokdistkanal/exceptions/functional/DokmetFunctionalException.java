@@ -6,7 +6,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ResponseStatus(value = BAD_REQUEST)
 public class DokmetFunctionalException extends DokdistkanalFunctionalException {
-	public DokmetFunctionalException(String message, Throwable cause) {
-		super(message, cause);
+	public DokmetFunctionalException(String message) {
+		super(message);
 	}
 }

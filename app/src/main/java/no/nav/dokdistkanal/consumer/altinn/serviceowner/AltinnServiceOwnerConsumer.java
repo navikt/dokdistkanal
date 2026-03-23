@@ -1,7 +1,5 @@
 package no.nav.dokdistkanal.consumer.altinn.serviceowner;
 
-import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.consumer.nais.NaisTexasRequestInterceptor;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
@@ -16,9 +14,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
+import static no.nav.dokdistkanal.consumer.nais.NaisTexasRequestInterceptor.MASKINPORTEN_SCOPE;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 
-@Slf4j
 @Component
 public class AltinnServiceOwnerConsumer {
 
@@ -46,7 +44,7 @@ public class AltinnServiceOwnerConsumer {
 						.path(SERVICEOWNER_PATH)
 						.queryParam("organizationNumber", organisasjonsnummer)
 						.build())
-				.attribute(NaisTexasRequestInterceptor.MASKINPORTEN_SCOPE, maskinportenScope)
+				.attribute(MASKINPORTEN_SCOPE, maskinportenScope)
 				.retrieve()
 				.body(ValidateRecipientResponse.class);
 	}
@@ -56,10 +54,9 @@ public class AltinnServiceOwnerConsumer {
 		String feilmelding = "Kall mot altinn feilet %s med status=%s, body=%s"
 				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
 						response.getStatusCode(), body);
-		log.warn(feilmelding);
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new AltinnServiceOwnerFunctionalException(feilmelding, null);
+			throw new AltinnServiceOwnerFunctionalException(feilmelding);
 		}
-		throw new AltinnServiceOwnerTechnicalException(feilmelding, null);
+		throw new AltinnServiceOwnerTechnicalException(feilmelding);
 	}
 }
