@@ -24,7 +24,6 @@ public class ServiceRegistryConsumer {
 	private final RestClient restClient;
 	private final MaskinportenConsumer maskinportenConsumer;
 
-	// Uses restClientTexas (not plain RestClient.Builder) to get the Nav-CallId interceptor
 	public ServiceRegistryConsumer(RestClient restClientTexas,
 								   DokdistkanalProperties dokdistkanalProperties,
 								   MaskinportenConsumer maskinportenConsumer) {

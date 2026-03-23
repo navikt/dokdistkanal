@@ -1,6 +1,5 @@
 package no.nav.dokdistkanal.consumer.nais;
 
-import org.slf4j.MDC;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -8,9 +7,6 @@ import org.springframework.http.client.ClientHttpResponse;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
-
-import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
 
 public class NaisTexasRequestInterceptor implements ClientHttpRequestInterceptor {
 
@@ -18,11 +14,9 @@ public class NaisTexasRequestInterceptor implements ClientHttpRequestInterceptor
 	public static final String MASKINPORTEN_SCOPE = "maskinportenScope";
 
 	private final NaisTexasConsumer naisTexasConsumer;
-	private final String callIdHeaderName;
 
-	public NaisTexasRequestInterceptor(NaisTexasConsumer naisTexasConsumer, String callIdHeaderName) {
+	public NaisTexasRequestInterceptor(NaisTexasConsumer naisTexasConsumer) {
 		this.naisTexasConsumer = naisTexasConsumer;
-		this.callIdHeaderName = callIdHeaderName;
 	}
 
 	@Override
@@ -38,13 +32,6 @@ public class NaisTexasRequestInterceptor implements ClientHttpRequestInterceptor
 			request.getHeaders().setBearerAuth(naisTexasConsumer.getMaskinportenToken(maskinportenScope));
 		}
 
-		request.getHeaders().add(callIdHeaderName, getCallId());
-
 		return execution.execute(request, body);
-	}
-
-	private static String getCallId() {
-		String callId = MDC.get(CALL_ID);
-		return callId != null && !callId.isBlank() ? callId : UUID.randomUUID().toString();
 	}
 }
