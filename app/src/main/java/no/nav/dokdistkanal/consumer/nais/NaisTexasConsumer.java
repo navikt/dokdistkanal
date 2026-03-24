@@ -1,7 +1,8 @@
 package no.nav.dokdistkanal.consumer.nais;
 
-import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.nais.NaisProperties;
+import no.nav.dokdistkanal.exceptions.functional.NaisTexasFunctionalException;
+import no.nav.dokdistkanal.exceptions.technical.NaisTexasTechnicalException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,6 @@ import java.util.Optional;
 import static java.lang.String.join;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
-@Slf4j
 @Component
 public class NaisTexasConsumer {
 
@@ -40,7 +40,7 @@ public class NaisTexasConsumer {
 				.retrieve()
 				.body(NaisTexasToken.class))
 				.map(NaisTexasToken::accessToken)
-				.orElseThrow(() -> new RuntimeException("Tomt token-svar fra NAIS Texas (entra_id)"));
+				.orElseThrow(() -> new NaisTexasTechnicalException("Tomt token-svar fra NAIS Texas (entra_id)"));
 	}
 
 	public String getMaskinportenToken(String... targetScopes) {
@@ -56,14 +56,17 @@ public class NaisTexasConsumer {
 				.retrieve()
 				.body(NaisTexasToken.class))
 				.map(NaisTexasToken::accessToken)
-				.orElseThrow(() -> new RuntimeException("Tomt token-svar fra NAIS Texas (maskinporten)"));
+				.orElseThrow(() -> new NaisTexasTechnicalException("Tomt token-svar fra NAIS Texas (maskinporten)"));
 	}
 
 	private void handleError(ClientHttpResponse response) throws IOException {
 		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-		String feilmelding = "Tokenforespørsel til NAIS Texas feilet med status=%s, body=%s"
-				.formatted(response.getStatusCode(), body);
-		log.error(feilmelding);
-		throw new RuntimeException(feilmelding);
+		String feilmelding = "Kall mot nais-texas feilet %s med status=%s, body=%s"
+				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+						response.getStatusCode(), body);
+		if (response.getStatusCode().is4xxClientError()) {
+			throw new NaisTexasFunctionalException(feilmelding);
+		}
+		throw new NaisTexasTechnicalException(feilmelding);
 	}
 }

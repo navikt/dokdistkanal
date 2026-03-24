@@ -2,6 +2,7 @@ package no.nav.dokdistkanal.consumer.serviceregistry;
 
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
+import no.nav.dokdistkanal.exceptions.functional.ServiceRegistryFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.ServiceRegistryTechnicalException;
 import org.springframework.http.HttpStatusCode;
@@ -51,7 +52,12 @@ public class ServiceRegistryConsumer {
 
 	private void handleError(ClientHttpResponse response) throws IOException {
 		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
-		throw new ServiceRegistryTechnicalException(
-				"Kall mot service-registry feilet teknisk med status=%s, body=%s".formatted(response.getStatusCode(), body));
+		String feilmelding = "Kall mot service-registry feilet %s med status=%s, body=%s"
+				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+						response.getStatusCode(), body);
+		if (response.getStatusCode().is4xxClientError()) {
+			throw new ServiceRegistryFunctionalException(feilmelding);
+		}
+		throw new ServiceRegistryTechnicalException(feilmelding);
 	}
 }

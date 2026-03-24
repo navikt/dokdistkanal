@@ -7,12 +7,16 @@ import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFuncti
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterNotFoundException;
+import no.nav.dokdistkanal.exceptions.functional.NaisTexasFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.ServiceRegistryFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.NaisTexasTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.PdlTechnicalException;
+import no.nav.dokdistkanal.exceptions.technical.ServiceRegistryTechnicalException;
 import no.nav.security.token.support.spring.validation.interceptor.JwtTokenUnauthorizedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -27,7 +31,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -48,7 +51,9 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 			AltinnServiceOwnerFunctionalException.class,
 			DigitalKontaktinformasjonFunctionalException.class,
 			EnhetsregisterFunctionalException.class,
-			PdlFunctionalException.class
+			PdlFunctionalException.class,
+			ServiceRegistryFunctionalException.class,
+			NaisTexasFunctionalException.class
 	})
 	ProblemDetail handleConsumerFunctionalException(Exception ex) {
 		log.warn("{}. Feil={}", CONSUMER_FUNKSJONELL_FEIL_MESSAGE, ex.getMessage(), ex);
@@ -66,8 +71,9 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 			AltinnServiceOwnerTechnicalException.class,
 			DigitalKontaktinformasjonTechnicalException.class,
 			PdlTechnicalException.class,
-			PdlTechnicalException.class,
-			EnhetsregisterTechnicalException.class
+			EnhetsregisterTechnicalException.class,
+			ServiceRegistryTechnicalException.class,
+			NaisTexasTechnicalException.class
 	})
 	ProblemDetail handleConsumerTechnicalException(Exception ex) {
 		log.error("{}. Feil={}", CONSUMER_TEKNISK_FEIL_MESSAGE, ex.getMessage(), ex);
@@ -77,7 +83,7 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
 		String feilmelding = ex.getFieldErrors().stream()
-				.map(it -> format("%s, mottatt %s=%s", it.getDefaultMessage(), it.getField(), it.getRejectedValue()))
+				.map(it -> "%s, mottatt %s=%s".formatted(it.getDefaultMessage(), it.getField(), it.getRejectedValue()))
 				.collect(Collectors.joining(". "));
 
 		log.warn("Validering av request feilet med feil={}", feilmelding, ex);

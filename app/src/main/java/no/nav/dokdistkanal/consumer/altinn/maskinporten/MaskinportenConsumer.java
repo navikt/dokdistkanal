@@ -31,9 +31,6 @@ import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils
 @Component
 public class MaskinportenConsumer {
 
-	public static final String FUNKSJONELL_FEIL_ERROR_MESSAGE = "Klarte ikke hente AccessToken fra maskinporten. Funksjonell feil: ";
-	public static final String TEKNISK_FEIL_ERROR_MESSAGE = "Klarte ikke hente AccessToken fra maskinporten. Teknisk feil: ";
-
 	private final RestClient restClient;
 	private final MaskinportenProperties maskinportenProperties;
 	private final AppCertificate appCertificate;
@@ -68,11 +65,14 @@ public class MaskinportenConsumer {
 	}
 
 	private void handleError(ClientHttpResponse response) throws IOException {
-		String errorBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+		String feilmelding = "Kall mot maskinporten feilet %s med status=%s, body=%s"
+				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+						response.getStatusCode(), body);
 		if (response.getStatusCode().is4xxClientError()) {
-			throw new MaskinportenFunctionalException(FUNKSJONELL_FEIL_ERROR_MESSAGE + errorBody);
+			throw new MaskinportenFunctionalException(feilmelding);
 		}
-		throw new MaskinportenTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + errorBody);
+		throw new MaskinportenTechnicalException(feilmelding);
 	}
 
 	private String signedJwtClaim() {
