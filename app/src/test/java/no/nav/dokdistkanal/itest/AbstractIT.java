@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.itest;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
-import io.github.resilience4j.retry.RetryRegistry;
 import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.client.RestTemplate;
 import org.wiremock.spring.EnableWireMock;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -50,8 +48,9 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 
 	protected static final String DOKMET_URL = "/rest/dokumenttypeinfo/.*";
 	protected static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
+	private static final String TEXAS_TOKEN_URL = "/texas/token";
 	private static final String MASKINPORTEN_URL = "/maskinporten";
-	private static final String AZURE_TOKEN_URL = "/azure_token";
+	private static final String MASKINPORTEN_HAPPY_FILE_PATH = "altinn/maskinporten_happy_response.json";
 	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient";
 	private static final String ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON = "/altinn/serviceowner/notifications/validaterecipient?organizationNumber=889640782";
 	private static final String PDL_GRAPHQL_URL = "/graphql";
@@ -59,8 +58,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	protected static final String DOKMET_HAPPY_FILE_PATH = "dokmet/happy-response.json";
 	private static final String PDL_HAPPY_FILE_PATH = "pdl/pdl_ok_response.json";
 	private static final String DIGDIR_KRR_PROXY_HAPPY_FILE_PATH = "dki/happy-responsebody.json";
-	private static final String MASKINPORTEN_HAPPY_FILE_PATH = "altinn/maskinporten_happy_response.json";
-	private static final String AZURE_TOKEN_HAPPY_FILE_PATH = "azure/token_response_dummy.json";
 
 	public static final String BESTEM_DISTRIBUSJONSKANAL_URL = "/rest/bestemDistribusjonskanal";
 	public static final String HENT_ENHET_OK_PATH = "enhetsregisteret/ikke_konkurs_enhetsregisteret.json";
@@ -79,16 +76,10 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	private CacheManager cacheManager;
 
 	@Autowired
-	protected RestTemplate restTemplate;
-
-	@Autowired
 	public WebTestClient webTestClient;
 
 	@Autowired
 	protected CircuitBreakerRegistry circuitBreakerRegistry;
-
-	@Autowired
-	protected RetryRegistry retryRegistry;
 
 	protected void resetCircuitBreakers() {
 		circuitBreakerRegistry.getAllCircuitBreakers().forEach(CircuitBreaker::reset);
@@ -98,12 +89,12 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 		cacheManager.getCacheNames().forEach(names -> cacheManager.getCache(names).clear());
 	}
 
-	protected void stubDigdirKrrProxy() {
-		stubDigdirKrrProxy(DIGDIR_KRR_PROXY_HAPPY_FILE_PATH);
-	}
-
-	protected void stubPdl() {
-		stubPdl(PDL_HAPPY_FILE_PATH);
+	protected void stubTexasToken() {
+		stubFor(post(urlEqualTo(TEXAS_TOKEN_URL))
+				.willReturn(aResponse()
+						.withStatus(OK.value())
+						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+						.withBody("{\"access_token\":\"dummy-token\",\"token_type\":\"Bearer\",\"expires_in\":3600}")));
 	}
 
 	protected void stubMaskinporten() {
@@ -112,6 +103,14 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(MASKINPORTEN_HAPPY_FILE_PATH)));
+	}
+
+	protected void stubDigdirKrrProxy() {
+		stubDigdirKrrProxy(DIGDIR_KRR_PROXY_HAPPY_FILE_PATH);
+	}
+
+	protected void stubPdl() {
+		stubPdl(PDL_HAPPY_FILE_PATH);
 	}
 
 	protected void stubAltinn() {
@@ -162,14 +161,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path))
 		);
-	}
-
-	protected void stubAzure() {
-		stubFor(post(AZURE_TOKEN_URL)
-				.willReturn(aResponse()
-						.withStatus(OK.value())
-						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile(AZURE_TOKEN_HAPPY_FILE_PATH)));
 	}
 
 	protected void stubDokmet() {
