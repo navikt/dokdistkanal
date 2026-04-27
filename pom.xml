@@ -22,7 +22,7 @@
 		<java.version>25</java.version>
 
 		<logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
-		<nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
+		<nimbus-jose-jwt.version>10.9</nimbus-jose-jwt.version>
 		<token-support.version>6.0.3</token-support.version>
 		<springdoc-openapi-starter-webmvc-ui.version>3.0.3</springdoc-openapi-starter-webmvc-ui.version>
 		<nocommons.version>0.17.0</nocommons.version>
