@@ -11,7 +11,7 @@ public record EnhetsRolleResponse(List<Roller> rollegrupper) {
 	public record Roller(Type type, List<Rolle> roller) {
 	}
 
-	public record Rolle(Type type, Person person) {
+	public record Rolle(Type type, Person person, boolean fratraadt) {
 
 	}
 

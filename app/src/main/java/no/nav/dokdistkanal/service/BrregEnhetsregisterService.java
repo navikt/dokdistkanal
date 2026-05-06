@@ -38,6 +38,7 @@ public class BrregEnhetsregisterService {
 		return response.rollegrupper().stream()
 				.flatMap(roller -> roller.roller().stream())
 				.filter(Objects::nonNull)
+				.filter(rolle -> !rolle.fratraadt())
 				.filter(rolle -> !erPersonDoedEllerManglerFodselsdato(rolle.person()))
 				.anyMatch(r -> GYLDIG_ROLLETYPE_FOR_DPVT.contains(r.type().kode()));
 	}
