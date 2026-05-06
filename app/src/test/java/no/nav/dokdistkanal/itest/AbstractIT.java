@@ -66,6 +66,7 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	public static final String HENT_ENHET_OK_PATH = "enhetsregisteret/ikke_konkurs_enhetsregisteret.json";
 	public static final String GRUPPEROLLER_OK_PATH = "enhetsregisteret/enhets_grupperoller.json";
 	public static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
+	public static final String GRUPPEROLLER_ALLE_FRATRAADT_PATH = "enhetsregisteret/grupperoller_alle_fratraadt.json";
 	public static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
 	public static final String SLETTET_ENHET_PATH = "enhetsregisteret/slettet_enhet.json";
 	public static final String UNDERENHET_ORGNR = "916007922";
