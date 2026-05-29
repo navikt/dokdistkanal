@@ -6,7 +6,7 @@ import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 
 @ResponseStatus(value = SERVICE_UNAVAILABLE)
 public class DokmetTechnicalException extends DokdistkanalTechnicalException {
-	public DokmetTechnicalException(String message, Throwable cause) {
-		super(message, cause);
+	public DokmetTechnicalException(String message) {
+		super(message);
 	}
 }

@@ -25,15 +25,15 @@ public class DokdistkanalProperties {
 	@Data
 	public static class Endpoints {
 		@Valid
-		private AzureEndpoint digdirKrrProxy;
+		private EntraIdEndpoint digdirKrrProxy;
 		@Valid
-		private AzureEndpoint pdl;
+		private EntraIdEndpoint pdl;
 		@Valid
 		private Endpoint dokmet;
 	}
 
 	@Data
-	public static class AzureEndpoint {
+	public static class EntraIdEndpoint {
 		@NotEmpty
 		private String url;
 
@@ -47,6 +47,8 @@ public class DokdistkanalProperties {
 		private String url;
 		@NotEmpty
 		private String apiKey;
+		@NotEmpty
+		private String maskinportenScope;
 	}
 
 	@Data

@@ -1,28 +1,21 @@
 package no.nav.dokdistkanal.consumer.altinn.serviceowner;
 
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
-import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
 import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokdistkanalTechnicalException;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.springframework.boot.restclient.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestClient;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
-import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.ServiceIdentifier.DPV;
+import static no.nav.dokdistkanal.consumer.nais.NaisTexasRequestInterceptor.MASKINPORTEN_SCOPE;
 import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 @Component
 public class AltinnServiceOwnerConsumer {
@@ -30,48 +23,40 @@ public class AltinnServiceOwnerConsumer {
 	private static final String SERVICEOWNER_PATH = "/serviceowner/notifications/validaterecipient";
 	private static final String ALTINN_API_KEY = "ApiKey";
 
-	private final MaskinportenConsumer maskinportenConsumer;
-	private final DokdistkanalProperties dokdistkanalProperties;
-	private final RestTemplate restTemplate;
+	private final RestClient restClient;
+	private final String maskinportenScope;
 
 	public AltinnServiceOwnerConsumer(DokdistkanalProperties dokdistkanalProperties,
-									  RestTemplateBuilder restTemplateBuilder,
-									  MaskinportenConsumer maskinportenConsumer,
-									  HttpClient httpClient) {
-		this.maskinportenConsumer = maskinportenConsumer;
-		this.dokdistkanalProperties = dokdistkanalProperties;
-		this.restTemplate = restTemplateBuilder
-				.requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
+									  RestClient restClientTexas) {
+		this.restClient = restClientTexas.mutate()
+				.baseUrl(dokdistkanalProperties.getAltinn().getUrl())
+				.defaultHeader(ACCEPT, HAL_JSON_VALUE)
+				.defaultHeader(ALTINN_API_KEY, dokdistkanalProperties.getAltinn().getApiKey())
+				.defaultStatusHandler(HttpStatusCode::isError, (_, res) -> handleError(res))
 				.build();
+		this.maskinportenScope = dokdistkanalProperties.getAltinn().getMaskinportenScope();
 	}
 
 	@Retryable(includes = DokdistkanalTechnicalException.class, delay = 200)
 	public ValidateRecipientResponse isServiceOwnerValidRecipient(String organisasjonsnummer) {
-		String altinnUrl = UriComponentsBuilder.fromUriString(dokdistkanalProperties.getAltinn().getUrl())
-				.path(SERVICEOWNER_PATH)
-				.queryParam("organizationNumber", organisasjonsnummer)
-				.build().toString();
-
-		var httpEntity = new HttpEntity<>(headers());
-
-		try {
-			ResponseEntity<ValidateRecipientResponse> response = restTemplate.exchange(altinnUrl, GET, httpEntity, ValidateRecipientResponse.class);
-			return response.getBody();
-		} catch (HttpClientErrorException err) {
-			throw new AltinnServiceOwnerFunctionalException(err.getMessage(), err);
-		} catch (HttpServerErrorException err) {
-			if (FORBIDDEN == err.getStatusCode()) {
-				throw new AltinnServiceOwnerFunctionalException(err.getMessage(), err);
-			}
-			throw new AltinnServiceOwnerTechnicalException(err.getMessage(), err);
-		}
+		return restClient.get()
+				.uri(uriBuilder -> uriBuilder
+						.path(SERVICEOWNER_PATH)
+						.queryParam("organizationNumber", organisasjonsnummer)
+						.build())
+				.attribute(MASKINPORTEN_SCOPE, maskinportenScope)
+				.retrieve()
+				.body(ValidateRecipientResponse.class);
 	}
 
-	private HttpHeaders headers() {
-		HttpHeaders headers = new HttpHeaders();
-		headers.set(ACCEPT, HAL_JSON_VALUE);
-		headers.setBearerAuth(maskinportenConsumer.getMaskinportenToken(DPV));
-		headers.set(ALTINN_API_KEY, dokdistkanalProperties.getAltinn().getApiKey());
-		return headers;
+	private void handleError(ClientHttpResponse response) throws IOException {
+		String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+		String feilmelding = "Kall mot altinn feilet %s med status=%s, body=%s"
+				.formatted(response.getStatusCode().is4xxClientError() ? "funksjonelt" : "teknisk",
+						response.getStatusCode(), body);
+		if (response.getStatusCode().is4xxClientError()) {
+			throw new AltinnServiceOwnerFunctionalException(feilmelding);
+		}
+		throw new AltinnServiceOwnerTechnicalException(feilmelding);
 	}
 }
