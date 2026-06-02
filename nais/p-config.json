@@ -13,7 +13,6 @@
   "DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE": "api://prod-gcp.team-rocket.digdir-krr-proxy/.default",
   "DOKDISTKANAL_ENDPOINTS_PDL_URL": "http://pdl-api.pdl.svc.nais.local/graphql",
   "DOKDISTKANAL_ENDPOINTS_PDL_SCOPE": "api://prod-fss.pdl.pdl-api/.default",
-  "DOKDISTKANAL_ALTINN_URL": "https://altinn.no/api",
   "DOKDISTKANAL_ENHETSREGISTER_URL": "https://data.brreg.no/enhetsregisteret/api",
   "DOKDISTKANAL_SERVICE_REGISTRY_URL": "https://eformidling.no/adressetjeneste",
   "NAV_VIRKSOMHETSSERTIFIKAT_VAULT": "/secret/virksomhetssertifikat/prod/sdp",

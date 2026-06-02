@@ -20,7 +20,7 @@ public enum BestemDistribusjonskanalRegel {
 	PREDEFINERT_INGEN_DISTRIBUSJON(INGEN_DISTRIBUSJON, "Predefinert distribusjonskanal er Ingen Distribusjon"),
 	PREDEFINERT_TRYGDERETTEN(TRYGDERETTEN, "Predefinert distribusjonskanal er Trygderetten"),
 	ORGANISASJON_MED_INFOTRYGD_DOKUMENT(PRINT, "Mottaker er organisasjon og dokument er produsert i infotrygd"),
-	ORGANISASJON_MED_ALTINN_INFO(DPVT, "Mottaker er organisasjon, har en gyldig altinn-serviceowner notifikasjonsmottaker og personer med nødvendig roller"),
+	ORGANISASJON_MED_ALTINN_INFO(DPVT, "Mottaker er organisasjon og har personer med nødvendige roller"),
 	ORGANISASJON_UTEN_ALTINN_INFO(PRINT, "Mottaker er organisasjon og mangler varslingsinformasjon for DPVT"),
 	ORGANISASJON_ER_KONKURS(PRINT, "Mottaker er organisasjon og er konkurs"),
 	ORGANISASJON_ER_SLETTET(PRINT, "Mottaker er organisasjon og er slettet"),

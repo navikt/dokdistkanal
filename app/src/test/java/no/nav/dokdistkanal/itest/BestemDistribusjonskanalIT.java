@@ -61,7 +61,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		clearCachene();
 		stubMaskinporten();
 		stubAzure();
-		stubAltinn();
 		resetCircuitBreakers();
 	}
 
@@ -148,11 +147,11 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	 * Her testes følgende regler for mottakertype ORGANISASJON:
 	 * 5: Er dokument produsert i Infotrygd? Hvis ja -> PRINT
 	 * 6: Har requesten forsendelseMetadataType DPO_AVTALEMELDING,  har mottaker info fra service registry? Hvis ja -> DPO
-	 * 7: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, og har enhets grupperoller? Hvis ja -> DPVT
+	 * 7: Er org. ikke konkurs eller slettet, og har enhets grupperoller? Hvis ja -> DPVT
 	 * 7.1: Mangler org. varslingsinformasjon for DPV? Hvis ja -> PRINT
-	 * 7.2: Har org. varslingsinformasjon i Altinn, men er konkurs? Hvis ja -> PRINT
-	 * 7.3: Har org. varslingsinformasjon i Altinn, er ikke konkurs, men er slettet? Hvis ja -> PRINT
-	 * 7.4: Har org. varslingsinformasjon i Altinn, er ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
+	 * 7.2: Er org. konkurs? Hvis ja -> PRINT
+	 * 7.3: Er org. ikke konkurs, men er slettet? Hvis ja -> PRINT
+	 * 7.4: Er org. ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -162,7 +161,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubGetServiceRegistry(registryStatus);
-		stubAltinn();
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(NOT_FOUND, "enhetsregisteret/underenhet_response.json", mottakerId);
 		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
@@ -197,7 +195,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, null),
 				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
 				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_UTEN_ALTINN_INFO, "889640782", "000000", null, null),
 				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null),
 				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null),
 				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH),
@@ -534,7 +531,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubAltinn();
 		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
 		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR);
 		stubUnderenhetsregisteret(NOT_FOUND, "", UNDERENHET_ORGNR);
@@ -568,7 +564,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubAltinn();
 		stubUnderenhetsregisteret(BAD_REQUEST, "", UNDERENHET_ORGNR);
 
 		var request = gyldigBestemDistribusjonskanalRequest();
@@ -600,7 +595,6 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubAltinn();
 		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
 		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, HOVEDENHET_ORGNR);
 		stubUnderenhetsregisteret(OK, "enhetsregisteret/underenhet_response.json", UNDERENHET_ORGNR);

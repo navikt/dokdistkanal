@@ -12,8 +12,6 @@ import org.springframework.validation.annotation.Validated;
 public class DokdistkanalProperties {
 
 	@Valid
-	private final Altinn altinn = new Altinn();
-	@Valid
 	private final Endpoints endpoints = new Endpoints();
 	@Valid
 	private final Endpoint serviceRegistry = new Endpoint();
@@ -39,14 +37,6 @@ public class DokdistkanalProperties {
 
 		@NotEmpty
 		private String scope;
-	}
-
-	@Data
-	public static final class Altinn {
-		@NotEmpty
-		private String url;
-		@NotEmpty
-		private String apiKey;
 	}
 
 	@Data

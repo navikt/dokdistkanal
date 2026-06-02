@@ -32,7 +32,6 @@ import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.MASKINPORTEN_CAC
 import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
 import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
-import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWTFromJwk;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateSignedJWTFromCertificate;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
@@ -87,14 +86,8 @@ public class MaskinportenConsumer {
 	private String signedJwtClaim(IdentifierResource.ServiceIdentifier serviceIdentifier) {
 		return switch (serviceIdentifier) {
 			case DPO -> generateDpoJWT(dpoProperties.getScope(), dpoProperties.getClientId());
-			case DPV -> generateDpvJWT(maskinportenProperties.getScopes(), maskinportenProperties.getClientId());
+			case DPV -> throw new UnsupportedOperationException("Støtter ikke jwt for DPV");
 		};
-	}
-
-	private String generateDpvJWT(String scope, String clientId) {
-		JWTClaimsSet claims = opprettClaim(scope, clientId);
-
-		return createSignedJWTFromJwk(maskinportenProperties.getClientJwk(), claims);
 	}
 
 	private String generateDpoJWT(String scope, String clientId) {
