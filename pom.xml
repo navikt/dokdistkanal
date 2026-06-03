@@ -26,7 +26,7 @@
 		<token-support.version>6.0.3</token-support.version>
 		<springdoc-openapi-starter-webmvc-ui.version>3.0.3</springdoc-openapi-starter-webmvc-ui.version>
 		<nocommons.version>0.17.0</nocommons.version>
-		<resilience4j.version>2.3.0</resilience4j.version>
+		<resilience4j.version>2.4.0</resilience4j.version>
 		<dok-common.version>1.7.1</dok-common.version>
 
 		<!-- Test -->
@@ -69,6 +69,11 @@
 				<version>${resilience4j.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>io.github.resilience4j</groupId>
+				<artifactId>resilience4j-spring-boot4</artifactId>
+				<version>${resilience4j.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>no.nav.dok-common</groupId>
