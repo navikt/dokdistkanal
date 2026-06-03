@@ -17,8 +17,6 @@ spec:
               $(JAVA_PROXY_OPTIONS) $(JAVA_TRUSTSTORE_OPTIONS)"
     - name: DOKDISTKANAL_ENHETSREGISTER_URL
       value: {{ DOKDISTKANAL_ENHETSREGISTER_URL }}
-    - name: DOKDISTKANAL_ALTINN_URL
-      value: {{ DOKDISTKANAL_ALTINN_URL }}
     - name: DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL
       value: {{ DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_URL }}
     - name: DOKDISTKANAL_ENDPOINTS_DIGDIR_KRR_PROXY_SCOPE
@@ -74,9 +72,6 @@ spec:
           - azp_name
   maskinporten:
     enabled: true
-    scopes:
-      consumes:
-        - name: altinn:serviceowner/notifications.read
   webproxy: true
   observability:
     logging:
@@ -86,8 +81,6 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
-      destinations:
-        - id: "elastic-apm"
   accessPolicy:
     inbound:
       rules:

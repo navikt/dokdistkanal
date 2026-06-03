@@ -2,7 +2,6 @@ package no.nav.dokdistkanal.service;
 
 import lombok.extern.slf4j.Slf4j;
 import no.bekk.bekkopen.org.OrganisasjonsnummerValidator;
-import no.nav.dokdistkanal.consumer.altinn.serviceowner.ValidateRecipientResponse;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import org.springframework.stereotype.Component;
 
@@ -24,11 +23,6 @@ public class DokdistkanalValidator {
 
 	private static final Set<String> AARSOPPGAVE_DOKUMENTTYPE_ID = Set.of("000053", "000077");
 	private static final Set<String> INFOTRYGD_DOKUMENTTYPE_ID = Set.of("000044", "000045", "000046", "000249");
-
-	public static boolean erGyldigAltinnNotifikasjonMottaker(ValidateRecipientResponse validateRecipientResponse) {
-		return validateRecipientResponse.inboxAccessible() &&
-				(validateRecipientResponse.canReceiveNotificationBySms() || validateRecipientResponse.canReceiveNotificationByEmail());
-	}
 
 	public static boolean erDokumentFraInfotrygd(String dokumentTypeId) {
 		return INFOTRYGD_DOKUMENTTYPE_ID.contains(dokumentTypeId);

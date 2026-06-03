@@ -6,7 +6,6 @@ import no.nav.dokdistkanal.certificate.AppCertificate;
 import no.nav.dokdistkanal.certificate.KeyStoreProperties;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.config.properties.MaskinportenProperties;
-import no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource;
 import no.nav.dokdistkanal.exceptions.functional.MaskinportenFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.MaskinportenTechnicalException;
 import org.apache.hc.client5.http.classic.HttpClient;
@@ -32,7 +31,6 @@ import static no.nav.dokdistkanal.config.cache.LocalCacheConfig.MASKINPORTEN_CAC
 import static no.nav.dokdistkanal.constants.DomainConstants.DEFAULT_ZONE_ID;
 import static no.nav.dokdistkanal.constants.DomainConstants.NAV_ORGNUMMER;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.Authority.ISO_6523_ACTORID_UPIS;
-import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.createSignedJWTFromJwk;
 import static no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenUtils.generateSignedJWTFromCertificate;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
@@ -61,12 +59,15 @@ public class MaskinportenConsumer {
 				.build();
 	}
 
+	/// Henter maskinporten token for DPO
+	///
+	/// Denne har en custom clientId hos maskinporten og er ikke noe som den nais provisjonerte klienten genererer
 	@Cacheable(MASKINPORTEN_CACHE)
-	public String getMaskinportenToken(IdentifierResource.ServiceIdentifier serviceIdentifier) {
+	public String getMaskinportenTokenDpo() {
 
 		LinkedMultiValueMap<String, String> attrMap = new LinkedMultiValueMap<>();
 		attrMap.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
-		attrMap.add("assertion", signedJwtClaim(serviceIdentifier));
+		attrMap.add("assertion", generateDpoJWT(dpoProperties.getScope(), dpoProperties.getClientId()));
 
 		HttpEntity<LinkedMultiValueMap<String, String>> httpEntity = new HttpEntity<>(attrMap, headers());
 
@@ -82,19 +83,6 @@ public class MaskinportenConsumer {
 			log.error(errorMessage, err);
 			throw new MaskinportenTechnicalException(errorMessage, err);
 		}
-	}
-
-	private String signedJwtClaim(IdentifierResource.ServiceIdentifier serviceIdentifier) {
-		return switch (serviceIdentifier) {
-			case DPO -> generateDpoJWT(dpoProperties.getScope(), dpoProperties.getClientId());
-			case DPV -> generateDpvJWT(maskinportenProperties.getScopes(), maskinportenProperties.getClientId());
-		};
-	}
-
-	private String generateDpvJWT(String scope, String clientId) {
-		JWTClaimsSet claims = opprettClaim(scope, clientId);
-
-		return createSignedJWTFromJwk(maskinportenProperties.getClientJwk(), claims);
 	}
 
 	private String generateDpoJWT(String scope, String clientId) {

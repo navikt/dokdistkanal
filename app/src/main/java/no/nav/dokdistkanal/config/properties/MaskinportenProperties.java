@@ -12,12 +12,5 @@ public class MaskinportenProperties {
 	@NotEmpty
 	private String issuer;
 	@NotEmpty
-	private String clientId;
-	@NotEmpty
-	private String scopes;
-	@NotEmpty
 	private String tokenEndpoint;
-	@NotEmpty
-	private String clientJwk;
-	private String wellKnownUrl;
 }

@@ -2,13 +2,11 @@ package no.nav.dokdistkanal.rest.bestemdistribusjonskanal;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.dokdistkanal.exceptions.functional.AltinnServiceOwnerFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterNotFoundException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
-import no.nav.dokdistkanal.exceptions.technical.AltinnServiceOwnerTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DigitalKontaktinformasjonTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.DokmetTechnicalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
@@ -45,7 +43,6 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	private static final String UKJENT_TEKNISK_FEIL_MESSAGE = "Ukjent teknisk feil";
 
 	@ExceptionHandler({DokmetFunctionalException.class,
-			AltinnServiceOwnerFunctionalException.class,
 			DigitalKontaktinformasjonFunctionalException.class,
 			EnhetsregisterFunctionalException.class,
 			PdlFunctionalException.class
@@ -63,7 +60,6 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	}
 
 	@ExceptionHandler({DokmetTechnicalException.class,
-			AltinnServiceOwnerTechnicalException.class,
 			DigitalKontaktinformasjonTechnicalException.class,
 			PdlTechnicalException.class,
 			PdlTechnicalException.class,

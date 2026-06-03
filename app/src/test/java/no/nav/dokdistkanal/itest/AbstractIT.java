@@ -25,11 +25,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
-import static no.nav.dokdistkanal.constants.DomainConstants.HAL_JSON_VALUE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -52,8 +49,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	protected static final String DIGDIR_KRR_PROXY_URL = "/DIGDIR_KRR_PROXY/rest/v1/personer?inkluderSikkerDigitalPost=true";
 	private static final String MASKINPORTEN_URL = "/maskinporten";
 	private static final String AZURE_TOKEN_URL = "/azure_token";
-	private static final String ALTINN_URL = "/altinn/serviceowner/notifications/validaterecipient";
-	private static final String ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON = "/altinn/serviceowner/notifications/validaterecipient?organizationNumber=889640782";
 	private static final String PDL_GRAPHQL_URL = "/graphql";
 
 	protected static final String DOKMET_HAPPY_FILE_PATH = "dokmet/happy-response.json";
@@ -113,23 +108,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withStatus(OK.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(MASKINPORTEN_HAPPY_FILE_PATH)));
-	}
-
-	protected void stubAltinn() {
-		var RESPONS_MED_VARSLINGSINFORMASJON = "altinn/serviceowner_happy_response.json";
-		var RESPONS_UTEN_VARSLINGSINFORMASJON = "altinn/serviceowner_with_false_response.json";
-
-		var response = aResponse()
-				.withHeader(CONTENT_TYPE, HAL_JSON_VALUE)
-				.withHeader(ACCEPT_ENCODING, "gzip");
-
-		stubFor(get(urlPathEqualTo(ALTINN_URL))
-				.willReturn(response
-						.withBodyFile(RESPONS_MED_VARSLINGSINFORMASJON)));
-
-		stubFor(get(urlEqualTo(ALTINN_URL_FOR_ORGANISASJON_UTEN_VARSLINGSINFORMASJON))
-				.willReturn(response
-						.withBodyFile(RESPONS_UTEN_VARSLINGSINFORMASJON)));
 	}
 
 	protected void stubEnhetsregisteret(HttpStatus status, String path, String organisasjonsnummer) {

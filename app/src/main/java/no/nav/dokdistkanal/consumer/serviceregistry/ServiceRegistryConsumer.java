@@ -15,7 +15,6 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
-import static no.nav.dokdistkanal.consumer.serviceregistry.IdentifierResource.ServiceIdentifier.DPO;
 
 @Slf4j
 @Component
@@ -49,7 +48,7 @@ public class ServiceRegistryConsumer {
 						.build(orgnummer))
 				.headers(httpHeaders -> {
 					httpHeaders.set(NAV_CALLID, MDC.get(CALL_ID));
-					httpHeaders.setBearerAuth(maskinportenConsumer.getMaskinportenToken(DPO));
+					httpHeaders.setBearerAuth(maskinportenConsumer.getMaskinportenTokenDpo());
 				})
 				.exchange((req, res) -> {
 					if (res.getStatusCode().isError()) {

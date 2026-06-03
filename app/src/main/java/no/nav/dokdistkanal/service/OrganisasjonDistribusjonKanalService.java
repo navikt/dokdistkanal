@@ -1,7 +1,6 @@
 package no.nav.dokdistkanal.service;
 
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
-import no.nav.dokdistkanal.consumer.altinn.serviceowner.AltinnServiceOwnerConsumer;
 import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.serviceregistry.DpoServiceRegistryService;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
@@ -15,10 +14,8 @@ import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISAS
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_SERVICE_REGISTRY_INFO;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_UTEN_ALTINN_INFO;
 import static no.nav.dokdistkanal.service.BestemDistribusjonskanalService.createResponse;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erDokumentFraInfotrygd;
-import static no.nav.dokdistkanal.service.DokdistkanalValidator.erGyldigAltinnNotifikasjonMottaker;
 import static no.nav.dokdistkanal.service.DokdistkanalValidator.erOrganisasjonsnummer;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -27,16 +24,13 @@ public class OrganisasjonDistribusjonKanalService {
 
 	public static final String DPO_AVTALEMELDING = "DPO_AVTALEMELDING";
 
-	private final AltinnServiceOwnerConsumer altinnServiceOwnerConsumer;
 	private final BrregEnhetsregisterService brregEnhetsregisterService;
 	private final DpoServiceRegistryService dpoServiceRegistryService;
 	private final DokdistkanalProperties.Dpo dpoProperties;
 
-	public OrganisasjonDistribusjonKanalService(AltinnServiceOwnerConsumer altinnServiceOwnerConsumer,
-												BrregEnhetsregisterService brregEnhetsregisterService,
+	public OrganisasjonDistribusjonKanalService(BrregEnhetsregisterService brregEnhetsregisterService,
 												DpoServiceRegistryService dpoServiceRegistryService,
 												DokdistkanalProperties dokdistkanalProperties) {
-		this.altinnServiceOwnerConsumer = altinnServiceOwnerConsumer;
 		this.brregEnhetsregisterService = brregEnhetsregisterService;
 		this.dpoServiceRegistryService = dpoServiceRegistryService;
 		this.dpoProperties = dokdistkanalProperties.getDpo();
@@ -68,13 +62,6 @@ public class OrganisasjonDistribusjonKanalService {
 	}
 
 	private BestemDistribusjonskanalResponse erGyldigDpvtMottaker(BestemDistribusjonskanalRequest request) {
-
-		var serviceOwnerValidRecipient = altinnServiceOwnerConsumer.isServiceOwnerValidRecipient(request.getMottakerId());
-
-		if (!erGyldigAltinnNotifikasjonMottaker(serviceOwnerValidRecipient)) {
-			return createResponse(request, ORGANISASJON_UTEN_ALTINN_INFO);
-		}
-
 		HovedenhetResponse hovedenhet = brregEnhetsregisterService.hentHovedenhet(request.getMottakerId());
 
 		if (hovedenhet == null) {
