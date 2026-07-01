@@ -564,7 +564,9 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubUnderenhetsregisteret(BAD_REQUEST, "", UNDERENHET_ORGNR);
+		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR, BAD_REQUEST.value());
+		stubUnderenhetsregisteret(NOT_FOUND, "", UNDERENHET_ORGNR);
 
 		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setMottakerId(UNDERENHET_ORGNR);

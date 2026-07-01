@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -47,7 +48,7 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/enheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
-						if (clientResponse.statusCode().is4xxClientError()) {
+						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
 							log.warn("organisasjonsnummer={} verken funnet i hoved eller underenheter", organisasjonsnummer);
 							return Mono.empty();
 						}
@@ -65,8 +66,8 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/enheter/{organisasjonsnummer}/roller", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
-						if (clientResponse.statusCode().is4xxClientError()) {
-							log.warn("fant ikke rollegrupper for organisasjonsnummer={}", organisasjonsnummer);
+						if (clientResponse.statusCode().isSameCodeAs(BAD_REQUEST)) {
+							log.warn("Bad request mot bregg med organisasjonsnummer={}", organisasjonsnummer);
 							return Mono.empty();
 						}
 						return handleErrorResponse(clientResponse);
@@ -84,7 +85,7 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
-						if (clientResponse.statusCode().is4xxClientError()) {
+						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
 							log.warn("fant ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
 							return Mono.empty();
 						}
@@ -96,6 +97,9 @@ public class BrregEnhetsregisterConsumer {
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
 
+		if (hentUnderenhetResponse != null && hentUnderenhetResponse.slettedato() != null) {
+			return new HovedenhetResponse(hentUnderenhetResponse.organisasjonsnummer(), false, hentUnderenhetResponse.slettedato());
+		}
 		return isNull(hentUnderenhetResponse) ? null : hentHovedenhet(hentUnderenhetResponse.overordnetEnhet());
 	}
 
