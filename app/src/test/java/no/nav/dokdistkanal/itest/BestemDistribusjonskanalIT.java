@@ -53,10 +53,10 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 /*
  * Se https://confluence.adeo.no/pages/viewpage.action?pageId=294148459 for funksjonelle behandlingsregler
  */
-public class BestemDistribusjonskanalIT extends AbstractIT {
+class BestemDistribusjonskanalIT extends AbstractIT {
 
 	@BeforeEach
-	public void setUp() {
+	void setUp() {
 		clearCachene();
 		stubMaskinporten();
 		stubAzure();
@@ -155,14 +155,14 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus, BestemDistribusjonskanalRegel regel,
-									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath) {
+									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath, int grupperollerStatus) {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubGetServiceRegistry(registryStatus);
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(NOT_FOUND, "enhetsregisteret/underenhet_response.json", mottakerId);
-		stubEnhetsGruppeRoller(grupperollerPath, mottakerId);
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, grupperollerStatus);
 
 		var request = bestemDistribusjonskanalRequestMedMetadataType(forsendelseMetadataType);
 		request.setMottakerId(mottakerId);
@@ -190,14 +190,15 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null),
-				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, null),
-				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH)
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null, OK.value()),
+				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, null, OK.value()),
+				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, OK.value()),
+				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, OK.value()),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null, OK.value()),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null, OK.value()),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, OK.value()),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, OK.value()),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, BAD_REQUEST.value())
 		);
 	}
 
@@ -531,7 +532,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
-		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR, OK.value());
 		stubUnderenhetsregisteret(NOT_FOUND, "", UNDERENHET_ORGNR);
 
 		var request = gyldigBestemDistribusjonskanalRequest();
@@ -559,7 +560,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	@Test
-	void skalReturnereInternalServerErrorWhenOrgnrThrowsBadRequestException() {
+	void skalReturnerePrintWhenOrgnrThrowsBadRequestException() {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
@@ -575,17 +576,17 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 				.bodyValue(request)
 				.exchange()
 				.expectStatus()
-				.is5xxServerError()
-				.expectBody(ProblemDetail.class)
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
 				.returnResult()
 				.getResponseBody();
 
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
-					assertThat(response.getDetail()).contains("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding");
-
+					assertThat(it.distribusjonskanal()).isEqualTo(PRINT);
+					assertThat(it.regel()).isEqualTo(MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.name());
+					assertThat(it.regelBegrunnelse()).isEqualTo(MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.begrunnelse);
 				});
 	}
 
@@ -595,7 +596,7 @@ public class BestemDistribusjonskanalIT extends AbstractIT {
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
-		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, HOVEDENHET_ORGNR);
+		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, HOVEDENHET_ORGNR, OK.value());
 		stubUnderenhetsregisteret(OK, "enhetsregisteret/underenhet_response.json", UNDERENHET_ORGNR);
 		stubSecondEnhetsregisteret("enhetsregisteret/ikke_konkurs_enhetsregisteret.json", HOVEDENHET_ORGNR);
 

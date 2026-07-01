@@ -47,7 +47,7 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/enheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
-						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
+						if (clientResponse.statusCode().is4xxClientError()) {
 							log.warn("organisasjonsnummer={} verken funnet i hoved eller underenheter", organisasjonsnummer);
 							return Mono.empty();
 						}
@@ -65,6 +65,10 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/enheter/{organisasjonsnummer}/roller", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
+						if (clientResponse.statusCode().is4xxClientError()) {
+							log.warn("fant ikke rollegrupper for organisasjonsnummer={}", organisasjonsnummer);
+							return Mono.empty();
+						}
 						return handleErrorResponse(clientResponse);
 					}
 					return clientResponse.bodyToMono(EnhetsRolleResponse.class);
@@ -80,8 +84,8 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
-						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
-							log.warn("Finner ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
+						if (clientResponse.statusCode().is4xxClientError()) {
+							log.warn("fant ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
 							return Mono.empty();
 						}
 						return handleErrorResponse(clientResponse);
