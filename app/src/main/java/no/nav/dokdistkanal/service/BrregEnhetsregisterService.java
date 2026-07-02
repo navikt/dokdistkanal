@@ -24,15 +24,17 @@ public class BrregEnhetsregisterService {
 		this.brregEnhetsregisterConsumer = brregEnhetsregisterConsumer;
 	}
 
-	public HovedenhetResponse hentHovedenhet(String organisasjonsnummer) {
+	public InternEnhet hentHovedenhet(String organisasjonsnummer) {
 		HentUnderenhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(organisasjonsnummer);
 
 		if (hentHovedenhetFraUnderenhet != null && hentHovedenhetFraUnderenhet.slettedato() != null) {
-			return new HovedenhetResponse(hentHovedenhetFraUnderenhet.organisasjonsnummer(), false, hentHovedenhetFraUnderenhet.slettedato());
+			return new InternEnhet(hentHovedenhetFraUnderenhet.organisasjonsnummer(), false, hentHovedenhetFraUnderenhet.slettedato());
 		}
 
 		final String orgNr = erOverordnetEnhetNotNull(hentHovedenhetFraUnderenhet) ? hentHovedenhetFraUnderenhet.overordnetEnhet() : organisasjonsnummer;
-		return brregEnhetsregisterConsumer.hentHovedenhet(orgNr);
+		HovedenhetResponse hovedenhetResponse = brregEnhetsregisterConsumer.hentHovedenhet(orgNr);
+
+		return mapFraHovednhet(hovedenhetResponse);
 	}
 
 	public boolean harEnhetenGyldigRolletypeForDpvt(String organisasjonsnummer) {
@@ -60,5 +62,9 @@ public class BrregEnhetsregisterService {
 
 	private boolean erOverordnetEnhetNotNull(HentUnderenhetResponse hentUnderenhetResponse) {
 		return hentUnderenhetResponse != null && isNotBlank(hentUnderenhetResponse.overordnetEnhet());
+	}
+
+	private InternEnhet mapFraHovednhet(HovedenhetResponse hovedenhetResponse) {
+		return new InternEnhet(hovedenhetResponse.organisasjonsnummer(), hovedenhetResponse.konkurs(), hovedenhetResponse.slettedato());
 	}
 }

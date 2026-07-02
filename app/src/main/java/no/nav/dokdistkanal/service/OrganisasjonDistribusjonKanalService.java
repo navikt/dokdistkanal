@@ -62,7 +62,7 @@ public class OrganisasjonDistribusjonKanalService {
 	}
 
 	private BestemDistribusjonskanalResponse erGyldigDpvtMottaker(BestemDistribusjonskanalRequest request) {
-		HovedenhetResponse hovedenhet = brregEnhetsregisterService.hentHovedenhet(request.getMottakerId());
+		InternEnhet hovedenhet = brregEnhetsregisterService.hentHovedenhet(request.getMottakerId());
 
 		if (hovedenhet == null) {
 			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
