@@ -15,9 +15,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -66,10 +64,6 @@ public class BrregEnhetsregisterConsumer {
 				.uri("/enheter/{organisasjonsnummer}/roller", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
-						if (clientResponse.statusCode().isSameCodeAs(BAD_REQUEST)) {
-							log.warn("Bad request mot bregg med organisasjonsnummer={}", organisasjonsnummer);
-							return Mono.empty();
-						}
 						return handleErrorResponse(clientResponse);
 					}
 					return clientResponse.bodyToMono(EnhetsRolleResponse.class);
@@ -80,8 +74,8 @@ public class BrregEnhetsregisterConsumer {
 
 	}
 
-	public HovedenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
-		HentUnderenhetResponse hentUnderenhetResponse = webClient.get()
+	public HentUnderenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
+		return webClient.get()
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
@@ -96,11 +90,6 @@ public class BrregEnhetsregisterConsumer {
 				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
-
-		if (hentUnderenhetResponse != null && hentUnderenhetResponse.slettedato() != null) {
-			return new HovedenhetResponse(hentUnderenhetResponse.organisasjonsnummer(), false, hentUnderenhetResponse.slettedato());
-		}
-		return isNull(hentUnderenhetResponse) ? null : hentHovedenhet(hentUnderenhetResponse.overordnetEnhet());
 	}
 
 	public <T> Mono<T> handleErrorResponse(ClientResponse clientResponse) {

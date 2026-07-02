@@ -150,19 +150,21 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7.1: Mangler org. varslingsinformasjon for DPV? Hvis ja -> PRINT
 	 * 7.2: Er org. konkurs? Hvis ja -> PRINT
 	 * 7.3: Er org. ikke konkurs, men er slettet? Hvis ja -> PRINT
+	 * 7.3  Er underenhet og slettet? Hvis ja -> PRINT
 	 * 7.4: Er org. ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus, BestemDistribusjonskanalRegel regel,
-									  String mottakerId, String dokumentTypeId, String hentEnhetPath, String grupperollerPath, int grupperollerStatus) {
+	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus,
+									  BestemDistribusjonskanalRegel regel, String mottakerId, String dokumentTypeId, String hentEnhetPath,
+									  String grupperollerPath, String underenhetPath, HttpStatus underenhetStatusCode) {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
 		stubGetServiceRegistry(registryStatus);
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
-		stubUnderenhetsregisteret(NOT_FOUND, "enhetsregisteret/underenhet_response.json", mottakerId);
-		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, grupperollerStatus);
+		stubUnderenhetsregisteret(underenhetStatusCode, underenhetPath, mottakerId);
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, OK.value());
 
 		var request = bestemDistribusjonskanalRequestMedMetadataType(forsendelseMetadataType);
 		request.setMottakerId(mottakerId);
@@ -190,15 +192,15 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "974761076", "000044", null, null, OK.value()),
-				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, null, OK.value()),
-				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, OK.value()),
-				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, OK.value()),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "974761076", "000000", KONKURS_ENHET_PATH, null, OK.value()),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "974761076", "000000", SLETTET_ENHET_PATH, null, OK.value()),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, OK.value()),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, OK.value()),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, "974761076", "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, BAD_REQUEST.value())
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, HOVEDENHET_ORGNR, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, HOVEDENHET_ORGNR, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, HOVEDENHET_ORGNR, "000000", SLETTET_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, SLETTET_UNDERENHET_PATH, OK),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND)
 		);
 	}
 
