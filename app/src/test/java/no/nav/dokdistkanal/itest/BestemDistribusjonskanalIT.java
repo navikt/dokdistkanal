@@ -561,14 +561,13 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 				});
 	}
 
+
 	@Test
-	void skalReturnerePrintWhenOrgnrThrowsBadRequestException() {
+	void skalReturnereInternalServerErrorWhenOrgnrThrowsBadRequestException() {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubEnhetsregisteret(NOT_FOUND, null, UNDERENHET_ORGNR);
-		stubEnhetsGruppeRoller(GRUPPEROLLER_OK_PATH, UNDERENHET_ORGNR, BAD_REQUEST.value());
-		stubUnderenhetsregisteret(NOT_FOUND, "", UNDERENHET_ORGNR);
+		stubUnderenhetsregisteret(BAD_REQUEST, "", UNDERENHET_ORGNR);
 
 		var request = gyldigBestemDistribusjonskanalRequest();
 		request.setMottakerId(UNDERENHET_ORGNR);
@@ -580,17 +579,17 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 				.bodyValue(request)
 				.exchange()
 				.expectStatus()
-				.isOk()
-				.expectBody(BestemDistribusjonskanalResponse.class)
+				.is5xxServerError()
+				.expectBody(ProblemDetail.class)
 				.returnResult()
 				.getResponseBody();
 
 		assertThat(response)
 				.isNotNull()
 				.satisfies(it -> {
-					assertThat(it.distribusjonskanal()).isEqualTo(PRINT);
-					assertThat(it.regel()).isEqualTo(MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.name());
-					assertThat(it.regelBegrunnelse()).isEqualTo(MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON.begrunnelse);
+					assertThat(response.getStatus()).isEqualTo(INTERNAL_SERVER_ERROR.value());
+					assertThat(response.getDetail()).contains("Kall mot Brønnøysundregistrene feilet funksjonelt med feilmelding");
+
 				});
 	}
 

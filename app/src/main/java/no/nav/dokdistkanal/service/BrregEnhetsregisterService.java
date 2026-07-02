@@ -34,7 +34,7 @@ public class BrregEnhetsregisterService {
 		final String orgNr = erOverordnetEnhetNotNull(hentHovedenhetFraUnderenhet) ? hentHovedenhetFraUnderenhet.overordnetEnhet() : organisasjonsnummer;
 		HovedenhetResponse hovedenhetResponse = brregEnhetsregisterConsumer.hentHovedenhet(orgNr);
 
-		return mapFraHovednhet(hovedenhetResponse);
+		return hovedenhetResponse == null ? null : mapFraHovednhet(hovedenhetResponse);
 	}
 
 	public boolean harEnhetenGyldigRolletypeForDpvt(String organisasjonsnummer) {
