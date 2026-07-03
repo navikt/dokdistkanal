@@ -8,6 +8,7 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
+import no.nav.dokdistkanal.exceptions.functional.EnhetSlettetException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
 import org.springframework.stereotype.Component;
@@ -75,7 +76,7 @@ public class BrregEnhetsregisterConsumer {
 	}
 
 	public HentUnderenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
-		return webClient.get()
+		HentUnderenhetResponse hentHovedenhetFraUnderenhet = webClient.get()
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
@@ -90,6 +91,12 @@ public class BrregEnhetsregisterConsumer {
 				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
+
+		if (hentHovedenhetFraUnderenhet != null && hentHovedenhetFraUnderenhet.slettedato() != null) {
+			throw new EnhetSlettetException("Underenheten med organisasjonsnummer=" + organisasjonsnummer + " er slettet per " + hentHovedenhetFraUnderenhet.slettedato());
+		}
+
+		return hentHovedenhetFraUnderenhet;
 	}
 
 	public <T> Mono<T> handleErrorResponse(ClientResponse clientResponse) {
