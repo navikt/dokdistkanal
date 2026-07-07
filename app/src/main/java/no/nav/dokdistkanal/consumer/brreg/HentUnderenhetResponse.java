@@ -1,4 +1,9 @@
 package no.nav.dokdistkanal.consumer.brreg;
 
-public record HentUnderenhetResponse (String organisasjonsnummer, String overordnetEnhet){
+import java.time.LocalDate;
+
+public record HentUnderenhetResponse(
+		String organisasjonsnummer,
+		String overordnetEnhet,
+		LocalDate slettedato) {
 }

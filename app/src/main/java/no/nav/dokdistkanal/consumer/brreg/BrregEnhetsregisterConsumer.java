@@ -8,6 +8,7 @@ import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
+import no.nav.dokdistkanal.exceptions.functional.EnhetSlettetException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.technical.EnhetsregisterTechnicalException;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,6 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import static java.util.Objects.isNull;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -75,13 +75,13 @@ public class BrregEnhetsregisterConsumer {
 
 	}
 
-	public HovedenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
-		HentUnderenhetResponse hentUnderenhetResponse = webClient.get()
+	public HentUnderenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
+		HentUnderenhetResponse hentHovedenhetFraUnderenhet = webClient.get()
 				.uri("/underenheter/{organisasjonsnummer}", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
 					if (clientResponse.statusCode().isError()) {
 						if (NOT_FOUND.isSameCodeAs(clientResponse.statusCode())) {
-							log.warn("Finner ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
+							log.warn("Fant ikke underenhet med organisasjonsnummer={}", organisasjonsnummer);
 							return Mono.empty();
 						}
 						return handleErrorResponse(clientResponse);
@@ -92,7 +92,11 @@ public class BrregEnhetsregisterConsumer {
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
 
-		return isNull(hentUnderenhetResponse) ? null : hentHovedenhet(hentUnderenhetResponse.overordnetEnhet());
+		if (hentHovedenhetFraUnderenhet != null && hentHovedenhetFraUnderenhet.slettedato() != null) {
+			throw new EnhetSlettetException("Underenheten med organisasjonsnummer=" + organisasjonsnummer + " er slettet per " + hentHovedenhetFraUnderenhet.slettedato());
+		}
+
+		return hentHovedenhetFraUnderenhet;
 	}
 
 	public <T> Mono<T> handleErrorResponse(ClientResponse clientResponse) {

@@ -36,9 +36,7 @@ public class BestemDistribusjonskanalController {
 	public ResponseEntity<BestemDistribusjonskanalResponse> bestemDistribusjonskanal(
 			@Valid @RequestBody BestemDistribusjonskanalRequest request,
 			@RequestHeader(value = NAV_CALLID, required = false) String navCallId) {
-
 		MDC.put(CALL_ID, getOrCreateCallId(navCallId));
-
 		return ResponseEntity.ok(bestemDistribusjonskanalService.bestemDistribusjonskanal(request));
 	}
 }

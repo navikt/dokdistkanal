@@ -3,6 +3,7 @@ package no.nav.dokdistkanal.service;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.serviceregistry.DpoServiceRegistryService;
+import no.nav.dokdistkanal.exceptions.functional.EnhetSlettetException;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.springframework.stereotype.Component;
@@ -37,11 +38,14 @@ public class OrganisasjonDistribusjonKanalService {
 	}
 
 	public BestemDistribusjonskanalResponse validerOrgNrOgBestemKanal(BestemDistribusjonskanalRequest request) {
-		if (!erOrganisasjonsnummer(request)) {
-			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		try {
+			if (!erOrganisasjonsnummer(request)) {
+				return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+			}
+			return organisasjon(request);
+		} catch (EnhetSlettetException _) {
+			return createResponse(request, ORGANISASJON_ER_SLETTET);
 		}
-
-		return organisasjon(request);
 	}
 
 	private BestemDistribusjonskanalResponse organisasjon(BestemDistribusjonskanalRequest request) {

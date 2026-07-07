@@ -5,7 +5,6 @@ import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.retry.RetryRegistry;
 import no.nav.dokdistkanal.itest.config.ApplicationTestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcObservationAutoConfiguration;
@@ -62,14 +61,12 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	public static final String GRUPPEROLLER_OK_PATH = "enhetsregisteret/enhets_grupperoller.json";
 	public static final String GRUPPEROLLER_PERSON_ER_DOED_PATH = "enhetsregisteret/grupperoller_person_er_doed.json";
 	public static final String GRUPPEROLLER_ALLE_FRATRAADT_PATH = "enhetsregisteret/grupperoller_alle_fratraadt.json";
+	public static final String UNDERENHET_PATH = "enhetsregisteret/underenhet_response.json";
 	public static final String KONKURS_ENHET_PATH = "enhetsregisteret/konkurs_enhet.json";
 	public static final String SLETTET_ENHET_PATH = "enhetsregisteret/slettet_enhet.json";
+	public static final String SLETTET_UNDERENHET_PATH = "enhetsregisteret/slettet_underenhet.json";
 	public static final String UNDERENHET_ORGNR = "916007922";
 	public static final String HOVEDENHET_ORGNR = "974761076";
-
-
-	@Value("${local.url}")
-	protected String LOCAL_ENDPOINT_URL;
 
 	@Autowired
 	private CacheManager cacheManager;
@@ -134,10 +131,10 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withBodyFile(path)));
 	}
 
-	protected void stubEnhetsGruppeRoller(String path, String organisasjonsnummer) {
+	protected void stubEnhetsGruppeRoller(String path, String organisasjonsnummer, int statuscode) {
 		stubFor(any(urlMatching("/enhetsregisteret/enheter/" + organisasjonsnummer + "/roller"))
 				.willReturn(aResponse()
-						.withStatus(OK.value())
+						.withStatus(statuscode)
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
 						.withBodyFile(path))
 		);

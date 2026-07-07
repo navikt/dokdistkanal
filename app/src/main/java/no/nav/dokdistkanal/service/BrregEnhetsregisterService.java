@@ -2,12 +2,14 @@ package no.nav.dokdistkanal.service;
 
 import no.nav.dokdistkanal.consumer.brreg.BrregEnhetsregisterConsumer;
 import no.nav.dokdistkanal.consumer.brreg.EnhetsRolleResponse;
+import no.nav.dokdistkanal.consumer.brreg.HentUnderenhetResponse;
 import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.Set;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.CollectionUtils.isEmpty;
 
 @Component
@@ -23,8 +25,9 @@ public class BrregEnhetsregisterService {
 	}
 
 	public HovedenhetResponse hentHovedenhet(String organisasjonsnummer) {
-		HovedenhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(organisasjonsnummer);
-		return hentHovedenhetFraUnderenhet != null ? hentHovedenhetFraUnderenhet : brregEnhetsregisterConsumer.hentHovedenhet(organisasjonsnummer);
+		HentUnderenhetResponse hentHovedenhetFraUnderenhet = brregEnhetsregisterConsumer.hentHovedenhetFraUnderenhet(organisasjonsnummer);
+		final String orgNr = erOverordnetEnhetNotNull(hentHovedenhetFraUnderenhet) ? hentHovedenhetFraUnderenhet.overordnetEnhet() : organisasjonsnummer;
+		return brregEnhetsregisterConsumer.hentHovedenhet(orgNr);
 	}
 
 	public boolean harEnhetenGyldigRolletypeForDpvt(String organisasjonsnummer) {
@@ -48,5 +51,9 @@ public class BrregEnhetsregisterService {
 			return false;
 		}
 		return person.erDoed() || person.fodselsdato() == null;
+	}
+
+	private boolean erOverordnetEnhetNotNull(HentUnderenhetResponse hentUnderenhetResponse) {
+		return hentUnderenhetResponse != null && isNotBlank(hentUnderenhetResponse.overordnetEnhet());
 	}
 }
