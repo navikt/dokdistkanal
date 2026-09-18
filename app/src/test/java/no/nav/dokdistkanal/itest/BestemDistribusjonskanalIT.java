@@ -106,7 +106,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 1: Skal dokumentet arkiveres? Hvis nei -> PRINT
 	 * 2: Er predefinert distribusjonskanal LOKAL_PRINT? Hvis ja -> LOKAL_PRINT
 	 * 3: Er predefinert distribusjonskanal INGEN_DISTRIBUSJON? Hvis ja -> INGEN_DISTRIBUSJON
-	 * 4: redefinert distribusjonskanal TRYGDERETTEN? Hvis ja -> TRYGDERETTEN
+	 * 4: Er predefinert distribusjonskanal TRYGDERETTEN? Hvis ja -> TRYGDERETTEN
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -206,9 +206,9 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 8: Finnes mottaker i PDL? Hvis nei -> PRINT
-	 * 9: Er mottakers fødselsdato ikke satt, eller er under 18 år gammel? Hvis ja -> PRINT
+	 * 9: Finnes mottaker i PDL? Hvis nei -> PRINT
 	 * 10: Er personen død? Hvis ja -> PRINT
+	 * 11: Er mottakers fødselsdato ikke satt, eller er under 18 år gammel? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -247,12 +247,12 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 11: Har personen gyldig digital kontaktinformasjon? Hvis nei -> PRINT
-	 * 12: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
-	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvis ja -> PRINT
-	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
-	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
-	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
+	 * 12: Finnes mottaker i digdir-krr-proxy? Hvis nei -> PRINT
+	 * 13: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
+	 * 15 (+ SDP-varsel): Skal bruker varsles, men mangler digital kontaktinfo? Hvis ja -> PRINT
+	 * 15: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
+	 * 16: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
+	 * 16: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -303,8 +303,8 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 16: Er bruker og mottaker forskjellig (og dokumentTypeId er ikke årsoppgave)? Hvis ja -> PRINT
-	 * 17: Er dokumentet arkivert? Hvis nei -> PRINT
+	 * 17: Er bruker og mottaker forskjellig (og dokumentTypeId er ikke årsoppgave)? Hvis ja -> PRINT
+	 * 18: Er dokumentet arkivert? Hvis nei -> PRINT
 	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"000011"})
@@ -339,7 +339,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 18: Har dokmentet tema med begrenset innsyn? Hvis ja -> PRINT
+	 * 19: Har dokmentet tema med begrenset innsyn? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP", "ARS", "BBF"})
@@ -374,7 +374,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 19: Har bruker gyldig epostadresse eller mobilnummer? Hvis ja -> DITT_NAV
+	 * 20: Har bruker gyldig epostadresse eller mobilnummer? Hvis ja -> DITT_NAV
 	 */
 	@Test
 	void skalReturnereDittNavForBrukerMedGyldigEpostEllerMobilnummer() {
@@ -407,7 +407,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
+	 * 8: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
 	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111", "GB:UK010"})
