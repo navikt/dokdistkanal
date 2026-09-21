@@ -151,13 +151,14 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7.2: Er org. konkurs? Hvis ja -> PRINT
 	 * 7.3: Er org. ikke konkurs, men er slettet? Hvis ja -> PRINT
 	 * 7.3  Er underenhet og slettet? Hvis ja -> PRINT
-	 * 7.4: Er org. ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus,
-									  BestemDistribusjonskanalRegel regel, String mottakerId, String dokumentTypeId, String hentEnhetPath,
+									  BestemDistribusjonskanalRegel regel, String dokumentTypeId, String hentEnhetPath,
 									  String grupperollerPath, String underenhetPath, HttpStatus underenhetStatusCode) {
+
+		String mottakerId = HOVEDENHET_ORGNR;
 
 		stubDokmet();
 		stubDigdirKrrProxy();
@@ -192,15 +193,65 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, HOVEDENHET_ORGNR, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, HOVEDENHET_ORGNR, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, HOVEDENHET_ORGNR, "000000", SLETTET_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, SLETTET_UNDERENHET_PATH, OK),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND)
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "000000", SLETTET_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, SLETTET_UNDERENHET_PATH, OK)
+		);
+	}
+
+	/*
+	 * Her testes følgende regel for mottakertype ORGANISASJON:
+	 * 7.4: Er org. ikke konkurs eller slettet, men:
+	 * - registert person er død, eller
+	 * - registert person har ingen fødselsdato, eller
+	 * Hvis ja -> PRINT
+	 */
+	@ParameterizedTest
+	@MethodSource
+	void skalReturnereForOrganisasjonUtenRoller(DistribusjonKanalCode distribusjonKanal, HttpStatus registryStatus,
+											    String dokumentTypeId, String hentEnhetPath, String grupperollerPath,
+											    String underenhetPath, HttpStatus underenhetStatusCode, HttpStatus rollerStatusCode) {
+		BestemDistribusjonskanalRegel regel = ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
+		String forsendelseMetadataType = null;
+		String mottakerId = HOVEDENHET_ORGNR;
+		stubDokmet();
+		stubDigdirKrrProxy();
+		stubGetServiceRegistry(registryStatus);
+		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
+		stubUnderenhetsregisteret(underenhetStatusCode, underenhetPath, mottakerId);
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, OK.value());
+		var request = bestemDistribusjonskanalRequestMedMetadataType(forsendelseMetadataType);
+		request.setMottakerId(mottakerId);
+		request.setDokumenttypeId(dokumentTypeId);
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);
+					assertThat(it.regel()).isEqualTo(regel.name());
+					assertThat(it.regelBegrunnelse()).isEqualTo(regel.begrunnelse);
+				});
+	}
+
+	private static Stream<Arguments> skalReturnereForOrganisasjonUtenRoller() {
+		return Stream.of(
+				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
+				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND, OK)
 		);
 	}
 
