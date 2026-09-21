@@ -64,7 +64,11 @@ public class BrregEnhetsregisterConsumer {
 		return webClient.get()
 				.uri("/enheter/{organisasjonsnummer}/roller", organisasjonsnummer)
 				.exchangeToMono(clientResponse -> {
-					if (clientResponse.statusCode().isError()) {
+					// brreg svarer med 404 for å signalisere ingen roller. så
+					// behandle det som en tom liste, og ikke som en feil.
+					if (clientResponse.statusCode() == NOT_FOUND) {
+						return Mono.empty();
+					} else if (clientResponse.statusCode().isError()) {
 						return handleErrorResponse(clientResponse);
 					}
 					return clientResponse.bodyToMono(EnhetsRolleResponse.class);
@@ -72,7 +76,6 @@ public class BrregEnhetsregisterConsumer {
 				.transformDeferred(CircuitBreakerOperator.of(circuitBreaker))
 				.transformDeferred(RetryOperator.of(retry))
 				.block();
-
 	}
 
 	public HentUnderenhetResponse hentHovedenhetFraUnderenhet(String organisasjonsnummer) {
