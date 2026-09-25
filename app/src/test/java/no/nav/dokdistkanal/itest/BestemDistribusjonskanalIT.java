@@ -208,6 +208,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7.4: Er org. ikke konkurs eller slettet, men:
 	 * - registert person er død, eller
 	 * - registert person har ingen fødselsdato, eller
+	 * - brreg svarer ikke med registrert person
 	 * Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
@@ -223,7 +224,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 		stubGetServiceRegistry(registryStatus);
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(underenhetStatusCode, underenhetPath, mottakerId);
-		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, OK.value());
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, rollerStatusCode.value());
 		var request = bestemDistribusjonskanalRequestMedMetadataType(forsendelseMetadataType);
 		request.setMottakerId(mottakerId);
 		request.setDokumenttypeId(dokumentTypeId);
@@ -251,7 +252,8 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	private static Stream<Arguments> skalReturnereForOrganisasjonUtenRoller() {
 		return Stream.of(
 				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
-				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND, OK)
+				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
+				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND, NOT_FOUND)
 		);
 	}
 
