@@ -35,7 +35,7 @@ public enum BestemDistribusjonskanalRegel {
 	BRUKER_ER_RESERVERT(PRINT, "Bruker har reservert seg mot digital kommunikasjon"),
 	BRUKER_SDP_MANGLER_VARSELINFO(PRINT, "Bruker skal varsles, men finner hverken mobiltelefonnummer eller e-postadresse"),
 	BRUKER_HAR_GYLDIG_SDP_ADRESSE(SDP, "Bruker har gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse"),
-	BRUKER_MANGLER_EPOST_OG_TELEFON(PRINT, "Bruker mangler mangler både e-post og telefonnummer"),
+	BRUKER_MANGLER_EPOST_OG_TELEFON(PRINT, "Bruker mangler både e-post og telefonnummer"),
 	BRUKER_OG_MOTTAKER_ER_FORSKJELLIG(PRINT, "Bruker og mottaker er forskjellig"),
 	DOKUMENT_ER_IKKE_ARKIVERT(PRINT, "Dokumentet er ikke arkivert"),
 	MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON(PRINT, "Mottaker er ikke person eller organisasjon"),
