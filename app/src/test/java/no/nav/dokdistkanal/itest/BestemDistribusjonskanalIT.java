@@ -106,7 +106,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 1: Skal dokumentet arkiveres? Hvis nei -> PRINT
 	 * 2: Er predefinert distribusjonskanal LOKAL_PRINT? Hvis ja -> LOKAL_PRINT
 	 * 3: Er predefinert distribusjonskanal INGEN_DISTRIBUSJON? Hvis ja -> INGEN_DISTRIBUSJON
-	 * 4: redefinert distribusjonskanal TRYGDERETTEN? Hvis ja -> TRYGDERETTEN
+	 * 4: Er predefinert distribusjonskanal TRYGDERETTEN? Hvis ja -> TRYGDERETTEN
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -151,13 +151,14 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7.2: Er org. konkurs? Hvis ja -> PRINT
 	 * 7.3: Er org. ikke konkurs, men er slettet? Hvis ja -> PRINT
 	 * 7.3  Er underenhet og slettet? Hvis ja -> PRINT
-	 * 7.4: Er org. ikke konkurs eller slettet, men registert person er død eller har ingen fødselsdato? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
 	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus,
-									  BestemDistribusjonskanalRegel regel, String mottakerId, String dokumentTypeId, String hentEnhetPath,
+									  BestemDistribusjonskanalRegel regel, String dokumentTypeId, String hentEnhetPath,
 									  String grupperollerPath, String underenhetPath, HttpStatus underenhetStatusCode) {
+
+		String mottakerId = HOVEDENHET_ORGNR;
 
 		stubDokmet();
 		stubDigdirKrrProxy();
@@ -192,23 +193,73 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, HOVEDENHET_ORGNR, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, HOVEDENHET_ORGNR, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, HOVEDENHET_ORGNR, "000000", SLETTET_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, SLETTET_UNDERENHET_PATH, OK),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MANGLER_NODVENDIG_ROLLER, HOVEDENHET_ORGNR, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND)
+				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "000000", SLETTET_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, SLETTET_UNDERENHET_PATH, OK)
+		);
+	}
+
+	/*
+	 * Her testes følgende regel for mottakertype ORGANISASJON:
+	 * 7.4: Er org. ikke konkurs eller slettet, men:
+	 * - registert person er død, eller
+	 * - registert person har ingen fødselsdato, eller
+	 * Hvis ja -> PRINT
+	 */
+	@ParameterizedTest
+	@MethodSource
+	void skalReturnereForOrganisasjonUtenRoller(DistribusjonKanalCode distribusjonKanal, HttpStatus registryStatus,
+											    String dokumentTypeId, String hentEnhetPath, String grupperollerPath,
+											    String underenhetPath, HttpStatus underenhetStatusCode, HttpStatus rollerStatusCode) {
+		BestemDistribusjonskanalRegel regel = ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
+		String forsendelseMetadataType = null;
+		String mottakerId = HOVEDENHET_ORGNR;
+		stubDokmet();
+		stubDigdirKrrProxy();
+		stubGetServiceRegistry(registryStatus);
+		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
+		stubUnderenhetsregisteret(underenhetStatusCode, underenhetPath, mottakerId);
+		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, OK.value());
+		var request = bestemDistribusjonskanalRequestMedMetadataType(forsendelseMetadataType);
+		request.setMottakerId(mottakerId);
+		request.setDokumenttypeId(dokumentTypeId);
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.isOk()
+				.expectBody(BestemDistribusjonskanalResponse.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response)
+				.isNotNull()
+				.satisfies(it -> {
+					assertThat(it.distribusjonskanal()).isEqualTo(distribusjonKanal);
+					assertThat(it.regel()).isEqualTo(regel.name());
+					assertThat(it.regelBegrunnelse()).isEqualTo(regel.begrunnelse);
+				});
+	}
+
+	private static Stream<Arguments> skalReturnereForOrganisasjonUtenRoller() {
+		return Stream.of(
+				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
+				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND, OK)
 		);
 	}
 
 	/*
 	 * Her testes følgende regler:
-	 * 8: Finnes mottaker i PDL? Hvis nei -> PRINT
-	 * 9: Er mottakers fødselsdato ikke satt, eller er under 18 år gammel? Hvis ja -> PRINT
+	 * 9: Finnes mottaker i PDL? Hvis nei -> PRINT
 	 * 10: Er personen død? Hvis ja -> PRINT
+	 * 11: Er mottakers fødselsdato ikke satt, eller er under 18 år gammel? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -247,12 +298,12 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 11: Har personen gyldig digital kontaktinformasjon? Hvis nei -> PRINT
-	 * 12: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
-	 * 13: Skal bruker varsles, men mangler digital kontaktinfo? Hvis ja -> PRINT
-	 * 14: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
-	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
-	 * 15: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
+	 * 12: Finnes mottaker i digdir-krr-proxy? Hvis nei -> PRINT
+	 * 13: Er personen reservert mot digital kommunikasjon? Hvis ja -> PRINT
+	 * 15 (+ SDP-varsel): Skal bruker varsles, men mangler digital kontaktinfo? Hvis ja -> PRINT
+	 * 15: Har mottaker gyldig epostadresse eller mobilnummer? Hvis nei -> PRINT
+	 * 16: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse? Hvis ja -> SDP
+	 * 16: Har bruker gyldig digitalt postkassesertifikat, leverandøradresse og brukeradresse med filstørrelse over 45 megabytes? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -303,8 +354,8 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 16: Er bruker og mottaker forskjellig (og dokumentTypeId er ikke årsoppgave)? Hvis ja -> PRINT
-	 * 17: Er dokumentet arkivert? Hvis nei -> PRINT
+	 * 17: Er bruker og mottaker forskjellig (og dokumentTypeId er ikke årsoppgave)? Hvis ja -> PRINT
+	 * 18: Er dokumentet arkivert? Hvis nei -> PRINT
 	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"000011"})
@@ -339,7 +390,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 18: Har dokmentet tema med begrenset innsyn? Hvis ja -> PRINT
+	 * 19: Har dokmentet tema med begrenset innsyn? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"FAR", "KTR", "KTA", "ARP", "ARS", "BBF"})
@@ -374,7 +425,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 19: Har bruker gyldig epostadresse eller mobilnummer? Hvis ja -> DITT_NAV
+	 * 20: Har bruker gyldig epostadresse eller mobilnummer? Hvis ja -> DITT_NAV
 	 */
 	@Test
 	void skalReturnereDittNavForBrukerMedGyldigEpostEllerMobilnummer() {
@@ -407,7 +458,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	/*
 	 * Her testes følgende regler:
-	 * 7: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
+	 * 8: Mottaker er hverken PERSON eller ORGANISASJON -> PRINT
 	 */
 	@ParameterizedTest
 	@ValueSource(strings = {"12345", "123456789", "82345678902", "11111111111", "GB:UK010"})
