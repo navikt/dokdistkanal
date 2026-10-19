@@ -67,6 +67,8 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	public static final String SLETTET_UNDERENHET_PATH = "enhetsregisteret/slettet_underenhet.json";
 	public static final String UNDERENHET_ORGNR = "916007922";
 	public static final String HOVEDENHET_ORGNR = "974761076";
+	public static final String SERVICEREGISTRY_HAPPY_PATH = "serviceregistry/serviceregistry_happy_response.json";
+	public static final String SERVICEREGISTRY_NOT_FOUND_PATH = "serviceregistry/serviceregistry_not_found_response.json";
 
 	@Autowired
 	private CacheManager cacheManager;
@@ -192,11 +194,15 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 	}
 
 	public static void stubGetServiceRegistry(HttpStatus status) {
+		stubGetServiceRegistry(status, SERVICEREGISTRY_HAPPY_PATH);
+	}
+
+	public static void stubGetServiceRegistry(HttpStatus status, String bodyfilePath) {
 		stubFor(get(urlMatching("/serviceregistry/identifier/974761076/process/urn:no:difi:profile:avtalt:avtalt:ver1.0"))
 				.willReturn(aResponse()
 						.withStatus(status.value())
 						.withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-						.withBodyFile("serviceregistry/serviceregistry_happy_response.json")));
+						.withBodyFile(bodyfilePath)));
 	}
 
 }

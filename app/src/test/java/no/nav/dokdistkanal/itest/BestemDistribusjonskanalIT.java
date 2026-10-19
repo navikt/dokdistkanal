@@ -194,7 +194,6 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 		return Stream.of(
 				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
 				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
 				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
 				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND)
 		);
@@ -245,6 +244,28 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(UNDERENHET_ORGNR, OK, SLETTET_UNDERENHET_PATH, null, UNDERENHET_ORGNR), // Slettet underenhet
 				Arguments.of(UNDERENHET_ORGNR, OK, UNDERENHET_PATH, SLETTET_ENHET_PATH, HOVEDENHET_ORGNR) // Aktiv underenhet med slettet hovedenhet
 		);
+	}
+
+	/*
+	 * 6: Har requesten forsendelseMetadataType DPO_AVTALEMELDING, men svarer
+	 * service registry med 4xx? I så fall kast en serverfeil og avbryt flyten.
+	 */
+	@Test
+	void skalReturnereFeilHvisServiceRegistryFeiler() {
+		stubDokmet();
+		stubGetServiceRegistry(BAD_REQUEST, SERVICEREGISTRY_NOT_FOUND_PATH);
+
+		var request = bestemDistribusjonskanalRequestMedMetadataType(DPO_AVTALEMELDING);
+		request.setMottakerId(HOVEDENHET_ORGNR);
+		request.setDokumenttypeId("000000");
+
+		webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.is5xxServerError();
 	}
 
 	/*
