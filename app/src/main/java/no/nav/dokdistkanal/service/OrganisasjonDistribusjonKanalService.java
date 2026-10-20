@@ -1,9 +1,8 @@
 package no.nav.dokdistkanal.service;
 
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
-import no.nav.dokdistkanal.consumer.brreg.HovedenhetResponse;
 import no.nav.dokdistkanal.consumer.serviceregistry.DpoServiceRegistryService;
-import no.nav.dokdistkanal.exceptions.functional.EnhetSlettetException;
+import no.nav.dokdistkanal.domain.Enhetsopplysninger;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.springframework.stereotype.Component;
@@ -38,14 +37,10 @@ public class OrganisasjonDistribusjonKanalService {
 	}
 
 	public BestemDistribusjonskanalResponse validerOrgNrOgBestemKanal(BestemDistribusjonskanalRequest request) {
-		try {
-			if (!erOrganisasjonsnummer(request)) {
-				return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
-			}
-			return organisasjon(request);
-		} catch (EnhetSlettetException _) {
-			return createResponse(request, ORGANISASJON_ER_SLETTET);
+		if (!erOrganisasjonsnummer(request)) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
 		}
+		return organisasjon(request);
 	}
 
 	private BestemDistribusjonskanalResponse organisasjon(BestemDistribusjonskanalRequest request) {
@@ -57,7 +52,7 @@ public class OrganisasjonDistribusjonKanalService {
 			return createResponse(request, ORGANISASJON_MED_SERVICE_REGISTRY_INFO);
 		}
 
-		return erGyldigDpvtMottaker(request);
+		return bestemKanalForOrganisasjon(request);
 	}
 
 	private boolean erGyldigDpoMottaker(BestemDistribusjonskanalRequest request) {
@@ -65,22 +60,26 @@ public class OrganisasjonDistribusjonKanalService {
 				&& (dpoServiceRegistryService.containsAvtaltMeldingServiceRecord(request.getMottakerId()));
 	}
 
-	private BestemDistribusjonskanalResponse erGyldigDpvtMottaker(BestemDistribusjonskanalRequest request) {
-		HovedenhetResponse hovedenhet = brregEnhetsregisterService.hentHovedenhet(request.getMottakerId());
+	private BestemDistribusjonskanalResponse bestemKanalForOrganisasjon(BestemDistribusjonskanalRequest request) {
+		Enhetsopplysninger enhetsopplysninger = brregEnhetsregisterService.hentEnhetsopplysninger(request.getMottakerId());
 
-		if (hovedenhet == null) {
-			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
-		}
-
-		if (hovedenhet.konkurs()) {
-			return createResponse(request, ORGANISASJON_ER_KONKURS);
-		}
-
-		if (hovedenhet.slettedato() != null) {
+		if (enhetsopplysninger.erUnderenhetSlettet()) {
 			return createResponse(request, ORGANISASJON_ER_SLETTET);
 		}
 
-		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(hovedenhet.organisasjonsnummer());
+		if (!enhetsopplysninger.harHovedenhet()) {
+			return createResponse(request, MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON);
+		}
+
+		if (enhetsopplysninger.erHovedenhetKonkurs()) {
+			return createResponse(request, ORGANISASJON_ER_KONKURS);
+		}
+
+		if (enhetsopplysninger.erHovedenhetSlettet()) {
+			return createResponse(request, ORGANISASJON_ER_SLETTET);
+		}
+
+		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(enhetsopplysninger.hovedenhet().organisasjonsnummer());
 
 		if (!harEnhetenGyldigRolletypeForDpvt) {
 			return createResponse(request, ORGANISASJON_MANGLER_NODVENDIG_ROLLER);
