@@ -49,6 +49,11 @@
       "cluster": "dev-fss"
     },
     {
+      "app": "familie-integrasjoner",
+      "namespace": "teamfamilie",
+      "cluster": "dev-gcp"
+    },
+    {
       "app": "brev-administrasjon-q2",
       "namespace": "isa",
       "cluster": "dev-gcp"
