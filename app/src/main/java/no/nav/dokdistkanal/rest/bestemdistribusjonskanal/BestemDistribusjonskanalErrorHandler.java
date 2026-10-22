@@ -4,6 +4,7 @@ import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.dokdistkanal.exceptions.functional.DigitalKontaktinformasjonFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.DokmetFunctionalException;
+import no.nav.dokdistkanal.exceptions.functional.EnhetSlettetException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterFunctionalException;
 import no.nav.dokdistkanal.exceptions.functional.EnhetsregisterNotFoundException;
 import no.nav.dokdistkanal.exceptions.functional.PdlFunctionalException;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.GONE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
@@ -41,6 +43,13 @@ public class BestemDistribusjonskanalErrorHandler extends ResponseEntityExceptio
 	private static final String CONSUMER_TEKNISK_FEIL_MESSAGE = "Teknisk feil ved kall mot ekstern tjeneste";
 	private static final String UNAUTHORIZED_FEIL_MESSAGE = "OIDC token mangler eller er ugyldig";
 	private static final String UKJENT_TEKNISK_FEIL_MESSAGE = "Ukjent teknisk feil";
+	private static final String ENHET_SLETTET_MESSAGE = "Virksomheten er slettet";
+
+	@ExceptionHandler(EnhetSlettetException.class)
+	ProblemDetail handleEnhetSlettetException(EnhetSlettetException ex) {
+		log.warn("{}. Feil={}", ENHET_SLETTET_MESSAGE, ex.getMessage());
+		return mapProblemDetail(ENHET_SLETTET_MESSAGE, GONE, ex);
+	}
 
 	@ExceptionHandler({DokmetFunctionalException.class,
 			DigitalKontaktinformasjonFunctionalException.class,

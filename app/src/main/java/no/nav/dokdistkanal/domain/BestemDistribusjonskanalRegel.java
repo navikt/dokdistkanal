@@ -23,7 +23,6 @@ public enum BestemDistribusjonskanalRegel {
 	ORGANISASJON_MED_ALTINN_INFO(DPVT, "Mottaker er organisasjon og har personer med nødvendige roller"),
 	ORGANISASJON_UTEN_ALTINN_INFO(PRINT, "Mottaker er organisasjon og mangler varslingsinformasjon for DPVT"),
 	ORGANISASJON_ER_KONKURS(PRINT, "Mottaker er organisasjon og er konkurs"),
-	ORGANISASJON_ER_SLETTET(PRINT, "Mottaker er organisasjon og er slettet"),
 	ORGANISASJON_MANGLER_NODVENDIG_ROLLER(PRINT, "Mottaker er organisasjon og mangler personer med nødvendig roller"),
 	ORGANISASJON_MED_SERVICE_REGISTRY_INFO(DPO, "Mottaker er organisasjon og har gyldig mottakerinfo i Service Registry"),
 	ORGANISASJON_MANGLER_MOTTAKER_INFO_I_SERVICE_REGISTRY(PRINT, "Mottaker er organisasjon og mangler gyldig mottaker info i Service Registry"),

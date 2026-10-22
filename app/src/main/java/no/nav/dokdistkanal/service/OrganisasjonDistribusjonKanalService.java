@@ -3,13 +3,15 @@ package no.nav.dokdistkanal.service;
 import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.serviceregistry.DpoServiceRegistryService;
 import no.nav.dokdistkanal.domain.Enhetsopplysninger;
+import no.nav.dokdistkanal.domain.Enhetsopplysninger.Hovedenhet;
+import no.nav.dokdistkanal.domain.Enhetsopplysninger.Underenhet;
+import no.nav.dokdistkanal.exceptions.functional.EnhetSlettetException;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalRequest;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
 import org.springframework.stereotype.Component;
 
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_SLETTET;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
@@ -64,7 +66,8 @@ public class OrganisasjonDistribusjonKanalService {
 		Enhetsopplysninger enhetsopplysninger = brregEnhetsregisterService.hentEnhetsopplysninger(request.getMottakerId());
 
 		if (enhetsopplysninger.erUnderenhetSlettet()) {
-			return createResponse(request, ORGANISASJON_ER_SLETTET);
+			Underenhet underenhet = enhetsopplysninger.underenhet();
+			throw new EnhetSlettetException(underenhet.organisasjonsnummer(), underenhet.slettedato());
 		}
 
 		if (!enhetsopplysninger.harHovedenhet()) {
@@ -76,7 +79,8 @@ public class OrganisasjonDistribusjonKanalService {
 		}
 
 		if (enhetsopplysninger.erHovedenhetSlettet()) {
-			return createResponse(request, ORGANISASJON_ER_SLETTET);
+			Hovedenhet hovedenhet = enhetsopplysninger.hovedenhet();
+			throw new EnhetSlettetException(hovedenhet.organisasjonsnummer(), hovedenhet.slettedato());
 		}
 
 		boolean harEnhetenGyldigRolletypeForDpvt = brregEnhetsregisterService.harEnhetenGyldigRolletypeForDpvt(enhetsopplysninger.hovedenhet().organisasjonsnummer());

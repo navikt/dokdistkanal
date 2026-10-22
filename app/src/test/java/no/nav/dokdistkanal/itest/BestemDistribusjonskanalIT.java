@@ -34,7 +34,6 @@ import static no.nav.dokdistkanal.constants.DomainConstants.DPI_MAX_FORSENDELSE_
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CONSUMER_ID;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.MOTTAKER_ER_IKKE_PERSON_ELLER_ORGANISASJON;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_KONKURS;
-import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_ER_SLETTET;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_ALTINN_INFO;
 import static no.nav.dokdistkanal.domain.BestemDistribusjonskanalRegel.ORGANISASJON_MED_INFOTRYGD_DOKUMENT;
@@ -43,12 +42,14 @@ import static no.nav.dokdistkanal.service.OrganisasjonDistribusjonKanalService.D
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.GONE;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
 /*
  * Se https://confluence.adeo.no/pages/viewpage.action?pageId=294148459 for funksjonelle behandlingsregler
@@ -149,8 +150,6 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 * 7: Er org. ikke konkurs eller slettet, og har enhets grupperoller? Hvis ja -> DPVT
 	 * 7.1: Mangler org. varslingsinformasjon for DPV? Hvis ja -> PRINT
 	 * 7.2: Er org. konkurs? Hvis ja -> PRINT
-	 * 7.3: Er org. ikke konkurs, men er slettet? Hvis ja -> PRINT
-	 * 7.3  Er underenhet og slettet? Hvis ja -> PRINT
 	 */
 	@ParameterizedTest
 	@MethodSource
@@ -197,9 +196,54 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
 				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
 				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "000000", SLETTET_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_SLETTET, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, SLETTET_UNDERENHET_PATH, OK)
+				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND)
+		);
+	}
+
+	/*
+	 * Her testes følgende regel for mottakertype ORGANISASJON:
+	 * 7.3: Er hovedenhet eller underenhet slettet? Hvis ja -> Returner 410 Gone
+	 */
+	@ParameterizedTest
+	@MethodSource
+	void skalReturnereGoneForSlettetVirksomhet(String mottakerId, HttpStatus underenhetStatus, String underenhetPath,
+											 String hovedenhetPath, String slettetOrgNr) {
+		stubDokmet();
+		stubUnderenhetsregisteret(underenhetStatus, underenhetPath, mottakerId);
+		if (hovedenhetPath != null) {
+			stubSecondEnhetsregisteret(hovedenhetPath, HOVEDENHET_ORGNR);
+		}
+
+		var request = gyldigBestemDistribusjonskanalRequest();
+		request.setMottakerId(mottakerId);
+
+		var response = webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.isEqualTo(GONE)
+				.expectHeader()
+				.contentTypeCompatibleWith(APPLICATION_PROBLEM_JSON)
+				.expectBody(ProblemDetail.class)
+				.returnResult()
+				.getResponseBody();
+
+		assertThat(response).isNotNull().satisfies(it -> {
+			assertThat(it.getStatus()).isEqualTo(GONE.value());
+			assertThat(it.getTitle()).isEqualTo("Virksomheten er slettet");
+			assertThat(it.getDetail()).isEqualTo(
+					"Virksomheten med organisasjonsnummer=%s er slettet per 2017-10-20. Forsendelsen kan ikke distribueres."
+							.formatted(slettetOrgNr));
+		});
+	}
+
+	private static Stream<Arguments> skalReturnereGoneForSlettetVirksomhet() {
+		return Stream.of(
+				Arguments.of(HOVEDENHET_ORGNR, NOT_FOUND, UNDERENHET_PATH, SLETTET_ENHET_PATH, HOVEDENHET_ORGNR), // Slettet hovedenhet
+				Arguments.of(UNDERENHET_ORGNR, OK, SLETTET_UNDERENHET_PATH, null, UNDERENHET_ORGNR), // Slettet underenhet
+				Arguments.of(UNDERENHET_ORGNR, OK, UNDERENHET_PATH, SLETTET_ENHET_PATH, HOVEDENHET_ORGNR) // Aktiv underenhet med slettet hovedenhet
 		);
 	}
 
