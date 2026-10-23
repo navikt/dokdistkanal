@@ -1,5 +1,5 @@
 {
-  "organisasjonsnummer" : "974761076",
+  "organisasjonsnummer" : "916007922",
   "navn" : "SLETTET ENHET AS",
   "organisasjonsform" : {
     "kode" : "UTBG",
@@ -15,7 +15,7 @@
   "nedleggelsesdato": "2026-02-01",
   "_links" : {
     "self" : {
-      "href" : "http://localhost/enhetsregisteret/api/enheter/123456789"
+      "href" : "http://localhost/enhetsregisteret/api/underenheter/916007922"
     }
   }
 }

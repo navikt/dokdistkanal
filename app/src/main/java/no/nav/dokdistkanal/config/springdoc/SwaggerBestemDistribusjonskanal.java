@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import no.nav.dokdistkanal.rest.bestemdistribusjonskanal.BestemDistribusjonskanalResponse;
+import org.springframework.http.ProblemDetail;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -35,6 +36,14 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 				responseCode = "400",
 				description = "Bad Request - Input feilet validering. Eksempler: mottakerId er ikke satt, brukerId er ikke et tall eller består av flere enn 11 siffer.",
 				content = @Content
+		),
+		@ApiResponse(
+				responseCode = "410",
+				description = "Gone - Virksomheten er slettet i Brønnøysundregistrene. Forsendelsen kan ikke distribueres.",
+				content = @Content(
+						mediaType = "application/problem+json",
+						schema = @Schema(implementation = ProblemDetail.class)
+				)
 		),
 		@ApiResponse(
 				responseCode = "500",
