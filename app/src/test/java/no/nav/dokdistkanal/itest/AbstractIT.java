@@ -193,10 +193,6 @@ public abstract class AbstractIT extends AbstractOauth2Test {
 						.withStatus(httpStatus.value())));
 	}
 
-	public static void stubGetServiceRegistry(HttpStatus status) {
-		stubGetServiceRegistry(status, SERVICEREGISTRY_HAPPY_PATH);
-	}
-
 	public static void stubGetServiceRegistry(HttpStatus status, String bodyfilePath) {
 		stubFor(get(urlMatching("/serviceregistry/identifier/974761076/process/urn:no:difi:profile:avtalt:avtalt:ver1.0"))
 				.willReturn(aResponse()
