@@ -5,13 +5,17 @@ import no.nav.dokdistkanal.config.properties.DokdistkanalProperties;
 import no.nav.dokdistkanal.consumer.altinn.maskinporten.MaskinportenConsumer;
 import no.nav.dokdistkanal.exceptions.technical.ServiceRegistryTechnicalException;
 import org.slf4j.MDC;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.io.IOException;
 
 import static no.nav.dokdistkanal.constants.MDCConstants.CALL_ID;
 import static no.nav.dokdistkanal.constants.NavHeaders.NAV_CALLID;
@@ -40,7 +44,7 @@ public class ServiceRegistryConsumer {
 		this.jsonMapper = jsonMapper;
 	}
 
-	@Retryable(includes = ServiceRegistryTechnicalException.class)
+	@Retryable(includes = {ServiceRegistryTechnicalException.class})
 	public IdentifierResource getIdentifierResource(final String orgnummer, final String processIdentifier) {
 		return restClient.get()
 				.uri(uriBuilder -> uriBuilder
@@ -50,16 +54,19 @@ public class ServiceRegistryConsumer {
 					httpHeaders.set(NAV_CALLID, MDC.get(CALL_ID));
 					httpHeaders.setBearerAuth(maskinportenConsumer.getMaskinportenTokenDpo());
 				})
-				.exchange((req, res) -> {
-					if (res.getStatusCode().isError()) {
-						ProblemDetail problemDetail = jsonMapper.readValue(res.getBody(), ProblemDetail.class);
-						if (res.getStatusCode().is5xxServerError()) {
-							log.error(TEKNISK_FEIL_ERROR_MESSAGE + " status={} og feilmelding={}", res.getStatusCode(), problemDetail.getDetail());
-							throw new ServiceRegistryTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + problemDetail);
-						}
-						return null;
-					}
-					return res.bodyTo(IdentifierResource.class);
-				});
+				.retrieve()
+				.onStatus(HttpStatusCode::isError, (req, res) -> handleError(res))
+				.body(IdentifierResource.class);
+	}
+
+	private void handleError(ClientHttpResponse res) throws IOException {
+		// tjenesteregisteret svarer ikke egentlig med en problem detail
+		// (rfc 9457). vi bruker det uansett, siden den tilgjengeliggjør alle
+		// elementene fra det mottatte json-objektet.
+		ProblemDetail problemDetail =
+			jsonMapper.readValue(res.getBody(),
+					ProblemDetail.class);
+		log.error(TEKNISK_FEIL_ERROR_MESSAGE + " status={} og feilmelding={}", res.getStatusCode(), problemDetail.getDetail());
+		throw new ServiceRegistryTechnicalException(TEKNISK_FEIL_ERROR_MESSAGE + problemDetail);
 	}
 }

@@ -153,7 +153,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 */
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType, HttpStatus registryStatus,
+	void skalReturnereForOrganisasjon(DistribusjonKanalCode distribusjonKanal, String forsendelseMetadataType,
 									  BestemDistribusjonskanalRegel regel, String dokumentTypeId, String hentEnhetPath,
 									  String grupperollerPath, String underenhetPath, HttpStatus underenhetStatusCode) {
 
@@ -161,7 +161,7 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubGetServiceRegistry(registryStatus);
+		stubGetServiceRegistry(OK, SERVICEREGISTRY_HAPPY_PATH);
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(underenhetStatusCode, underenhetPath, mottakerId);
 		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, OK.value());
@@ -192,11 +192,10 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjon() {
 		return Stream.of(
-				Arguments.of(PRINT, null, OK, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPO, DPO_AVTALEMELDING, OK, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, DPO_AVTALEMELDING, BAD_REQUEST, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(DPVT, null, OK, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
-				Arguments.of(PRINT, null, OK, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND)
+				Arguments.of(PRINT, null, ORGANISASJON_MED_INFOTRYGD_DOKUMENT, "000044", null, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPO, DPO_AVTALEMELDING, ORGANISASJON_MED_SERVICE_REGISTRY_INFO, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(DPVT, null, ORGANISASJON_MED_ALTINN_INFO, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_OK_PATH, UNDERENHET_PATH, NOT_FOUND),
+				Arguments.of(PRINT, null, ORGANISASJON_ER_KONKURS, "000000", KONKURS_ENHET_PATH, null, UNDERENHET_PATH, NOT_FOUND)
 		);
 	}
 
@@ -248,6 +247,28 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	}
 
 	/*
+	 * 6: Har requesten forsendelseMetadataType DPO_AVTALEMELDING, men svarer
+	 * service registry med 4xx? I så fall kast en serverfeil og avbryt flyten.
+	 */
+	@Test
+	void skalReturnereFeilHvisServiceRegistryFeiler() {
+		stubDokmet();
+		stubGetServiceRegistry(BAD_REQUEST, SERVICEREGISTRY_NOT_FOUND_PATH);
+
+		var request = bestemDistribusjonskanalRequestMedMetadataType(DPO_AVTALEMELDING);
+		request.setMottakerId(HOVEDENHET_ORGNR);
+		request.setDokumenttypeId("000000");
+
+		webTestClient.post()
+				.uri(BESTEM_DISTRIBUSJONSKANAL_URL)
+				.headers(headers())
+				.bodyValue(request)
+				.exchange()
+				.expectStatus()
+				.is5xxServerError();
+	}
+
+	/*
 	 * Her testes følgende regel for mottakertype ORGANISASJON:
 	 * 7.4: Er org. ikke konkurs eller slettet, men:
 	 * - registert person er død, eller
@@ -257,14 +278,14 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 	 */
 	@ParameterizedTest
 	@MethodSource
-	void skalReturnereForOrganisasjonUtenRoller(DistribusjonKanalCode distribusjonKanal, HttpStatus registryStatus,
+	void skalReturnereForOrganisasjonUtenRoller(DistribusjonKanalCode distribusjonKanal,
 											    String dokumentTypeId, String hentEnhetPath, String grupperollerPath,
 											    String underenhetPath, HttpStatus underenhetStatusCode, HttpStatus rollerStatusCode) {
 		BestemDistribusjonskanalRegel regel = ORGANISASJON_MANGLER_NODVENDIG_ROLLER;
 		String mottakerId = HOVEDENHET_ORGNR;
 		stubDokmet();
 		stubDigdirKrrProxy();
-		stubGetServiceRegistry(registryStatus);
+		stubGetServiceRegistry(OK, SERVICEREGISTRY_HAPPY_PATH);
 		stubEnhetsregisteret(OK, hentEnhetPath, mottakerId);
 		stubUnderenhetsregisteret(underenhetStatusCode, underenhetPath, mottakerId);
 		stubEnhetsGruppeRoller(grupperollerPath, mottakerId, rollerStatusCode.value());
@@ -294,9 +315,9 @@ class BestemDistribusjonskanalIT extends AbstractIT {
 
 	private static Stream<Arguments> skalReturnereForOrganisasjonUtenRoller() {
 		return Stream.of(
-				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
-				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
-				Arguments.of(PRINT, OK, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND, NOT_FOUND)
+				Arguments.of(PRINT, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_PERSON_ER_DOED_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
+				Arguments.of(PRINT, "000000", HENT_ENHET_OK_PATH, GRUPPEROLLER_ALLE_FRATRAADT_PATH, UNDERENHET_PATH, NOT_FOUND, OK),
+				Arguments.of(PRINT, "000000", HENT_ENHET_OK_PATH, null, UNDERENHET_PATH, NOT_FOUND, NOT_FOUND)
 		);
 	}
 
